@@ -2,33 +2,34 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export function proxy(request: NextRequest) {
-  // Get the response
-  const response = NextResponse.next();
+  // Retrieve the origin from the request headers
+  const origin = request.headers.get("origin") || "";
+  // const allowedOrigins = [
+  //   "https://voice-maker-minivox-web.vercel.app",
+  //   "http://localhost:4200",
+  // ];
 
-  // Add CORS headers
-  response.headers.set("Access-Control-Allow-Origin", "*");
-  response.headers.set(
-    "Access-Control-Allow-Methods",
-    "GET, POST, PUT, DELETE, OPTIONS",
-  );
-  response.headers.set(
-    "Access-Control-Allow-Headers",
-    "Content-Type, Authorization",
-  );
-  // response.headers.set("Access-Control-Allow-Credentials", "true");
+  // CORS headers
+  const headers = {
+    "Access-Control-Allow-Origin": origin,
+    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Access-Control-Allow-Credentials": "true",
+  };
 
-  // Handle preflight requests
+  // Handle preflight
   if (request.method === "OPTIONS") {
     return new NextResponse(null, {
-      status: 200,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
-        // "Access-Control-Allow-Credentials": "true",
-      },
+      status: 204,
+      headers,
     });
   }
+
+  // Get the response
+  const response = NextResponse.next();
+  Object.entries(headers).forEach(([key, value]) => {
+    response.headers.set(key, value);
+  });
 
   return response;
 }
