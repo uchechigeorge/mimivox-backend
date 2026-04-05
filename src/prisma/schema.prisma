@@ -33,6 +33,8 @@ model User {
   updatedAt            DateTime       @updatedAt
   deletedAt            DateTime?
   subscriptions        Subscription[]
+
+  @@map("Users")
 }
 
 /// =====================
@@ -48,6 +50,8 @@ model Plan {
   updatedAt     DateTime       @updatedAt
   deletedAt     DateTime?
   subscriptions Subscription[]
+
+  @@map("Plans")
 }
 
 model Pricing {
@@ -67,6 +71,8 @@ model Pricing {
   updatedAt        DateTime       @updatedAt
   deletedAt        DateTime?
   subscriptions    Subscription[]
+
+  @@map("Pricings")
 }
 
 model Subscription {
@@ -87,4 +93,6 @@ model Subscription {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
+
+  @@map("Subscriptions")
 }

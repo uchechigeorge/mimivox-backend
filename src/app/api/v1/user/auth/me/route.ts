@@ -6,7 +6,6 @@ import { NextResponse } from "next/server";
 
 export const GET = userHandler(
   async (req: Request, ctx: any, authData: UserAuthItems) => {
-    console.log({ authData });
     const result = await authService.getAuthenticatedUser(authData);
     const response = successResponse(result);
     return NextResponse.json(response);

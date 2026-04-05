@@ -87,6 +87,5 @@ const handleUserAuth = async (req: Request, options?: HandlerOptions) => {
     }
   }
 
-  console.log("Auth Data:", authData);
   return authData;
 };
