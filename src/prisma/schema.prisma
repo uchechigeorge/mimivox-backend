@@ -1,0 +1,90 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// =====================
+/// USER MODULE
+/// =====================
+
+model User {
+  id                   String         @id @default(uuid())
+  email                String         @unique
+  emailVerified        Boolean        @default(false)
+  firstName            String
+  lastName             String
+  fullName             String         @default("")
+  password             String
+  dpUrl                String?
+  defaultBg            String?
+  phoneNumber          String?
+  hasValidSubscription Boolean        @default(false)
+  blocked              Boolean        @default(false)
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+  deletedAt            DateTime?
+  subscriptions        Subscription[]
+}
+
+/// =====================
+/// BILLING MODULE
+/// =====================
+
+model Plan {
+  id            String         @id @default(uuid())
+  name          String
+  description   String?
+  sequence      Int
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  deletedAt     DateTime?
+  subscriptions Subscription[]
+}
+
+model Pricing {
+  id               String         @id @default(uuid())
+  planId           String
+  planName         String
+  name             String
+  description      String?
+  price            Decimal        @db.Decimal(18, 2)
+  oldPrice         Decimal?       @db.Decimal(18, 2)
+  interval         String
+  intervalTypeId   Int
+  intervalTypeName String
+  intervalCount    Int
+  sequence         Int
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  deletedAt        DateTime?
+  subscriptions    Subscription[]
+}
+
+model Subscription {
+  id          String    @id @default(uuid())
+  userId      String
+  pricingId   String
+  pricingName String
+  planId      String
+  planName    String
+  isValid     Boolean
+  statusId    Int
+  statusName  String
+  startDate   DateTime
+  endDate     DateTime
+  user        User      @relation(fields: [userId], references: [id])
+  pricing     Pricing   @relation(fields: [pricingId], references: [id])
+  plan        Plan      @relation(fields: [planId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+}
