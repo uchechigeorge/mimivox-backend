@@ -12,3 +12,5 @@ export const POST = userHandler(async (req: Request) => {
   const response = successResponse(result);
   return NextResponse.json(response);
 });
+
+// export const OPTIONS = () => new Response(null, { status: 204 });
