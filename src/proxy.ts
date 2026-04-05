@@ -5,7 +5,6 @@ export function proxy(request: NextRequest) {
   // Retrieve the origin from the request headers
   const origin = request.headers.get("origin") || "";
   // const allowedOrigins = [
-  //   "https://voice-maker-minivox-web.vercel.app",
   //   "http://localhost:4200",
   // ];
 
