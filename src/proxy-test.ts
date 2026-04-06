@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export function proxy(request: NextRequest) {
+  console.log("Proxy middleware triggered for:", request.url);
   // Retrieve the origin from the request headers
   const origin = request.headers.get("origin") || "";
   // const allowedOrigins = [
