@@ -18,14 +18,14 @@ export const POST = userHandler(async (req: Request) => {
   });
 });
 
-export async function OPTIONS() {
-  return new Response(null, {
-    status: 200,
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
-      "Access-Control-Allow-Headers": "*",
-      "Access-Control-Allow-Credentials": "true",
-    },
-  });
-}
+// export async function OPTIONS() {
+//   return new Response(null, {
+//     status: 200,
+//     headers: {
+//       "Access-Control-Allow-Origin": "*",
+//       "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
+//       "Access-Control-Allow-Headers": "*",
+//       "Access-Control-Allow-Credentials": "true",
+//     },
+//   });
+// }
