@@ -11,10 +11,10 @@ export const POST = userHandler(async (req: Request) => {
   const result = await authService.login(dto);
   const response = successResponse(result);
   return NextResponse.json(response, {
-    headers: {
-      "Access-Control-Allow-Origin": "http://localhost:4200",
-      "Access-Control-Allow-Credentials": "true",
-    },
+    // headers: {
+    //   "Access-Control-Allow-Origin": "http://localhost:4200",
+    //   "Access-Control-Allow-Credentials": "true",
+    // },
   });
 });
 
