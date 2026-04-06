@@ -10,7 +10,12 @@ export const POST = userHandler(async (req: Request) => {
 
   const result = await authService.login(dto);
   const response = successResponse(result);
-  return NextResponse.json(response);
+  return NextResponse.json(response, {
+    headers: {
+      "Access-Control-Allow-Origin": "http://localhost:4200",
+      "Access-Control-Allow-Credentials": "true",
+    },
+  });
 });
 
 export async function OPTIONS() {
@@ -19,7 +24,7 @@ export async function OPTIONS() {
     headers: {
       "Access-Control-Allow-Origin": "http://localhost:4200",
       "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      "Access-Control-Allow-Headers": "*",
       "Access-Control-Allow-Credentials": "true",
     },
   });
