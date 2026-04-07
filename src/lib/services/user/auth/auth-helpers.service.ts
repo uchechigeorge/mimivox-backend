@@ -17,7 +17,7 @@ export const generateAccessToken = (user: User) => {
     userId: user.id,
     email: user.email ?? "",
     name: user.fullName ?? "",
-    hasValidSubscription: user.hasValidSubscription,
+    hasActiveSubscription: user.hasActiveSubscription,
   };
 
   // Generate jwt token based on user details

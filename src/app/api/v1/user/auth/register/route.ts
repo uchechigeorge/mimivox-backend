@@ -1,5 +1,5 @@
 import authService from "@/lib/services/user/auth";
-import { userHandler } from "@/lib/utils/handler";
+import { userHandler } from "@/lib/utils/handler.utils";
 import { successResponse } from "@/lib/utils/response";
 import { registerValidator } from "@/lib/validators/user/auth.validator";
 import { NextResponse } from "next/server";

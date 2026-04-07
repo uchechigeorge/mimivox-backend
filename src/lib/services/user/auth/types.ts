@@ -32,15 +32,21 @@ export type UserCredentials = {
   fullName: string | null;
   dpUrl: string | null;
   phoneNumber: string | null;
-  hasValidSubscription: boolean;
+  hasActiveSubscription: boolean;
   blocked: boolean;
+  noOfCharactersUsed: number;
+  noOfCharactersAllocated: number | null;
+  noOfCharactersLeft: number | null;
+  noOfVoicesUsed: number;
+  noOfVoicesAllocated: number | null;
+  noOfVoicesLeft: number | null;
+  noOfWordsAllowed: number | null;
   subscription?: UserCredentialSubscription | null;
 };
 
 export type UserCredentialSubscription = {
-  isValid: boolean;
-  statusId: SubscriptionStatus;
-  statusName: string;
+  isActive: boolean;
+  status: string;
   nextBillingDate: Date | null;
 };
 

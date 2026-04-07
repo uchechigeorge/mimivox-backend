@@ -17,22 +17,31 @@ datasource db {
 /// =====================
 
 model User {
-  id                   String         @id @default(uuid())
-  email                String         @unique
-  emailVerified        Boolean        @default(false)
-  firstName            String
-  lastName             String
-  fullName             String         @default("")
-  password             String
-  dpUrl                String?
-  defaultBg            String?
-  phoneNumber          String?
-  hasValidSubscription Boolean        @default(false)
-  blocked              Boolean        @default(false)
-  createdAt            DateTime       @default(now())
-  updatedAt            DateTime       @updatedAt
-  deletedAt            DateTime?
-  subscriptions        Subscription[]
+  id                      String         @id @default(uuid()) @db.VarChar(1024)
+  email                   String         @unique
+  emailVerified           Boolean        @default(false)
+  firstName               String         @db.VarChar(1024)
+  lastName                String         @db.VarChar(1024)
+  fullName                String         @default("") @db.VarChar(1024)
+  password                String         @db.VarChar(1024)
+  dpUrl                   String?        @db.VarChar(1024)
+  defaultBg               String?        @db.VarChar(1024)
+  phoneNumber             String?        @db.VarChar(1024)
+  hasActiveSubscription   Boolean        @default(false)
+  noOfCharactersUsed      Int            @default(0)
+  noOfCharactersAllocated Int?           @default(0)
+  noOfCharactersLeft      Int?           @default(0)
+  noOfVoicesUsed          Int            @default(0)
+  noOfVoicesAllocated     Int?           @default(0)
+  noOfVoicesLeft          Int?           @default(0)
+  noOfWordsAllowed        Int?           @default(0)
+  blocked                 Boolean        @default(false)
+  createdAt               DateTime       @default(now())
+  updatedAt               DateTime       @updatedAt
+  deletedAt               DateTime?
+  subscriptions           Subscription[]
+  voices                  Voice[]
+  audios                  Audio[]
 
   @@map("Users")
 }
@@ -42,57 +51,163 @@ model User {
 /// =====================
 
 model Plan {
-  id            String         @id @default(uuid())
-  name          String
-  description   String?
-  sequence      Int
+  id            String         @id @default(uuid()) @db.VarChar(1024)
+  name          String         @db.VarChar(1024)
+  description   String?        @db.VarChar(1024)
+  slug          String         @unique @db.VarChar(1024)
+  isFree        Boolean        @default(false)
+  sequence      Int            @default(0)
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   deletedAt     DateTime?
+  pricings      Pricing[]
   subscriptions Subscription[]
+  settings      PlanSetting?
 
   @@map("Plans")
 }
 
+model PlanSetting {
+  id                          String    @id @default(uuid()) @db.VarChar(1024)
+  planId                      String    @unique
+  planName                    String    @db.VarChar(1024)
+  noOfCharacters              Int?      @default(0)
+  noOfWords                   Int?      @default(0)
+  noOfVoices                  Int?      @default(0)
+  hasCommunitySupport         Boolean   @default(true)
+  hasEmailSupport             Boolean   @default(false)
+  socialMediaGuidelines       Int       @default(1)
+  hasDedicatedCustomerSupport Boolean   @default(false)
+  hasApiAccess                Boolean   @default(false)
+  createdAt                   DateTime  @default(now())
+  updatedAt                   DateTime  @updatedAt
+  deletedAt                   DateTime?
+  plan                        Plan      @relation(fields: [planId], references: [id])
+
+  @@map("PlanSettings")
+}
+
+enum IntervalType {
+  None
+  Year
+  Month
+  Week
+  Day
+}
+
 model Pricing {
-  id               String         @id @default(uuid())
-  planId           String
-  planName         String
-  name             String
-  description      String?
-  price            Decimal        @db.Decimal(18, 2)
-  oldPrice         Decimal?       @db.Decimal(18, 2)
-  interval         String
-  intervalTypeId   Int
-  intervalTypeName String
-  intervalCount    Int
-  sequence         Int
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
-  deletedAt        DateTime?
-  subscriptions    Subscription[]
+  id            String         @id @default(uuid()) @db.VarChar(1024)
+  planId        String         @db.VarChar(1024)
+  planName      String         @db.VarChar(1024)
+  slug          String         @unique @db.VarChar(1024)
+  name          String         @db.VarChar(1024)
+  description   String?        @db.VarChar(1024)
+  price         Decimal        @db.Decimal(18, 2)
+  oldPrice      Decimal?       @db.Decimal(18, 2)
+  interval      String         @db.VarChar(1024)
+  intervalCount Int
+  intervalType  IntervalType   @default(None)
+  sequence      Int            @default(0)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  deletedAt     DateTime?
+  plan          Plan           @relation(fields: [planId], references: [id])
+  subscriptions Subscription[]
 
   @@map("Pricings")
 }
 
+enum SubscriptionStatus {
+  Pending
+  WillRenew
+  Completed
+  Cancelled
+  PastDue
+  Trialing
+}
+
+enum PaymentGatewayOption {
+  None
+  Manual
+  Paystack
+}
+
 model Subscription {
-  id          String    @id @default(uuid())
-  userId      String
-  pricingId   String
-  pricingName String
-  planId      String
-  planName    String
-  isValid     Boolean
-  statusId    Int
-  statusName  String
-  startDate   DateTime
-  endDate     DateTime
-  user        User      @relation(fields: [userId], references: [id])
-  pricing     Pricing   @relation(fields: [pricingId], references: [id])
-  plan        Plan      @relation(fields: [planId], references: [id])
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  deletedAt   DateTime?
+  id              String               @id @default(uuid()) @db.VarChar(1024)
+  reference       String               @db.VarChar(1024)
+  userId          String               @db.VarChar(1024)
+  userName        String               @db.VarChar(1024)
+  pricingId       String               @db.VarChar(1024)
+  pricingName     String               @db.VarChar(1024)
+  planId          String               @db.VarChar(1024)
+  planName        String               @db.VarChar(1024)
+  isActive        Boolean
+  status          SubscriptionStatus   @default(Pending)
+  startDate       DateTime
+  nextBillingDate DateTime?
+  endDate         DateTime?
+  initialAmount   Decimal?             @db.Decimal(18, 2)
+  paymentGateway  PaymentGatewayOption @default(None)
+  user            User                 @relation(fields: [userId], references: [id])
+  pricing         Pricing              @relation(fields: [pricingId], references: [id])
+  plan            Plan                 @relation(fields: [planId], references: [id])
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  deletedAt       DateTime?
 
   @@map("Subscriptions")
+}
+
+/// =====================
+/// AUDIO MODULE
+/// =====================
+
+enum VoiceType {
+  Default
+  Cloned
+}
+
+enum AudioServiceType {
+  None
+  Google
+  ElevenLabs
+}
+
+model Voice {
+  id                 String           @id @default(uuid()) @db.VarChar(1024)
+  name               String           @db.VarChar(1024)
+  description        String?          @db.VarChar(1024)
+  type               VoiceType        @default(Cloned)
+  userId             String?          @db.VarChar(1024)
+  userName           String?          @db.VarChar(1024)
+  serviceReferenceId String?          @db.VarChar(1024)
+  audioServiceType   AudioServiceType
+  sampleAudioUrl     String?          @db.VarChar(1024)
+  exampleAudioUrl    String?          @db.VarChar(1024)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  deletedAt          DateTime?
+  audios             Audio[]
+  user               User?            @relation(fields: [userId], references: [id])
+
+  @@map("Voices")
+}
+
+model Audio {
+  id               String           @id @default(uuid()) @db.VarChar(1024)
+  userId           String           @db.VarChar(1024)
+  userName         String           @db.VarChar(1024)
+  content          String
+  language         String           @db.VarChar(1024)
+  voiceId          String           @db.VarChar(1024)
+  voiceName        String           @db.VarChar(1024)
+  audioUrl         String?          @db.VarChar(1024)
+  audioServiceType AudioServiceType @default(None)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  deletedAt        DateTime?
+  user             User             @relation(fields: [userId], references: [id])
+  voice            Voice            @relation(fields: [voiceId], references: [id])
+
+  @@map("Audios")
 }

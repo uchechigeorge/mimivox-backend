@@ -1,8 +1,8 @@
 // import { User } from "@/entities/user.entity";
 import { User } from "@/generated/prisma/client";
-import { isNullOrWhitespace } from "@/lib/utils/type";
+import { isNullOrWhitespace } from "@/lib/utils/type.utils";
 
-export const getDefaultDp = async (user: User) => {
+export const getDefaultDp = (user: User) => {
   if (!isNullOrWhitespace(user.dpUrl)) return user.dpUrl;
 
   let initials = (

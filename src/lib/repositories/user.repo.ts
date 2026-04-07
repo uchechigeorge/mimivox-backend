@@ -1,15 +1,6 @@
-import { Prisma } from "@/generated/prisma/client";
+import { Prisma, User } from "@/generated/prisma/client";
 import { prisma } from "../db/prisma";
-import { UserCreateInput } from "@/generated/prisma/models";
-
-const create = async (data: UserCreateInput) => {
-  return await prisma.user.create({
-    data: {
-      ...data,
-      fullName: `${data.firstName.trim()} ${data.lastName}`.trim(),
-    },
-  });
-};
+import { UserCreateArgs, UserUpdateArgs } from "@/generated/prisma/models";
 
 const getById = async (id: Prisma.UserWhereUniqueInput["id"]) => {
   return await prisma.user.findUnique({
@@ -28,11 +19,28 @@ const getExistsByEmail = async (email: string) => {
   return user !== null;
 };
 
+const create = async (data: UserCreateArgs["data"]) => {
+  return await prisma.user.create({
+    data: {
+      ...data,
+      fullName: `${data.firstName.trim()} ${data.lastName}`.trim(),
+    },
+  });
+};
+
+const update = async (id: User["id"], data: UserUpdateArgs["data"]) => {
+  return await prisma.user.update({
+    where: { id },
+    data,
+  });
+};
+
 const userRepo = {
-  create,
   getById,
   getByEmail,
   getExistsByEmail,
+  create,
+  update,
 };
 
 export default userRepo;

@@ -1,3 +1,4 @@
+import subscriptionRepo from "@/lib/repositories/subscription.repo";
 import { getDefaultDp } from "../users/get-default-dp.service";
 import { UserCredentials } from "./types";
 import userRepo from "@/lib/repositories/user.repo";
@@ -12,9 +13,7 @@ export const getCredentials = async (userId: string) => {
 
   if (user == null) return;
 
-  // const subscription = (
-  //   await subscriptionRepo.getByUserIdAndActive(user.id, true)
-  // )[0];
+  const subscription = await subscriptionRepo.getByUserIdAndIsActive(user.id);
 
   const credentials: UserCredentials = {
     email: user.email,
@@ -22,20 +21,24 @@ export const getCredentials = async (userId: string) => {
     firstName: user.firstName,
     lastName: user.lastName,
     fullName: user.fullName,
-    dpUrl: await getDefaultDp(user),
+    dpUrl: getDefaultDp(user),
     blocked: user.blocked,
-    phoneNumber: null, //user.phoneNumber,
-    hasValidSubscription: user.hasValidSubscription,
-    // nextSubscriptionPaymentDate: null,
-    subscription: null,
-    //  subscription
-    //   ? {
-    //       isValid: subscription.isActive,
-    //       nextBillingDate: subscription.nextBillingDate,
-    //       statusId: subscription.statusId,
-    //       statusName: subscription.statusName ?? "Pending",
-    //     }
-    //   : null,
+    phoneNumber: user.phoneNumber,
+    hasActiveSubscription: user.hasActiveSubscription,
+    noOfCharactersUsed: user.noOfCharactersUsed,
+    noOfCharactersAllocated: user.noOfCharactersAllocated,
+    noOfCharactersLeft: user.noOfCharactersLeft,
+    noOfVoicesUsed: user.noOfVoicesUsed,
+    noOfVoicesAllocated: user.noOfVoicesAllocated,
+    noOfVoicesLeft: user.noOfVoicesLeft,
+    noOfWordsAllowed: user.noOfWordsAllowed,
+    subscription: subscription
+      ? {
+          isActive: subscription.isActive,
+          nextBillingDate: subscription.nextBillingDate,
+          status: subscription.status,
+        }
+      : null,
   };
 
   return credentials;

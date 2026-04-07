@@ -4,11 +4,8 @@ import { AppError } from "./error";
 import { errorResponse } from "./response";
 import { UserAuthItems } from "../types";
 import authService from "../services/user/auth";
-
-interface HandlerOptions {
-  authenticate?: boolean;
-  ignoreAuth?: boolean; // If true, allows request even if token is missing/invalid
-}
+import { HandlerOptions } from "./types";
+import { AdminAuthItems } from "../types/AuthItems";
 
 export const userHandler =
   (
@@ -20,6 +17,21 @@ export const userHandler =
       const authData = await handleUserAuth(req, options);
 
       return await fn(req, ctx, authData);
+    } catch (err: any) {
+      return handleError(err);
+    }
+  };
+
+export const adminHandler =
+  (
+    fn: (req: Request, ctx: any, auth?: AdminAuthItems) => Promise<Response>,
+    options?: HandlerOptions,
+  ) =>
+  async (req: Request, ctx?: any) => {
+    try {
+      // const authData = await handleUserAuth(req, options);
+
+      return await fn(req, ctx);
     } catch (err: any) {
       return handleError(err);
     }
