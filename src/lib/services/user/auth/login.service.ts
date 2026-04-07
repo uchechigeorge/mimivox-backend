@@ -1,5 +1,5 @@
 import { LoginDto } from "@/lib/dtos/user/auth.dto";
-import { BadRequestError } from "@/lib/utils/error";
+import { BadRequestError } from "@/lib/utils/error.util";
 import userRepo from "@/lib/repositories/user.repo";
 import { comparePassword, generateAccessToken } from "./auth-helpers.service";
 import { UserLoginResponse } from "./types";

@@ -1,5 +1,5 @@
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "../../generated/prisma/client";
+import { PrismaClient, Prisma } from "../../generated/prisma/client";
 import { env } from "../config/env";
 
 const connectionString = `${env.DATABASE_URL}`;
@@ -13,3 +13,5 @@ export const prisma =
   new PrismaClient({ adapter, log: ["query", "error", "warn"] });
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+
+export type DB = PrismaClient | Prisma.TransactionClient;

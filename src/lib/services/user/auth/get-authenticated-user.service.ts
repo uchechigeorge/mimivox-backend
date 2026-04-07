@@ -1,7 +1,7 @@
 import { UserAuthItems } from "@/lib/types";
 import { UserMeResponse } from "./types";
 import { getCredentials } from "./get-credentials.service";
-import { UnauthorizedError } from "@/lib/utils/error";
+import { UnauthorizedError } from "@/lib/utils/error.util";
 
 export const getAuthenticatedUser = async (authItems: UserAuthItems) => {
   if (!authItems.loggedIn || !authItems.userId) {

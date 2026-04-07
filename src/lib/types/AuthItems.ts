@@ -1,6 +1,5 @@
-import { AdminJwtPayload } from "./AdminJwtResult";
 import { UserId } from "./UserId";
-import { UserJwtPayload } from "./UserJwtResult";
+import { AdminJwtPayload, UserJwtPayload } from "./JwtResult";
 
 export type AuthItems = {
   loggedIn: boolean;
@@ -16,6 +15,8 @@ export type UserAuthItems = AuthItems & {
 };
 
 export type AdminAuthItems = AuthItems & {
-  adminId?: number;
+  adminId?: string;
+  adminName?: string;
+  adminEmail?: string;
   claims?: AdminJwtPayload;
 };

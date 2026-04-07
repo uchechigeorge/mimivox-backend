@@ -1,21 +1,24 @@
 import { PlanSetting, Pricing } from "@/generated/prisma/client";
-import { UpdateUserSubscription } from "@/lib/dtos/admin/user.dto";
+import {
+  UpdateUserSubscriptionDto,
+  UpdateUserSubscriptionParams,
+} from "@/lib/dtos/admin/user.dto";
 import pricingRepo from "@/lib/repositories/pricing.repo";
 import subscriptionRepo from "@/lib/repositories/subscription.repo";
 import userRepo from "@/lib/repositories/user.repo";
 import { UserId } from "@/lib/types/UserId";
 import { getNextBillingDate } from "@/lib/utils/date.utils";
-import { BadRequestError } from "@/lib/utils/error";
+import { BadRequestError } from "@/lib/utils/error.util";
 import { toAppIntervalType } from "../../shared/pricings/pricing-helper.service";
 import { Decimal } from "@prisma/client/runtime/client";
 import planSettingRepo from "@/lib/repositories/plan-setting.repo";
 import planRepo from "@/lib/repositories/plan.repo";
 
 export const updateUserSubscription = async (
-  userId: UserId,
-  updateDto: UpdateUserSubscription,
+  params: UpdateUserSubscriptionParams,
+  updateDto: UpdateUserSubscriptionDto,
 ) => {
-  const user = await userRepo.getById(userId);
+  const user = await userRepo.getById(params.id);
   if (!user) {
     throw new BadRequestError("User not found");
   }

@@ -1,6 +1,6 @@
 import { RegisterDto } from "@/lib/dtos/user/auth.dto";
 import userRepo from "@/lib/repositories/user.repo";
-import { BadRequestError } from "@/lib/utils/error";
+import { BadRequestError } from "@/lib/utils/error.util";
 import { generateAccessToken, hashPassword } from "./auth-helpers.service";
 import { UserRegisterResponse } from "./types";
 import { getCredentials } from "./get-credentials.service";

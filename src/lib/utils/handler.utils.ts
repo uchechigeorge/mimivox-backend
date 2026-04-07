@@ -1,18 +1,23 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import z from "zod";
-import { AppError } from "./error";
-import { errorResponse } from "./response";
+import { AppError, UnauthorizedError } from "./error.util";
+import { errorResponse } from "./response.utils";
 import { UserAuthItems } from "../types";
-import authService from "../services/user/auth";
-import { HandlerOptions } from "./types";
+import userAuthService from "../services/user/auth";
+import adminAuthService from "../services/admin/auth";
+import { AppRouteContext, HandlerOptions } from "./types";
 import { AdminAuthItems } from "../types/AuthItems";
 
 export const userHandler =
-  (
-    fn: (req: Request, ctx: any, auth: UserAuthItems) => Promise<Response>,
+  <TParams>(
+    fn: (
+      req: NextRequest,
+      ctx: AppRouteContext<TParams>,
+      auth: UserAuthItems,
+    ) => Promise<Response>,
     options?: HandlerOptions,
   ) =>
-  async (req: Request, ctx?: any) => {
+  async (req: NextRequest, ctx: AppRouteContext<TParams>) => {
     try {
       const authData = await handleUserAuth(req, options);
 
@@ -23,15 +28,19 @@ export const userHandler =
   };
 
 export const adminHandler =
-  (
-    fn: (req: Request, ctx: any, auth?: AdminAuthItems) => Promise<Response>,
+  <TParams>(
+    fn: (
+      req: NextRequest,
+      ctx: AppRouteContext<TParams>,
+      auth?: AdminAuthItems,
+    ) => Promise<Response>,
     options?: HandlerOptions,
   ) =>
-  async (req: Request, ctx?: any) => {
+  async (req: NextRequest, ctx: AppRouteContext<TParams>) => {
     try {
-      // const authData = await handleUserAuth(req, options);
+      const authData = await handleAdminAuth(req, options);
 
-      return await fn(req, ctx);
+      return await fn(req, ctx, authData);
     } catch (err: any) {
       return handleError(err);
     }
@@ -74,17 +83,17 @@ const handleUserAuth = async (req: Request, options?: HandlerOptions) => {
 
     if (!bearerToken) {
       if (!options.ignoreAuth) {
-        throw new AppError("No token provided", 401);
+        throw new UnauthorizedError("No token provided", 401);
       }
     } else {
       // Verify Token
       const [jwtResult, jwtError] =
-        await authService.verifyAccessToken(bearerToken);
+        await userAuthService.verifyAccessToken(bearerToken);
 
       if (jwtError) {
         authData.errorMessage = "Invalid token";
         if (!options.ignoreAuth) {
-          throw new AppError("Invalid or expired token", 401);
+          throw new UnauthorizedError("Invalid or expired token", 401);
         }
       } else {
         // Success: Populate auth data
@@ -94,6 +103,54 @@ const handleUserAuth = async (req: Request, options?: HandlerOptions) => {
           userId: jwtResult.userId,
           userFullName: jwtResult.name,
           userEmail: jwtResult.email,
+        };
+      }
+    }
+  }
+
+  return authData;
+};
+
+const handleAdminAuth = async (req: Request, options?: HandlerOptions) => {
+  let authData: AdminAuthItems = { loggedIn: false };
+
+  // !Remove this
+  options = {
+    authenticate: false,
+  };
+  // !Remove this
+
+  if (options?.authenticate) {
+    const authHeader = req.headers.get("Authorization");
+    const bearerToken = authHeader?.split(" ")[1];
+
+    authData = {
+      loggedIn: false,
+    };
+
+    if (!bearerToken) {
+      if (!options.ignoreAuth) {
+        throw new UnauthorizedError("No token provided");
+      }
+    } else {
+      // Verify Token
+      const [jwtResult, jwtError] =
+        await adminAuthService.verifyAccessToken(bearerToken);
+
+      if (jwtError) {
+        authData.errorMessage = "Invalid token";
+        if (!options.ignoreAuth) {
+          throw new UnauthorizedError("Invalid or expired token", 401);
+        }
+      } else {
+        // Success: Populate auth data
+        authData = {
+          ...authData,
+          loggedIn: true,
+          adminId: jwtResult.adminId,
+          claims: jwtResult,
+          adminName: jwtResult.name,
+          adminEmail: jwtResult.email,
         };
       }
     }

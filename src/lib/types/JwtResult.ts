@@ -6,3 +6,9 @@ export type UserJwtPayload = {
   name: string;
   hasActiveSubscription: boolean;
 };
+
+export type AdminJwtPayload = {
+  adminId: string;
+  email: string;
+  name: string;
+};

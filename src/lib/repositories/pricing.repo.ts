@@ -1,11 +1,14 @@
-import { Pricing } from "@/generated/prisma/client";
-import { prisma } from "../db/prisma";
+import { Pricing, Prisma } from "@/generated/prisma/client";
+import { DB, prisma } from "../db/prisma";
 
-const getById = async (id: Pricing["id"]) => {
-  return await prisma.pricing.findUnique({
+const getById = async (id: Pricing["id"], tc?: Prisma.TransactionClient) => {
+  const db: DB = tc || prisma;
+
+  return await db.pricing.findUnique({
     where: { id },
   });
 };
+
 const pricingRepo = {
   getById,
 };

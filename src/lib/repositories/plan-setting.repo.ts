@@ -1,14 +1,24 @@
-import { Plan, PlanSetting } from "@/generated/prisma/client";
-import { prisma } from "../db/prisma";
+import { Plan, PlanSetting, Prisma } from "@/generated/prisma/client";
+import { DB, prisma } from "../db/prisma";
 
-const getById = async (id: PlanSetting["id"]) => {
-  return await prisma.planSetting.findUnique({
+const getById = async (
+  id: PlanSetting["id"],
+  tc?: Prisma.TransactionClient,
+) => {
+  const db: DB = tc || prisma;
+
+  return await db.planSetting.findUnique({
     where: { id },
   });
 };
 
-const getByPlanId = async (planId: Plan["id"]) => {
-  return await prisma.planSetting.findUnique({
+const getByPlanId = async (
+  planId: Plan["id"],
+  tc?: Prisma.TransactionClient,
+) => {
+  const db: DB = tc || prisma;
+
+  return await db.planSetting.findUnique({
     where: { planId },
   });
 };

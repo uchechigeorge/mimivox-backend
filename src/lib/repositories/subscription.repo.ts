@@ -1,5 +1,5 @@
-import { Subscription, User } from "@/generated/prisma/client";
-import { prisma } from "../db/prisma";
+import { Prisma, Subscription, User } from "@/generated/prisma/client";
+import { DB, prisma } from "../db/prisma";
 import {
   SubscriptionCreateArgs,
   SubscriptionUpdateArgs,
@@ -8,14 +8,22 @@ import {
 const getByUserIdAndIsActive = async (
   userId: User["id"],
   isActive: boolean = true,
+  tc?: Prisma.TransactionClient,
 ) => {
-  return await prisma.subscription.findFirst({
+  const db: DB = tc || prisma;
+
+  return await db.subscription.findFirst({
     where: { userId, isActive },
   });
 };
 
-const create = async (data: SubscriptionCreateArgs["data"]) => {
-  return await prisma.subscription.create({
+const create = async (
+  data: SubscriptionCreateArgs["data"],
+  tc?: Prisma.TransactionClient,
+) => {
+  const db: DB = tc || prisma;
+
+  return await db.subscription.create({
     data,
   });
 };
@@ -23,8 +31,11 @@ const create = async (data: SubscriptionCreateArgs["data"]) => {
 const update = async (
   id: Subscription["id"],
   data: SubscriptionUpdateArgs["data"],
+  tc?: Prisma.TransactionClient,
 ) => {
-  return await prisma.subscription.update({
+  const db: DB = tc || prisma;
+
+  return await db.subscription.update({
     where: { id },
     data,
   });
