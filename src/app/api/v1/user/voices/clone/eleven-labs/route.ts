@@ -1,17 +1,20 @@
-import textToSpeechService from "@/lib/services/user/audios/text-to-speech";
+import voiceService from "@/lib/services/user/voices";
 import { UserAuthItems } from "@/lib/types";
 import { userHandler } from "@/lib/utils/handler.utils";
 import { AppRouteContext } from "@/lib/utils/types";
 
 export const POST = userHandler(
   async (req: Request, ctx: AppRouteContext<any>, authItems: UserAuthItems) => {
-    const body = await req.json();
+    const formData = await req.formData();
 
-    const result = await textToSpeechService.generateViaGoogle(body, authItems);
+    const result = await voiceService.clone.cloneViaElevenLabs(
+      formData,
+      authItems,
+    );
 
     const headers = new Headers(result.headers);
 
-    // optional cleanup
+    // header cleanup
     headers.delete("content-encoding");
     headers.delete("transfer-encoding");
 

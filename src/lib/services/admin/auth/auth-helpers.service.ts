@@ -5,7 +5,7 @@ import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import { User } from "@/generated/prisma/client";
 import { AdminJwtPayload } from "@/lib/types";
-import { env } from "@/lib/config/env";
+import { env } from "@/lib/config/env.config";
 
 /**
  * Generates access token for admin login

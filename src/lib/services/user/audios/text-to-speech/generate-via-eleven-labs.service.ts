@@ -1,9 +1,9 @@
-import { env } from "@/lib/config/env";
+import { env } from "@/lib/config/env.config";
 import { UserAuthItems } from "@/lib/types";
 import { createAudioAndUpdateUser, validate } from "./generate.service";
 import voiceRepo from "@/lib/repositories/voice.repo";
 import elevenLabsService from "@/lib/services/shared/eleven-labs";
-import { uploadToCloudinary } from "./upload";
+import { uploadStreamToCloudinary } from "./upload";
 
 export const generateViaElevenLabs = async (
   voiceId: string,
@@ -29,17 +29,19 @@ export const generateViaElevenLabs = async (
   });
 
   const clonedRes = res.clone();
+
+  if (!res.ok) {
+    const clonedRes = res.clone();
+    const errorText = await clonedRes.text();
+
+    console.error("==> ERROR:", errorText);
+    return res;
+  }
+
   const arrayBuffer = await clonedRes.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
 
-  const uploadedResult: any = await uploadToCloudinary(buffer);
-  console.log({ result: uploadedResult });
-  // if (!res.ok) {
-  //   const errorText = await res.text();
-
-  //   console.error("==> ERROR:", errorText);
-  //   return new Response(errorText, { status: res.status });
-  // }
+  const uploadedResult: any = await uploadStreamToCloudinary(buffer);
 
   if (!voice) {
     const sequence = await voiceRepo.getMaxSequence({ type: "Default" });

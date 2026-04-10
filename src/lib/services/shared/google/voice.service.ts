@@ -1,7 +1,7 @@
-import { env } from "@/lib/config/env";
+import { env } from "@/lib/config/env.config";
 import { BadRequestError } from "@/lib/utils/error.util";
 
-export const getVoices = async () => {
+export const listVoices = async () => {
   const res = await fetch(
     `https://texttospeech.googleapis.com/v1/voices?key=${env.GOOGLE_API_KEY}`,
     {
@@ -27,3 +27,9 @@ export type GoogleVoice = {
 export type GoogleVoicesResponse = {
   voices: GoogleVoice[];
 };
+
+const googleVoiceService = {
+  listVoices,
+};
+
+export default googleVoiceService;

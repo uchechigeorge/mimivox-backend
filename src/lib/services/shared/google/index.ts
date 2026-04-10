@@ -1,7 +1,7 @@
-import { getVoices } from "./get-voices.service";
+import googleVoiceService from "./voice.service";
 
 const googleService = {
-  getVoices,
+  voice: googleVoiceService,
 };
 
 export default googleService;

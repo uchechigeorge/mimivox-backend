@@ -1,4 +1,4 @@
-import { env } from "@/lib/config/env";
+import { env } from "@/lib/config/env.config";
 import { BadRequestError } from "@/lib/utils/error.util";
 
 export const listVoices = async (searchParams?: ListVoiceSearchParams) => {

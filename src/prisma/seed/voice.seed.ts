@@ -9,7 +9,7 @@ import googleService from "@/lib/services/shared/google";
 export default async function seedVoices() {
   if (await voiceRepo.exists()) return;
 
-  const googleVoices = (await googleService.getVoices()).voices.filter(
+  const googleVoices = (await googleService.voice.listVoices()).voices.filter(
     (e) => !e.name.includes("-"),
   );
 
