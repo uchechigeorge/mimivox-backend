@@ -1,6 +1,11 @@
 import { Plan, Prisma } from "@/generated/prisma/client";
 import { DB, prisma } from "../db/prisma";
 
+const exists = async (tc?: Prisma.TransactionClient) => {
+  const db: DB = tc || prisma;
+  return (await db.plan.count()) > 0;
+};
+
 const getById = async (id: Plan["id"], tc?: Prisma.TransactionClient) => {
   const db: DB = tc || prisma;
 
@@ -26,6 +31,7 @@ const getByIsFree = async (tc?: Prisma.TransactionClient) => {
 };
 
 const planRepo = {
+  exists,
   getById,
   getBySlug,
   getByIsFree,

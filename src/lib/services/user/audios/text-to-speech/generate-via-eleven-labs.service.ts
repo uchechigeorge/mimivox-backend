@@ -1,29 +1,73 @@
 import { env } from "@/lib/config/env";
 import { UserAuthItems } from "@/lib/types";
+import { createAudioAndUpdateUser, validate } from "./generate.service";
+import voiceRepo from "@/lib/repositories/voice.repo";
+import elevenLabsService from "@/lib/services/shared/eleven-labs";
+import { uploadToCloudinary } from "./upload";
 
 export const generateViaElevenLabs = async (
   voiceId: string,
   body: any,
   authItems: UserAuthItems,
 ) => {
-  const res = await fetch(
-    `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
-    {
-      method: "POST",
-      headers: {
-        "xi-api-key": env.ELEVENLABS_API_KEY,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
+  const content = body.text;
+  let [user, voice] = await validate({
+    authItems,
+    content,
+    voiceId,
+    audioServiceType: "ElevenLabs",
+  });
+
+  const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      "xi-api-key": env.ELEVENLABS_API_KEY,
+      "Content-Type": "application/json",
     },
-  );
+    body: JSON.stringify(body),
+  });
 
-  if (!res.ok) {
-    const errorText = await res.text();
+  const clonedRes = res.clone();
+  const arrayBuffer = await clonedRes.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
 
-    console.error("==> ERROR:", errorText);
-    return new Response(errorText, { status: res.status });
+  const uploadedResult: any = await uploadToCloudinary(buffer);
+  console.log({ result: uploadedResult });
+  // if (!res.ok) {
+  //   const errorText = await res.text();
+
+  //   console.error("==> ERROR:", errorText);
+  //   return new Response(errorText, { status: res.status });
+  // }
+
+  if (!voice) {
+    const sequence = await voiceRepo.getMaxSequence({ type: "Default" });
+
+    const elVoice = await elevenLabsService.voice.getVoice(voiceId);
+    voice = await voiceRepo.create({
+      audioServiceType: "ElevenLabs",
+      audioServiceReferenceId: elVoice.voice_id,
+      name: elVoice.name,
+      description: elVoice.description,
+      gender: elVoice.labels?.gender,
+      previewUrl: elVoice.preview_url,
+      sequence,
+      type: elVoice.category === "cloned" ? "Cloned" : "Default",
+    });
   }
+
+  await createAudioAndUpdateUser({
+    user,
+    content,
+    audioUrl: uploadedResult.url,
+    voice,
+    languageCode: body.language_code,
+    requestLog: {
+      url,
+      body,
+    },
+  });
 
   return res;
 };

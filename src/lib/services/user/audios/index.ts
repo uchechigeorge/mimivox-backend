@@ -1,7 +1,9 @@
+import { getAllAudios } from "./get-all-audios.service";
 import textToSpeechService from "./text-to-speech";
 
-const speechService = {
+const audioService = {
   textToSpeech: textToSpeechService,
+  getAllAudios,
 };
 
-export default speechService;
+export default audioService;

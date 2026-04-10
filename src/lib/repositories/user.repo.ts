@@ -7,10 +7,7 @@ import {
 } from "@/generated/prisma/models";
 import { BaseGetOptions, BaseGetParams } from "../dtos/shared/base-get-params";
 
-const getById = async (
-  id: Prisma.UserWhereUniqueInput["id"],
-  tc?: Prisma.TransactionClient,
-) => {
+const getById = async (id: User["id"], tc?: Prisma.TransactionClient) => {
   const db: DB = tc || prisma;
 
   return await db.user.findUnique({
@@ -113,10 +110,10 @@ const userRepo = {
   query,
 };
 
-export default userRepo;
-
 type UserGetParams = BaseGetParams & {
   blocked?: boolean;
 };
 
 export type UserGetOptions = BaseGetOptions & {};
+
+export default userRepo;

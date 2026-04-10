@@ -25,4 +25,5 @@ export const POST = userHandler(
       headers,
     });
   },
+  { authenticate: true },
 );

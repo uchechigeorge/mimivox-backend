@@ -4,8 +4,11 @@ import {
   PricingCreateWithoutPlanInput,
 } from "@/generated/prisma/models";
 import { prisma } from "@/lib/db/prisma";
+import planRepo from "@/lib/repositories/plan.repo";
 
 export default async function seedPlans() {
+  if (await planRepo.exists()) return;
+
   const plans: PlanCreateInput[] = [
     {
       name: "Free",

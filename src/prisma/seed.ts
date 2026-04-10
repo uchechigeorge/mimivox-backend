@@ -1,8 +1,10 @@
 import { prisma } from "@/lib/db/prisma";
 import seedPlans from "./seed/plan.seed";
+import seedVoices from "./seed/voice.seed";
 
 async function main() {
   await seedPlans();
+  await seedVoices();
 
   console.log("🌱 Seeding completed");
   // try {

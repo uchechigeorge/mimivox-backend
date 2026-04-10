@@ -13,6 +13,13 @@ export const generateViaGoogle = async (
     },
   );
 
+  // if (!res.ok) {
+  //   const errorText = await res.text();
+
+  //   console.error("==> ERROR:", errorText);
+  //   return new Response(errorText, { status: res.status });
+  // }
+
   // const base64 = res.data.audioContent;
   // const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
   // const blob = new Blob([bytes], { type: "audio/mpeg" });

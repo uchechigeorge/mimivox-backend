@@ -174,40 +174,44 @@ enum AudioServiceType {
 }
 
 model Voice {
-  id                 String           @id @default(uuid()) @db.VarChar(1024)
-  name               String           @db.VarChar(1024)
-  description        String?          @db.VarChar(1024)
-  type               VoiceType        @default(Cloned)
-  userId             String?          @db.VarChar(1024)
-  userName           String?          @db.VarChar(1024)
-  serviceReferenceId String?          @db.VarChar(1024)
-  audioServiceType   AudioServiceType
-  sampleAudioUrl     String?          @db.VarChar(1024)
-  exampleAudioUrl    String?          @db.VarChar(1024)
-  createdAt          DateTime         @default(now())
-  updatedAt          DateTime         @updatedAt
-  deletedAt          DateTime?
-  audios             Audio[]
-  user               User?            @relation(fields: [userId], references: [id])
+  id                      String           @id @default(uuid()) @db.VarChar(1024)
+  name                    String           @db.VarChar(1024)
+  description             String?          @db.VarChar(1024)
+  type                    VoiceType        @default(Cloned)
+  userId                  String?          @db.VarChar(1024)
+  userName                String?          @db.VarChar(1024)
+  gender                  String?          @db.VarChar(1024)
+  audioServiceReferenceId String?          @db.VarChar(1024)
+  audioServiceType        AudioServiceType
+  previewUrl              String?          @db.VarChar(1024)
+  sampleUrl               String?          @db.VarChar(1024)
+  sequence                Int              @default(0)
+  createdAt               DateTime         @default(now())
+  updatedAt               DateTime         @updatedAt
+  deletedAt               DateTime?
+  audios                  Audio[]
+  user                    User?            @relation(fields: [userId], references: [id])
 
+  @@unique([audioServiceType, audioServiceReferenceId])
   @@map("Voices")
 }
 
 model Audio {
-  id               String           @id @default(uuid()) @db.VarChar(1024)
-  userId           String           @db.VarChar(1024)
-  userName         String           @db.VarChar(1024)
-  content          String
-  language         String           @db.VarChar(1024)
-  voiceId          String           @db.VarChar(1024)
-  voiceName        String           @db.VarChar(1024)
-  audioUrl         String?          @db.VarChar(1024)
-  audioServiceType AudioServiceType @default(None)
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
-  deletedAt        DateTime?
-  user             User             @relation(fields: [userId], references: [id])
-  voice            Voice            @relation(fields: [voiceId], references: [id])
+  id                     String           @id @default(uuid()) @db.VarChar(1024)
+  userId                 String           @db.VarChar(1024)
+  userName               String           @db.VarChar(1024)
+  content                String
+  languageCode           String           @default("en-US") @db.VarChar(1024)
+  voiceId                String           @db.VarChar(1024)
+  voiceName              String           @db.VarChar(1024)
+  audioUrl               String?          @db.VarChar(1024)
+  audioServiceType       AudioServiceType @default(None)
+  audioServiceRequestLog Json?
+  createdAt              DateTime         @default(now())
+  updatedAt              DateTime         @updatedAt
+  deletedAt              DateTime?
+  user                   User             @relation(fields: [userId], references: [id])
+  voice                  Voice            @relation(fields: [voiceId], references: [id])
 
   @@map("Audios")
 }
