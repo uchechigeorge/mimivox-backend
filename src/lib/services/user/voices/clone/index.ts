@@ -1,7 +1,7 @@
 import { cloneViaElevenLabs } from "./clone-via-eleven-labs.service";
 
-const cloneService = {
+const cloneVoiceService = {
   cloneViaElevenLabs,
 };
 
-export default cloneService;
+export default cloneVoiceService;

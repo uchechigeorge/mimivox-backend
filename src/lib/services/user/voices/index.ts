@@ -1,8 +1,10 @@
-import cloneService from "./clone";
+import cloneVoiceService from "./clone";
 import { getAllVoices } from "./get-all-voices.service";
+import listVoiceService from "./list";
 
 const voiceService = {
-  clone: cloneService,
+  clone: cloneVoiceService,
+  list: listVoiceService,
   getAllVoices,
 };
 
