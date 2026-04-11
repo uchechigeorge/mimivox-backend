@@ -1,7 +1,7 @@
 import { env } from "@/lib/config/env.config";
 import { UserAuthItems } from "@/lib/types";
-import { uploadStreamToCloudinary } from "./upload";
 import { createVoiceAndUpdateUser, validate } from "./clone.service";
+import { uploadAudioStream } from "@/lib/utils/cloudinary.utils";
 
 export const cloneViaElevenLabs = async (
   formData: FormData,
@@ -35,7 +35,7 @@ export const cloneViaElevenLabs = async (
   const files = formData.getAll("files") as File[];
   const file = files[0];
   const buffer = Buffer.from(await file.arrayBuffer());
-  const uploadResponse = await uploadStreamToCloudinary(buffer);
+  const uploadResponse = await uploadAudioStream(buffer, "clone-samples");
 
   await createVoiceAndUpdateUser({
     name: data.name.toString(),

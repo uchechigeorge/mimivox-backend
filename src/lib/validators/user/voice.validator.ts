@@ -1,10 +1,10 @@
 import z from "zod";
 import { baseGetParamsSchema } from "../shared/base-get-params.validator";
-import { nDate, nString } from "@/lib/utils/zod.utils";
+import { nDate, normalizeOptional, nString } from "@/lib/utils/zod.utils";
 
 export const voiceGetAllParamsValidator = z.object({
   ...baseGetParamsSchema,
-  type: z.enum(["Default", "Cloned"]).optional(),
+  type: normalizeOptional(z.enum(["Default", "Cloned"])),
 });
 
 export const voiceReadDtoValidator = z.object({

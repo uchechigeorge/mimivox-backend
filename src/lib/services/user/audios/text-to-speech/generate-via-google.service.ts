@@ -2,19 +2,17 @@ import { env } from "@/lib/config/env.config";
 import { UserAuthItems } from "@/lib/types";
 import { createAudioAndUpdateUser, validate } from "./generate.service";
 import { GoogleTTSSDto } from "@/lib/dtos/user/tts.dto";
-import { uploadToCloudinary } from "./upload";
 import voiceRepo from "@/lib/repositories/voice.repo";
 import googleService from "@/lib/services/shared/google";
 import { BadRequestError } from "@/lib/utils/error.util";
+import { uploadAudio } from "@/lib/utils/cloudinary.utils";
 
 export const generateViaGoogle = async (
   body: GoogleTTSSDto,
   authItems: UserAuthItems,
 ) => {
   const content = body.input.text;
-  // if (body.voice.name.includes("-")) {
-  //   throw new BadRequestError("Invalid voice");
-  // }
+
   const voiceNameArr = body.voice.name.split("-");
   const voiceId = voiceNameArr[voiceNameArr.length - 1];
 
@@ -44,8 +42,9 @@ export const generateViaGoogle = async (
   const result = await clonedRes.json();
   const base64String = result.audioContent;
 
-  const uploadResult = await uploadToCloudinary(
+  const uploadResult = await uploadAudio(
     `data:audio/mp3;base64,${base64String}`,
+    "tts-audio",
   );
   // const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
   // const blob = new Blob([bytes], { type: "audio/mpeg" });
@@ -66,9 +65,7 @@ export const generateViaGoogle = async (
       audioServiceType: "Google",
       audioServiceReferenceId: googleVoice?.name,
       name: googleVoice.name,
-      // description: googleVoice.description,
       gender: googleVoice.ssmlGender,
-      // previewUrl: googleVoice.preview_url,
       sequence,
       type: "Default",
     });

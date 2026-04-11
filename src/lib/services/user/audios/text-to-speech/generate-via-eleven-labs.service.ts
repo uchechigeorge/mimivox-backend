@@ -3,7 +3,7 @@ import { UserAuthItems } from "@/lib/types";
 import { createAudioAndUpdateUser, validate } from "./generate.service";
 import voiceRepo from "@/lib/repositories/voice.repo";
 import elevenLabsService from "@/lib/services/shared/eleven-labs";
-import { uploadStreamToCloudinary } from "./upload";
+import { uploadAudioStream } from "@/lib/utils/cloudinary.utils";
 
 export const generateViaElevenLabs = async (
   voiceId: string,
@@ -41,7 +41,7 @@ export const generateViaElevenLabs = async (
   const arrayBuffer = await clonedRes.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
 
-  const uploadedResult: any = await uploadStreamToCloudinary(buffer);
+  const uploadedResult = await uploadAudioStream(buffer, "tts-audio");
 
   if (!voice) {
     const sequence = await voiceRepo.getMaxSequence({ type: "Default" });
