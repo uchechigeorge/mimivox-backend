@@ -13,8 +13,7 @@ export const generateViaGoogle = async (
 ) => {
   const content = body.input.text;
 
-  const voiceNameArr = body.voice.name.split("-");
-  const voiceId = voiceNameArr[voiceNameArr.length - 1];
+  const voiceId = body.voice.name;
 
   let [user, voice] = await validate({
     authItems,
@@ -22,8 +21,6 @@ export const generateViaGoogle = async (
     voiceId,
     audioServiceType: "Google",
   });
-
-  console.log({ voiceId, voice, user });
 
   const url = `https://texttospeech.googleapis.com/v1/text:synthesize?key=${env.GOOGLE_API_KEY}`;
   const res = await fetch(url, {
@@ -63,7 +60,7 @@ export const generateViaGoogle = async (
 
     voice = await voiceRepo.create({
       audioServiceType: "Google",
-      audioServiceReferenceId: googleVoice?.name,
+      audioServiceReferenceId: googleVoice.name,
       name: googleVoice.name,
       gender: googleVoice.ssmlGender,
       sequence,

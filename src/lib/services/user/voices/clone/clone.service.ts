@@ -41,7 +41,7 @@ export const createVoiceAndUpdateUser = async (
   const userId = user.id;
 
   const sequence = Math.max(
-    100,
+    10000,
     (await voiceRepo.getMaxSequence({ userId })) + 1,
   );
   //TODO: Add request log

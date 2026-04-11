@@ -14,7 +14,10 @@ export const voiceReadDtoValidator = z.object({
   type: nString,
   name: nString,
   description: nString,
+  gender: nString,
   audioServiceType: nString,
+  audioServiceReferenceId: nString,
+  previewUrl: nString,
   updatedAt: nDate,
   createdAt: nDate,
 });
