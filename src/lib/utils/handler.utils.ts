@@ -81,31 +81,31 @@ const handleUserAuth = async (req: Request, options?: HandlerOptions) => {
       loggedIn: false,
     };
 
-    // if (!bearerToken) {
-    //   if (!options.ignoreAuth) {
-    //     throw new UnauthorizedError("No token provided", 401);
-    //   }
-    // } else {
-    //   // Verify Token
-    //   const [jwtResult, jwtError] =
-    //     await userAuthService.verifyAccessToken(bearerToken);
+    if (!bearerToken) {
+      if (!options.ignoreAuth) {
+        throw new UnauthorizedError("No token provided", 401);
+      }
+    } else {
+      // Verify Token
+      const [jwtResult, jwtError] =
+        await userAuthService.verifyAccessToken(bearerToken);
 
-    //   if (jwtError) {
-    //     authData.errorMessage = "Invalid token";
-    //     if (!options.ignoreAuth) {
-    //       throw new UnauthorizedError("Invalid or expired token", 401);
-    //     }
-    //   } else {
-    //     // Success: Populate auth data
-    //     authData = {
-    //       ...authData,
-    //       loggedIn: true,
-    //       userId: jwtResult.userId,
-    //       userFullName: jwtResult.name,
-    //       userEmail: jwtResult.email,
-    //     };
-    //   }
-    // }
+      if (jwtError) {
+        authData.errorMessage = "Invalid token";
+        if (!options.ignoreAuth) {
+          throw new UnauthorizedError("Invalid or expired token", 401);
+        }
+      } else {
+        // Success: Populate auth data
+        authData = {
+          ...authData,
+          loggedIn: true,
+          userId: jwtResult.userId,
+          userFullName: jwtResult.name,
+          userEmail: jwtResult.email,
+        };
+      }
+    }
   }
 
   return authData;
