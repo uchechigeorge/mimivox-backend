@@ -3,23 +3,22 @@ import { userHandler } from "@/lib/utils/handler.utils";
 import { AppRouteContext } from "@/lib/utils/types";
 import { NextResponse } from "next/server";
 
-// export const OPTIONS = () => {
-//   return new Response(null, {
-//     status: 200,
-//     headers: {
-//       "Access-Control-Allow-Origin": "*",
-//       "Access-Control-Allow-Methods": "POST, OPTIONS",
-//       "Access-Control-Allow-Headers": "Content-Type, Authorization",
-//     },
-//   });
-// };
-
 export const POST = userHandler(
   async (req: Request, ctx: AppRouteContext<any>, authItems: UserAuthItems) => {
     try {
       const body = await req.json();
 
-      const { mode, prompt, lyrics, style, title, instrumental } = body;
+      const {
+        mode,
+        prompt,
+        lyrics,
+        style,
+        title,
+        instrumental,
+        gender,
+        customMode,
+        callBackUrl,
+      } = body;
 
       const response = await fetch("https://api.sunoapi.org/api/v1/generate", {
         method: "POST",
@@ -28,31 +27,27 @@ export const POST = userHandler(
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          customMode: true,
+          customMode: customMode ? customMode : false,
           instrumental: instrumental ?? false,
           model: "V4_5ALL",
           prompt: mode === "lyrics" ? lyrics : prompt,
           style,
           title: title || "AI Generated Song",
           negativeTags: "",
-          vocalGender: "m",
+          vocalGender: gender ? gender : "m",
           styleWeight: 0.65,
           weirdnessConstraint: 0.65,
           audioWeight: 0.65,
+          callBackUrl: callBackUrl
+            ? callBackUrl
+            : "https://api.example.com/callback",
         }),
       });
 
-      const headers = new Headers(response.headers);
-
-      // header cleanup
-      headers.delete("content-encoding");
-      headers.delete("transfer-encoding");
-
       const data = await response.json();
 
-      return new Response(data.body, {
-        status: data.status,
-        headers,
+      return NextResponse.json({
+        ...data,
       });
     } catch (err: any) {
       console.error(err);
