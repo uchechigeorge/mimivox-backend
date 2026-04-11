@@ -1,6 +1,10 @@
 import { z } from "zod";
 
 const envSchema = z.object({
+  HOST: z.string(),
+  ALLOWED_ORIGINS: z
+    .string()
+    .transform((val) => val.split(",").map((item) => item.trim())),
   DATABASE_URL: z.string(),
   JWT_USER_ACCESS_SECRET: z.string(),
   JWT_USER_ACCESS_EXPIRATION: z.string(),

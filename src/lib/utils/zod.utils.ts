@@ -15,45 +15,26 @@ export const nString = z.string().nullish();
 export const nDate = z.coerce.date().nullish();
 export const nBoolean = z.boolean().catch(false);
 
-// export const nObjPromise = (value: any) => {
-//   return z
-//     .object(value)
-//     .nullish()
-//     .promise()
-//     .transform(async (e) => await e)
-//     .catch(null);
-// };
+export const normalizeOptional = <T extends z.ZodTypeAny>(schema: T) =>
+  z.preprocess((val) => {
+    if (val === null || val === undefined) return undefined;
 
-// export const nArrPromise = (value: any) => {
-//   return z
-//     .object(value)
-//     .nullish()
-//     .array()
-//     .nullish()
-//     .promise()
-//     .transform(async (e) => await e)
-//     .catch([]);
-// };
+    if (typeof val === "string") {
+      const trimmed = val.trim();
 
-// export const parsedOptionalNumber = z
-//   .string()
-//   .trim()
-//   .or(z.number())
-//   .nullish()
-//   .transform((e) => (e == undefined || e == "" ? undefined : e))
-//   .pipe(z.coerce.number().optional().catch(undefined));
+      if (
+        trimmed === "" ||
+        trimmed.toLowerCase() === "null" ||
+        trimmed.toLowerCase() === "undefined"
+      ) {
+        return undefined;
+      }
 
-// export const stringToOptionalNumber = z
-//   .string()
-//   .trim()
-//   .nullish()
-//   .transform((e) => (e == "" || e == null ? undefined : e))
-//   .pipe(
-//     z.coerce
-//       .number()
-//       .optional()
-//       .transform((e) => (e == null || isNaN(e) ? undefined : e))
-//   );
+      return trimmed;
+    }
+
+    return val;
+  }, schema.optional());
 
 export const stringToBoolean = z
   .string()
@@ -79,41 +60,6 @@ export const stringToNullableBoolean = z
   })
   .or(z.boolean())
   .pipe(z.boolean().optional());
-
-// export const stringToDate = (defaultValue?: Date) => {
-//   return z
-//     .string()
-//     .nullish()
-//     .transform((e) => (e == undefined || e.trim() == "" ? undefined : e))
-//     .pipe(
-//       defaultValue ? z.coerce.date().default(defaultValue) : z.coerce.date()
-//     );
-// };
-
-// export const stringToNullableDate = z
-//   .string()
-//   .nullish()
-//   .transform((e) => e ?? undefined)
-//   .pipe(z.coerce.date().optional().catch(undefined));
-
-// export function stringToEnum<T>(type: T) {
-//   return z
-//     .string()
-//     .or(z.number())
-//     .transform((val, ctx) => {
-//       const parsed = parseEnum(type, val.toString());
-//       if (parsed == null) {
-//         ctx.addIssue({
-//           code: z.ZodIssueCode.custom,
-//           message: "Invalid enum value",
-//         });
-
-//         return z.NEVER;
-//       }
-
-//       return parsed;
-//     });
-// }
 
 export async function parseArr<T, S>(
   items: T[],
