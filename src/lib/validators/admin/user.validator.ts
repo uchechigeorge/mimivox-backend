@@ -4,12 +4,17 @@ import {
   nBoolean,
   nDate,
   nString,
-  stringToNullableBoolean,
+  stringToNullableDate,
+  stringToOptionalBoolean,
 } from "@/lib/utils/zod.utils";
 
-export const userGetAllParamsValidator = z.object({
+export const userListParamsValidator = z.object({
   ...baseGetParamsSchema,
-  blocked: stringToNullableBoolean,
+  blocked: stringToOptionalBoolean,
+});
+
+export const userGetParamsValidator = z.object({
+  id: z.guid(),
 });
 
 export const updateUserSubscriptionParamsValidator = z.object({
@@ -20,7 +25,7 @@ export const updateUserSubscriptionDtoValidator = z.object({
   isActive: z.boolean(),
   pricingId: z.string().min(1),
   amount: z.number().min(0).optional(),
-  startDate: z.date().optional(),
+  startDate: stringToNullableDate,
 });
 
 export const userReadDtoValidator = z.object({

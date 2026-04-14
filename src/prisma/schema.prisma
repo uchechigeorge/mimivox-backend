@@ -17,33 +17,78 @@ datasource db {
 /// =====================
 
 model User {
-  id                      String         @id @default(uuid()) @db.VarChar(1024)
-  email                   String         @unique
-  emailVerified           Boolean        @default(false)
-  firstName               String         @db.VarChar(1024)
-  lastName                String         @db.VarChar(1024)
-  fullName                String         @default("") @db.VarChar(1024)
-  password                String         @db.VarChar(1024)
-  dpUrl                   String?        @db.VarChar(1024)
-  defaultBg               String?        @db.VarChar(1024)
-  phoneNumber             String?        @db.VarChar(1024)
-  hasActiveSubscription   Boolean        @default(false)
-  noOfCharactersUsed      Int            @default(0)
-  noOfCharactersAllocated Int?           @default(0)
-  noOfCharactersLeft      Int?           @default(0)
-  noOfVoicesUsed          Int            @default(0)
-  noOfVoicesAllocated     Int?           @default(0)
-  noOfVoicesLeft          Int?           @default(0)
-  noOfWordsAllowed        Int?           @default(0)
-  blocked                 Boolean        @default(false)
-  createdAt               DateTime       @default(now())
-  updatedAt               DateTime       @updatedAt
-  deletedAt               DateTime?
-  subscriptions           Subscription[]
-  voices                  Voice[]
-  audios                  Audio[]
+  id                         String         @id @default(uuid()) @db.VarChar(1024)
+  email                      String         @unique
+  emailVerified              Boolean        @default(false)
+  firstName                  String         @db.VarChar(1024)
+  lastName                   String         @db.VarChar(1024)
+  fullName                   String         @default("") @db.VarChar(1024)
+  password                   String         @db.VarChar(1024)
+  dpUrl                      String?        @db.VarChar(1024)
+  defaultBg                  String?        @db.VarChar(1024)
+  phoneNumber                String?        @db.VarChar(1024)
+  hasActiveSubscription      Boolean        @default(false)
+  noOfCreditsUsed            Int            @default(0)
+  totalCreditsUsed           Int            @default(0)
+  noOfCreditsAllocated       Int?           @default(0)
+  noOfCreditsLeft            Int?           @default(0)
+  noOfCharactersUsed         Int            @default(0)
+  totalCharactersUsed        Int            @default(0)
+  noOfCharactersAllocated    Int?           @default(0)
+  noOfCharactersLeft         Int?           @default(0)
+  noOfVoicesUsed             Int            @default(0)
+  noOfWordsAllowed           Int?           @default(0)
+  totalVoicesUsed            Int            @default(0)
+  noOfVoicesAllocated        Int?           @default(0)
+  noOfVoicesLeft             Int?           @default(0)
+  noOfCloneVoicesUsed        Int            @default(0)
+  totalCloneVoicesUsed       Int            @default(0)
+  noOfCloneVoicesAllocated   Int?           @default(0)
+  noOfCloneVoicesLeft        Int?           @default(0)
+  noOfPremiumVoicesUsed      Int            @default(0)
+  totalPremiumVoicesUsed     Int            @default(0)
+  noOfPremiumVoicesAllocated Int?           @default(0)
+  noOfPremiumVoicesLeft      Int?           @default(0)
+  noOfMusicUsed              Int            @default(0)
+  totalMusicUsed             Int            @default(0)
+  noOfMusicAllocated         Int?           @default(0)
+  noOfMusicLeft              Int?           @default(0)
+  noOfImagesUsed             Int            @default(0)
+  totalImagesUsed            Int            @default(0)
+  noOfImagesAllocated        Int?           @default(0)
+  noOfImagesLeft             Int?           @default(0)
+  noOfVideosUsed             Int            @default(0)
+  totalVideosUsed            Int            @default(0)
+  noOfVideosAllocated        Int?           @default(0)
+  noOfVideosLeft             Int?           @default(0)
+  blocked                    Boolean        @default(false)
+  createdAt                  DateTime       @default(now())
+  updatedAt                  DateTime       @updatedAt
+  deletedAt                  DateTime?
+  subscriptions              Subscription[]
+  voices                     Voice[]
+  audios                     Audio[]
 
   @@map("Users")
+}
+
+model Admin {
+  id            String    @id @default(uuid()) @db.VarChar(1024)
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  firstName     String    @db.VarChar(1024)
+  lastName      String    @db.VarChar(1024)
+  fullName      String    @default("") @db.VarChar(1024)
+  password      String    @db.VarChar(1024)
+  dpUrl         String?   @db.VarChar(1024)
+  defaultBg     String?   @db.VarChar(1024)
+  phoneNumber   String?   @db.VarChar(1024)
+  blocked       Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+
+  @@map("Admins")
 }
 
 /// =====================
@@ -71,9 +116,15 @@ model PlanSetting {
   id                          String    @id @default(uuid()) @db.VarChar(1024)
   planId                      String    @unique
   planName                    String    @db.VarChar(1024)
+  noOfCredits                 Int?      @default(0)
   noOfCharacters              Int?      @default(0)
   noOfWords                   Int?      @default(0)
   noOfVoices                  Int?      @default(0)
+  noOfPremiumVoices           Int?      @default(0)
+  noOfCloneVoices             Int?      @default(0)
+  noOfMusic                   Int?      @default(0)
+  noOfImages                  Int?      @default(0)
+  noOfVideos                  Int?      @default(0)
   hasCommunitySupport         Boolean   @default(true)
   hasEmailSupport             Boolean   @default(false)
   socialMediaGuidelines       Int       @default(1)
@@ -171,6 +222,7 @@ enum AudioServiceType {
   None
   Google
   ElevenLabs
+  Noiz
 }
 
 model Voice {
@@ -186,6 +238,7 @@ model Voice {
   previewUrl              String?          @db.VarChar(1024)
   sampleUrl               String?          @db.VarChar(1024)
   sequence                Int              @default(0)
+  audioServiceRequestLog  Json?
   createdAt               DateTime         @default(now())
   updatedAt               DateTime         @updatedAt
   deletedAt               DateTime?

@@ -6,3 +6,5 @@ export interface HandlerOptions {
 export type AppRouteContext<T> = {
   params: Promise<T>;
 };
+
+export type AppGetRouteContext = AppRouteContext<{ id: string }>;

@@ -1,12 +1,14 @@
 import {
   updateUserSubscriptionDtoValidator,
   updateUserSubscriptionParamsValidator,
-  userGetAllParamsValidator,
+  userGetParamsValidator,
+  userListParamsValidator,
   userReadDtoValidator,
 } from "@/lib/validators/admin/user.validator";
 import z from "zod";
 
-export type UserGetAllParams = z.infer<typeof userGetAllParamsValidator>;
+export type UserListParams = z.infer<typeof userListParamsValidator>;
+export type UserGetParams = z.infer<typeof userGetParamsValidator>;
 
 export type UserReadDto = z.infer<typeof userReadDtoValidator>;
 

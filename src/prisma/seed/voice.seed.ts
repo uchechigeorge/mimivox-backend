@@ -3,10 +3,13 @@ import {
   VoiceCreateManyArgs,
 } from "@/generated/prisma/models";
 import { prisma } from "@/lib/db/prisma";
+import voiceRepo from "@/lib/repositories/voice.repo";
 import elevenLabsService from "@/lib/services/shared/eleven-labs";
 import googleService from "@/lib/services/shared/google";
 
 export default async function seedVoices() {
+  if (await voiceRepo.exists()) return;
+
   const googleVoices = (await googleService.voice.listVoices()).voices.filter(
     (e) => !e.name.includes("-"),
   );

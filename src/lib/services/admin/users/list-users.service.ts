@@ -1,11 +1,11 @@
 import userRepo from "@/lib/repositories/user.repo";
 import { GetAllUsersMetaResponse } from "./types";
-import { UserGetAllParams, UserReadDto } from "@/lib/dtos/admin/user.dto";
+import { UserListParams, UserReadDto } from "@/lib/dtos/admin/user.dto";
 import { parseArr } from "@/lib/utils/zod.utils";
 import { userReadDtoValidator } from "@/lib/validators/admin/user.validator";
 
-export const getAllUsers = async (
-  params: UserGetAllParams,
+export const listUsers = async (
+  params: UserListParams,
 ): Promise<[UserReadDto[], GetAllUsersMetaResponse]> => {
   const [data, total] = await userRepo.query(
     {

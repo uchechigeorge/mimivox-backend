@@ -3,7 +3,7 @@ import { verifyJwt } from "@/lib/utils/jwt.utils";
 import ms from "ms";
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
-import { User } from "@/generated/prisma/client";
+import { Admin } from "@/generated/prisma/client";
 import { AdminJwtPayload } from "@/lib/types";
 import { env } from "@/lib/config/env.config";
 
@@ -12,7 +12,7 @@ import { env } from "@/lib/config/env.config";
  * @param admin The admin
  * @returns Generated jwt token
  */
-export const generateAccessToken = (admin: User) => {
+export const generateAccessToken = (admin: Admin) => {
   const payload: JwtPayload & AdminJwtPayload = {
     sub: admin.id.toString(),
     adminId: admin.id,

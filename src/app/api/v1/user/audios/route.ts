@@ -2,7 +2,7 @@ import audioService from "@/lib/services/user/audios";
 import { UserAuthItems } from "@/lib/types/AuthItems";
 import { userHandler } from "@/lib/utils/handler.utils";
 import { getQueryParams } from "@/lib/utils/request.utils";
-import { getAllResponse } from "@/lib/utils/response.utils";
+import { listResponse } from "@/lib/utils/response.utils";
 import { audioGetAllParamsValidator } from "@/lib/validators/user/audio.validator";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -14,7 +14,7 @@ export const GET = userHandler(
       searchParams,
       authData,
     );
-    const response = getAllResponse(result, meta);
+    const response = listResponse(result, meta);
     return NextResponse.json(response);
   },
   { authenticate: true },

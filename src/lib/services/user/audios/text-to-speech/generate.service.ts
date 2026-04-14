@@ -1,4 +1,6 @@
 import { $Enums, User, Voice } from "@/generated/prisma/client";
+import { env } from "@/lib/config/env.config";
+import { prisma } from "@/lib/db/prisma";
 import audioRepo from "@/lib/repositories/audio.repo";
 import userRepo from "@/lib/repositories/user.repo";
 import voiceRepo from "@/lib/repositories/voice.repo";
@@ -47,26 +49,72 @@ export const createAudioAndUpdateUser = async (
   options: CreateAudioAndUpdateUserOptions,
 ) => {
   const { user, voice, content, languageCode, requestLog, audioUrl } = options;
-  await audioRepo.create({
-    content,
-    languageCode,
-    userId: user.id,
-    userName: user.fullName,
-    voiceId: voice.id,
-    voiceName: voice.name,
-    audioServiceType: voice.audioServiceType,
-    audioServiceRequestLog: requestLog,
-    audioUrl,
-  });
 
-  const noOfCharacters = content.trim().length;
+  prisma.$transaction(async (tc) => {
+    await audioRepo.create(
+      {
+        content,
+        languageCode,
+        userId: user.id,
+        userName: user.fullName,
+        voiceId: voice.id,
+        voiceName: voice.name,
+        audioServiceType: voice.audioServiceType,
+        audioServiceRequestLog: requestLog,
+        audioUrl,
+      },
+      tc,
+    );
 
-  await userRepo.update(user.id, {
-    noOfCharactersUsed: user.noOfCharactersUsed + noOfCharacters,
-    noOfCharactersLeft:
+    const noOfCharacters = content.trim().length;
+    const creditsPerCharacter = env.CREDITS_PER_CHARACTER;
+    const noOfCredits = noOfCharacters * creditsPerCharacter;
+
+    const isPremiumVoice = voice.audioServiceType === "ElevenLabs";
+
+    const noOfCharactersUsed = user.noOfCharactersUsed + noOfCharacters;
+    const totalCharactersUsed = user.totalCharactersUsed + noOfCharacters;
+    const noOfCharactersLeft =
       user.noOfCharactersAllocated == null || user.noOfCharactersLeft == null
         ? null
-        : user.noOfCharactersLeft - noOfCharacters,
+        : user.noOfCharactersLeft - noOfCharacters;
+
+    const noOfCreditsUsed = user.noOfCreditsUsed + noOfCredits;
+    const totalCreditsUsed = user.totalCreditsUsed + noOfCredits;
+    const noOfCreditsLeft =
+      user.noOfCreditsAllocated == null || user.noOfCreditsLeft == null
+        ? null
+        : user.noOfCreditsLeft - noOfCredits;
+
+    const noOfPremiumVoicesUsed = isPremiumVoice
+      ? user.noOfPremiumVoicesUsed + 1
+      : undefined;
+    const totalPremiumVoicesUsed = isPremiumVoice
+      ? user.totalPremiumVoicesUsed + 1
+      : undefined;
+    const noOfPremiumVoicesLeft =
+      user.noOfPremiumVoicesLeft == null ||
+      user.noOfPremiumVoicesAllocated == null
+        ? null
+        : isPremiumVoice
+          ? user.noOfPremiumVoicesLeft - 1
+          : undefined;
+
+    await userRepo.update(
+      user.id,
+      {
+        noOfCharactersUsed,
+        totalCharactersUsed,
+        noOfCharactersLeft,
+        noOfCreditsUsed,
+        totalCreditsUsed,
+        noOfCreditsLeft,
+        noOfPremiumVoicesUsed,
+        totalPremiumVoicesUsed,
+        noOfPremiumVoicesLeft,
+      },
+      tc,
+    );
   });
 };
 

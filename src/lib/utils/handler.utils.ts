@@ -32,7 +32,7 @@ export const adminHandler =
     fn: (
       req: NextRequest,
       ctx: AppRouteContext<TParams>,
-      auth?: AdminAuthItems,
+      auth: AdminAuthItems,
     ) => Promise<Response>,
     options?: HandlerOptions,
   ) =>
@@ -113,12 +113,6 @@ const handleUserAuth = async (req: Request, options?: HandlerOptions) => {
 
 const handleAdminAuth = async (req: Request, options?: HandlerOptions) => {
   let authData: AdminAuthItems = { loggedIn: false };
-
-  // !Remove this
-  options = {
-    authenticate: false,
-  };
-  // !Remove this
 
   if (options?.authenticate) {
     const authHeader = req.headers.get("Authorization");

@@ -59,11 +59,11 @@ export const createVoiceAndUpdateUser = async (
   });
 
   await userRepo.update(user.id, {
-    noOfVoicesUsed: user.noOfVoicesUsed + 1,
-    noOfVoicesLeft:
-      user.noOfVoicesLeft == null || user.noOfVoicesLeft == null
+    noOfCloneVoicesUsed: user.noOfCloneVoicesUsed + 1,
+    noOfCloneVoicesLeft:
+      user.noOfCloneVoicesLeft == null || user.noOfCloneVoicesAllocated == null
         ? null
-        : user.noOfVoicesLeft - 1,
+        : user.noOfCloneVoicesLeft - 1,
   });
 };
 

@@ -65,8 +65,6 @@ export const query = async (
   params: UserGetParams,
   options?: UserGetOptions,
 ): Promise<[User[], number]> => {
-  // const { page = 1, pageSize = 50, id, searchString, blocked } = params;
-
   // Build `where` filter
   const where: UserFindManyArgs["where"] = {};
 
@@ -101,6 +99,12 @@ export const query = async (
   return [result, total];
 };
 
+type UserGetParams = BaseGetParams & {
+  blocked?: boolean;
+};
+
+export type UserGetOptions = BaseGetOptions & {};
+
 const userRepo = {
   getById,
   getByEmail,
@@ -109,11 +113,5 @@ const userRepo = {
   update,
   query,
 };
-
-type UserGetParams = BaseGetParams & {
-  blocked?: boolean;
-};
-
-export type UserGetOptions = BaseGetOptions & {};
 
 export default userRepo;

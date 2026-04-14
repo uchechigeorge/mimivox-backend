@@ -38,12 +38,12 @@ export const cloneViaElevenLabs = async (
   const uploadResponse = await uploadAudioStream(buffer, "clone-samples");
 
   await createVoiceAndUpdateUser({
-    name: data.name.toString(),
-    audioServiceType: "Google",
+    name: data.name?.toString(),
+    audioServiceType: "ElevenLabs",
     user,
     voiceId: elResponse.voice_id,
     sampleUrl: uploadResponse.url,
-    description: data.description.toString(),
+    description: data.description?.toString(),
   });
 
   return res;

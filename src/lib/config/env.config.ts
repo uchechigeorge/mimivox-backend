@@ -15,6 +15,12 @@ const envSchema = z.object({
   CLOUDINARY_API_SECRET: z.string(),
   CLOUDINARY_API_KEY: z.string(),
   CLOUDINARY_CLOUD_NAME: z.string(),
+  INIT_ADMIN_EMAIL: z.string().optional(),
+  INIT_ADMIN_PASSWORD: z.string().optional(),
+  INIT_ADMIN_FIRST_NAME: z.string().optional(),
+  INIT_ADMIN_LAST_NAME: z.string().optional(),
+  CREDITS_PER_CHARACTER: z.coerce.number(),
+  CREDITS_PER_VOICE_CLONE: z.coerce.number(),
 });
 
 export const env = envSchema.parse(process.env);

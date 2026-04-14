@@ -25,13 +25,46 @@ export const getCredentials = async (userId: string) => {
     blocked: user.blocked,
     phoneNumber: user.phoneNumber,
     hasActiveSubscription: user.hasActiveSubscription,
+
+    noOfCreditsUsed: user.noOfCreditsUsed,
+    // totalCreditsUsed: user.totalCreditsUsed,
+    noOfCreditsAllocated: user.noOfCreditsAllocated,
+    noOfCreditsLeft: user.noOfCreditsLeft,
+
     noOfCharactersUsed: user.noOfCharactersUsed,
+    // totalCharactersUsed: user.totalCharactersUsed,
     noOfCharactersAllocated: user.noOfCharactersAllocated,
     noOfCharactersLeft: user.noOfCharactersLeft,
-    noOfVoicesUsed: user.noOfVoicesUsed,
-    noOfVoicesAllocated: user.noOfVoicesAllocated,
-    noOfVoicesLeft: user.noOfVoicesLeft,
     noOfWordsAllowed: user.noOfWordsAllowed,
+
+    // noOfVoicesUsed: user.noOfVoicesUsed,
+    // totalVoicesUsed: user.totalVoicesUsed,
+    // noOfVoicesAllocated: user.noOfVoicesAllocated,
+    // noOfVoicesLeft: user.noOfVoicesLeft,
+
+    noOfPremiumVoicesUsed: user.noOfPremiumVoicesUsed,
+    // totalPremiumVoicesUsed: user.totalPremiumVoicesUsed,
+    noOfPremiumVoicesAllocated: user.noOfPremiumVoicesAllocated,
+    noOfPremiumVoicesLeft: user.noOfPremiumVoicesLeft,
+    noOfCloneVoicesUsed: user.noOfCloneVoicesUsed,
+    // totalCloneVoicesUsed: user.totalCloneVoicesUsed,
+    noOfCloneVoicesAllocated: user.noOfCloneVoicesAllocated,
+    noOfCloneVoicesLeft: user.noOfCloneVoicesLeft,
+
+    noOfImagesUsed: user.noOfImagesUsed,
+    // totalImagesUsed: user.totalImagesUsed,
+    noOfImagesAllocated: user.noOfImagesAllocated,
+    noOfImagesLeft: user.noOfImagesLeft,
+
+    noOfMusicUsed: user.noOfMusicUsed,
+    // totalMusicUsed: user.totalMusicUsed,
+    noOfMusicAllocated: user.noOfMusicAllocated,
+    noOfMusicLeft: user.noOfMusicLeft,
+
+    noOfVideosUsed: user.noOfVideosUsed,
+    // totalVideosUsed: user.totalVideosUsed,
+    noOfVideosAllocated: user.noOfVideosAllocated,
+    noOfVideosLeft: user.noOfVideosLeft,
     subscription: subscription
       ? {
           isActive: subscription.isActive,

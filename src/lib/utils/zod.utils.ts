@@ -44,7 +44,7 @@ export const stringToBoolean = z
   .or(z.boolean())
   .pipe(z.boolean().catch(false));
 
-export const stringToNullableBoolean = z
+export const stringToOptionalBoolean = z
   .string()
   .trim()
   .nullish()
@@ -60,6 +60,11 @@ export const stringToNullableBoolean = z
   })
   .or(z.boolean())
   .pipe(z.boolean().optional());
+
+export const stringToNullableDate = z.preprocess(
+  (value) => (!value ? undefined : value),
+  z.coerce.date().optional(),
+);
 
 export async function parseArr<T, S>(
   items: T[],

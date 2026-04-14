@@ -17,6 +17,26 @@ const getByUserIdAndIsActive = async (
   });
 };
 
+const getByReference = async (
+  reference: string,
+  tc?: Prisma.TransactionClient,
+) => {
+  const db: DB = tc || prisma;
+
+  return await db.subscription.findFirst({
+    where: { reference },
+  });
+};
+
+const getExistsByReference = async (
+  reference: string,
+  tc?: Prisma.TransactionClient,
+) => {
+  const result = await getByReference(reference, tc);
+
+  return result !== null;
+};
+
 const create = async (
   data: SubscriptionCreateArgs["data"],
   tc?: Prisma.TransactionClient,
@@ -43,6 +63,8 @@ const update = async (
 
 const subscriptionRepo = {
   getByUserIdAndIsActive,
+  getByReference,
+  getExistsByReference,
   create,
   update,
 };
