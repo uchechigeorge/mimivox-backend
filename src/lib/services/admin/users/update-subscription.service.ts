@@ -47,16 +47,15 @@ export const updateUserSubscription = async (
   }
 
   const startDate = updateDto.startDate ?? new Date();
-  prisma.$transaction(async (tc) => {
-    const activeSubscription = await subscriptionRepo.getByUserIdAndIsActive(
-      user.id,
-      true,
-      tc,
-    );
-    const initialAmount = Decimal(
-      updateDto.amount ? updateDto.amount : (pricing?.price.toNumber() ?? 0),
-    );
+  const initialAmount = Decimal(
+    updateDto.amount ? updateDto.amount : (pricing?.price.toNumber() ?? 0),
+  );
+  const activeSubscription = await subscriptionRepo.getByUserIdAndIsActive(
+    user.id,
+    true,
+  );
 
+  prisma.$transaction(async (tc) => {
     // Activate subscriptions
     if (activeSubscription == null && updateDto.isActive && pricing != null) {
       await subscriptionRepo.create(
@@ -77,7 +76,7 @@ export const updateUserSubscription = async (
           status: "WillRenew",
           initialAmount,
           paymentGateway: "Manual",
-          reference: await sharedSubscriptionService.generateReference(),
+          reference: await sharedSubscriptionService.generateReference(tc),
         },
         tc,
       );
