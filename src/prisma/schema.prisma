@@ -184,29 +184,47 @@ enum PaymentGatewayOption {
 }
 
 model Subscription {
-  id              String               @id @default(uuid()) @db.VarChar(1024)
-  reference       String               @db.VarChar(1024)
-  userId          String               @db.VarChar(1024)
-  userName        String               @db.VarChar(1024)
-  pricingId       String               @db.VarChar(1024)
-  pricingName     String               @db.VarChar(1024)
-  planId          String               @db.VarChar(1024)
-  planName        String               @db.VarChar(1024)
-  isActive        Boolean
-  status          SubscriptionStatus   @default(Pending)
-  startDate       DateTime
-  nextBillingDate DateTime?
-  endDate         DateTime?
-  initialAmount   Decimal?             @db.Decimal(18, 2)
-  paymentGateway  PaymentGatewayOption @default(None)
-  user            User                 @relation(fields: [userId], references: [id])
-  pricing         Pricing              @relation(fields: [pricingId], references: [id])
-  plan            Plan                 @relation(fields: [planId], references: [id])
-  createdAt       DateTime             @default(now())
-  updatedAt       DateTime             @updatedAt
-  deletedAt       DateTime?
+  id                   String                @id @default(uuid()) @db.VarChar(1024)
+  reference            String                @db.VarChar(1024)
+  userId               String                @db.VarChar(1024)
+  userName             String                @db.VarChar(1024)
+  pricingId            String                @db.VarChar(1024)
+  pricingName          String                @db.VarChar(1024)
+  planId               String                @db.VarChar(1024)
+  planName             String                @db.VarChar(1024)
+  isActive             Boolean
+  status               SubscriptionStatus    @default(Pending)
+  startDate            DateTime
+  nextBillingDate      DateTime?
+  endDate              DateTime?
+  initialAmount        Decimal?              @db.Decimal(18, 2)
+  paymentGateway       PaymentGatewayOption  @default(None)
+  user                 User                  @relation(fields: [userId], references: [id])
+  pricing              Pricing               @relation(fields: [pricingId], references: [id])
+  plan                 Plan                  @relation(fields: [planId], references: [id])
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  deletedAt            DateTime?
+  subscriptionPayments SubscriptionPayment[]
 
   @@map("Subscriptions")
+}
+
+model SubscriptionPayment {
+  id                    String               @id @default(uuid()) @db.Uuid()
+  subscriptionId        String?              @db.VarChar(1024)
+  subscriptionReference String               @db.VarChar(1024)
+  amount                Decimal              @db.Decimal(18, 2)
+  isInitialPayment      Boolean              @default(false)
+  isPaymentVerified     Boolean              @default(false)
+  paymentGateway        PaymentGatewayOption @default(None)
+  paidAt                DateTime?
+  updatedAt             DateTime             @updatedAt
+  createdAt             DateTime             @default(now())
+  deletedAt             DateTime?
+  subscription          Subscription?        @relation(fields: [subscriptionId], references: [id])
+
+  @@map("SubscriptionPayments")
 }
 
 /// =====================
