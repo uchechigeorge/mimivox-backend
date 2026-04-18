@@ -55,75 +55,15 @@ export const updateUserSubscription = async (
     true,
   );
 
-  prisma.$transaction(async (tc) => {
-    // Activate subscriptions
-    if (activeSubscription == null && updateDto.isActive && pricing != null) {
-      await subscriptionRepo.create(
-        {
-          isActive: true,
-          userId: user.id,
-          userName: user.fullName,
-          planId: pricing.planId,
-          planName: pricing.planName,
-          pricingId: pricing.id,
-          pricingName: pricing.name,
-          startDate,
-          nextBillingDate: getNextBillingDate(
-            startDate,
-            toAppIntervalType(pricing.intervalType),
-            pricing.intervalCount,
-          ),
-          status: "WillRenew",
-          initialAmount,
-          paymentGateway: "Manual",
-          reference: await sharedSubscriptionService.generateReference(tc),
-        },
-        tc,
-      );
-
-      const userSettings = getUserSettings(planSettings);
-      await userRepo.update(
-        user.id,
-        {
-          ...userSettings,
-          hasActiveSubscription: true,
-        },
-        tc,
-      );
-    } else if (activeSubscription != null) {
-      // Cancelling subscriptions
-      if (updateDto.isActive == false) {
-        await subscriptionRepo.update(
-          activeSubscription.id,
+  prisma.$transaction(
+    async (tc) => {
+      // Activate subscriptions
+      if (activeSubscription == null && updateDto.isActive && pricing != null) {
+        await subscriptionRepo.create(
           {
-            isActive: false,
-            status: "Completed",
-            endDate: new Date(),
-          },
-          tc,
-        );
-
-        const freePlan = await planRepo.getByIsFree(tc);
-        let freePlanSettings: PlanSetting | null = null;
-        if (freePlan) {
-          freePlanSettings = await planSettingRepo.getByPlanId(freePlan.id, tc);
-        }
-
-        const userSettings = getUserSettings(freePlanSettings);
-        await userRepo.update(
-          user.id,
-          {
-            ...userSettings,
-            hasActiveSubscription: false,
-          },
-          tc,
-        );
-      }
-      // Changing plans
-      else if (pricing != null) {
-        await subscriptionRepo.update(
-          activeSubscription.id,
-          {
+            isActive: true,
+            userId: user.id,
+            userName: user.fullName,
             planId: pricing.planId,
             planName: pricing.planName,
             pricingId: pricing.id,
@@ -134,7 +74,10 @@ export const updateUserSubscription = async (
               toAppIntervalType(pricing.intervalType),
               pricing.intervalCount,
             ),
+            status: "WillRenew",
             initialAmount,
+            paymentGateway: "Manual",
+            reference: await sharedSubscriptionService.generateReference(tc),
           },
           tc,
         );
@@ -148,9 +91,75 @@ export const updateUserSubscription = async (
           },
           tc,
         );
+      } else if (activeSubscription != null) {
+        // Cancelling subscriptions
+        if (updateDto.isActive == false) {
+          await subscriptionRepo.update(
+            activeSubscription.id,
+            {
+              isActive: false,
+              status: "Completed",
+              endDate: new Date(),
+            },
+            tc,
+          );
+
+          const freePlan = await planRepo.getByIsFree(tc);
+          let freePlanSettings: PlanSetting | null = null;
+          if (freePlan) {
+            freePlanSettings = await planSettingRepo.getByPlanId(
+              freePlan.id,
+              tc,
+            );
+          }
+
+          const userSettings = getUserSettings(freePlanSettings);
+          await userRepo.update(
+            user.id,
+            {
+              ...userSettings,
+              hasActiveSubscription: false,
+            },
+            tc,
+          );
+        }
+        // Changing plans
+        else if (pricing != null) {
+          await subscriptionRepo.update(
+            activeSubscription.id,
+            {
+              planId: pricing.planId,
+              planName: pricing.planName,
+              pricingId: pricing.id,
+              pricingName: pricing.name,
+              startDate,
+              nextBillingDate: getNextBillingDate(
+                startDate,
+                toAppIntervalType(pricing.intervalType),
+                pricing.intervalCount,
+              ),
+              initialAmount,
+            },
+            tc,
+          );
+
+          const userSettings = getUserSettings(planSettings);
+          await userRepo.update(
+            user.id,
+            {
+              ...userSettings,
+              hasActiveSubscription: true,
+            },
+            tc,
+          );
+        }
       }
-    }
-  });
+    },
+    {
+      maxWait: 10000,
+      timeout: 20000,
+    },
+  );
 };
 
 const getUserSettings = (planSettings: PlanSetting | null) => {
