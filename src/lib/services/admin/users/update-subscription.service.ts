@@ -20,6 +20,9 @@ export const updateUserSubscription = async (
   params: UpdateUserSubscriptionParams,
   updateDto: UpdateUserSubscriptionDto,
 ) => {
+  // ======================
+  // 1. Fetch base data
+  // ======================
   const user = await userRepo.getById(params.id);
   if (!user) {
     throw new BadRequestError("User not found");
@@ -40,30 +43,122 @@ export const updateUserSubscription = async (
     }
   }
 
-  if (updateDto.isActive && pricing == null) {
+  if (updateDto.isActive && !pricing) {
     throw new BadRequestError(
       "Pricing plan must be provided for active subscriptions",
     );
   }
 
   const startDate = updateDto.startDate ?? new Date();
-  const initialAmount = Decimal(
-    updateDto.amount ? updateDto.amount : (pricing?.price.toNumber() ?? 0),
-  );
+
+  // ======================
+  // 2. Pre-fetch state
+  // ======================
   const activeSubscription = await subscriptionRepo.getByUserIdAndIsActive(
     user.id,
     true,
   );
 
-  prisma.$transaction(
-    async (tc) => {
-      // Activate subscriptions
-      if (activeSubscription == null && updateDto.isActive && pricing != null) {
-        await subscriptionRepo.create(
-          {
-            isActive: true,
-            userId: user.id,
-            userName: user.fullName,
+  const initialAmount = Decimal(
+    updateDto.amount ? updateDto.amount : (pricing?.price.toNumber() ?? 0),
+  );
+
+  const shouldCreate = !activeSubscription && updateDto.isActive && pricing;
+  let reference: string = "";
+  if (shouldCreate) {
+    // Generate reference
+    reference = await sharedSubscriptionService.generateReference();
+  }
+
+  // ======================
+  // 3. Build transaction
+  // ======================
+  const queries: any[] = [];
+
+  // ======================
+  // CASE 1: Activate new subscription
+  // ======================
+  if (!activeSubscription && updateDto.isActive && pricing) {
+    queries.push(
+      prisma.subscription.create({
+        data: {
+          isActive: true,
+          userId: user.id,
+          userName: user.fullName,
+          planId: pricing.planId,
+          planName: pricing.planName,
+          pricingId: pricing.id,
+          pricingName: pricing.name,
+          startDate,
+          nextBillingDate: getNextBillingDate(
+            startDate,
+            toAppIntervalType(pricing.intervalType),
+            pricing.intervalCount,
+          ),
+          status: "WillRenew",
+          initialAmount,
+          paymentGateway: "Manual",
+          reference: reference!,
+        },
+      }),
+    );
+
+    queries.push(
+      prisma.user.update({
+        where: { id: user.id },
+        data: {
+          ...getUserSettings(planSettings),
+          hasActiveSubscription: true,
+        },
+      }),
+    );
+  }
+
+  // ======================
+  // CASE 2: Existing subscription
+  // ======================
+  if (activeSubscription) {
+    // ----------------------
+    // Cancel subscription
+    // ----------------------
+    if (updateDto.isActive === false) {
+      queries.push(
+        prisma.subscription.update({
+          where: { id: activeSubscription.id },
+          data: {
+            isActive: false,
+            status: "Completed",
+            endDate: new Date(),
+          },
+        }),
+      );
+
+      const freePlan = await planRepo.getByIsFree();
+      let freePlanSettings: PlanSetting | null = null;
+
+      if (freePlan) {
+        freePlanSettings = await planSettingRepo.getByPlanId(freePlan.id);
+      }
+
+      queries.push(
+        prisma.user.update({
+          where: { id: user.id },
+          data: {
+            ...getUserSettings(freePlanSettings),
+            hasActiveSubscription: false,
+          },
+        }),
+      );
+    }
+
+    // ----------------------
+    // Change plan
+    // ----------------------
+    else if (pricing) {
+      queries.push(
+        prisma.subscription.update({
+          where: { id: activeSubscription.id },
+          data: {
             planId: pricing.planId,
             planName: pricing.planName,
             pricingId: pricing.id,
@@ -74,92 +169,29 @@ export const updateUserSubscription = async (
               toAppIntervalType(pricing.intervalType),
               pricing.intervalCount,
             ),
-            status: "WillRenew",
             initialAmount,
-            paymentGateway: "Manual",
-            reference: await sharedSubscriptionService.generateReference(tc),
           },
-          tc,
-        );
+        }),
+      );
 
-        const userSettings = getUserSettings(planSettings);
-        await userRepo.update(
-          user.id,
-          {
-            ...userSettings,
+      queries.push(
+        prisma.user.update({
+          where: { id: user.id },
+          data: {
+            ...getUserSettings(planSettings),
             hasActiveSubscription: true,
           },
-          tc,
-        );
-      } else if (activeSubscription != null) {
-        // Cancelling subscriptions
-        if (updateDto.isActive == false) {
-          await subscriptionRepo.update(
-            activeSubscription.id,
-            {
-              isActive: false,
-              status: "Completed",
-              endDate: new Date(),
-            },
-            tc,
-          );
+        }),
+      );
+    }
+  }
 
-          const freePlan = await planRepo.getByIsFree(tc);
-          let freePlanSettings: PlanSetting | null = null;
-          if (freePlan) {
-            freePlanSettings = await planSettingRepo.getByPlanId(
-              freePlan.id,
-              tc,
-            );
-          }
-
-          const userSettings = getUserSettings(freePlanSettings);
-          await userRepo.update(
-            user.id,
-            {
-              ...userSettings,
-              hasActiveSubscription: false,
-            },
-            tc,
-          );
-        }
-        // Changing plans
-        else if (pricing != null) {
-          await subscriptionRepo.update(
-            activeSubscription.id,
-            {
-              planId: pricing.planId,
-              planName: pricing.planName,
-              pricingId: pricing.id,
-              pricingName: pricing.name,
-              startDate,
-              nextBillingDate: getNextBillingDate(
-                startDate,
-                toAppIntervalType(pricing.intervalType),
-                pricing.intervalCount,
-              ),
-              initialAmount,
-            },
-            tc,
-          );
-
-          const userSettings = getUserSettings(planSettings);
-          await userRepo.update(
-            user.id,
-            {
-              ...userSettings,
-              hasActiveSubscription: true,
-            },
-            tc,
-          );
-        }
-      }
-    },
-    {
-      maxWait: 10000,
-      timeout: 20000,
-    },
-  );
+  // ======================
+  // 4. Execute transaction
+  // ======================
+  if (queries.length > 0) {
+    await prisma.$transaction(queries);
+  }
 };
 
 const getUserSettings = (planSettings: PlanSetting | null) => {
