@@ -57,6 +57,7 @@ export const updateUserSubscription = async (
       updateDto.amount ? updateDto.amount : (pricing?.price.toNumber() ?? 0),
     );
 
+    // Activate subscriptions
     if (activeSubscription == null && updateDto.isActive && pricing != null) {
       await subscriptionRepo.create(
         {
@@ -91,6 +92,7 @@ export const updateUserSubscription = async (
         tc,
       );
     } else if (activeSubscription != null) {
+      // Cancelling subscriptions
       if (updateDto.isActive == false) {
         await subscriptionRepo.update(
           activeSubscription.id,
@@ -117,7 +119,9 @@ export const updateUserSubscription = async (
           },
           tc,
         );
-      } else if (pricing != null) {
+      }
+      // Changing plans
+      else if (pricing != null) {
         await subscriptionRepo.update(
           activeSubscription.id,
           {

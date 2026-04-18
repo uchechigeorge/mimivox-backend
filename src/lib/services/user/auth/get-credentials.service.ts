@@ -70,6 +70,7 @@ export const getCredentials = async (userId: string) => {
           isActive: subscription.isActive,
           nextBillingDate: subscription.nextBillingDate,
           status: subscription.status,
+          planName: subscription.planName,
         }
       : null,
   };

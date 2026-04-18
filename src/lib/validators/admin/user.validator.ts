@@ -23,7 +23,7 @@ export const updateUserSubscriptionParamsValidator = z.object({
 
 export const updateUserSubscriptionDtoValidator = z.object({
   isActive: z.boolean(),
-  pricingId: z.string().min(1),
+  pricingId: z.guid().nullish(),
   amount: z.number().min(0).optional(),
   startDate: stringToNullableDate,
 });
@@ -42,6 +42,7 @@ export const userReadDtoValidator = z.object({
       isActive: nBoolean,
       nextBillingDate: nDate,
       status: nString,
+      planName: nString,
     })
     .nullish(),
   dateModified: nDate,

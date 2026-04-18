@@ -14,28 +14,28 @@ export default async function seedPlans() {
       name: "Free",
       slug: "free",
       isFree: true,
-      pricings: {
-        create: [
-          {
-            name: "Free Monthly",
-            slug: "free-monthly",
-            interval: "Monthly",
-            intervalCount: 1,
-            intervalType: "Month",
-            planName: "Free",
-            price: 10,
-          },
-          {
-            name: "Free Yearly",
-            slug: "free-yearly",
-            interval: "Yearly",
-            intervalCount: 1,
-            intervalType: "Year",
-            planName: "Free",
-            price: 100,
-          },
-        ],
-      },
+      // pricings: {
+      //   create: [
+      //     {
+      //       name: "Free Monthly",
+      //       slug: "free-monthly",
+      //       interval: "Monthly",
+      //       intervalCount: 1,
+      //       intervalType: "Month",
+      //       planName: "Free",
+      //       price: 10,
+      //     },
+      //     {
+      //       name: "Free Yearly",
+      //       slug: "free-yearly",
+      //       interval: "Yearly",
+      //       intervalCount: 1,
+      //       intervalType: "Year",
+      //       planName: "Free",
+      //       price: 100,
+      //     },
+      //   ],
+      // },
       settings: {
         create: {
           planName: "Free",
