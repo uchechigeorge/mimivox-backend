@@ -2,7 +2,7 @@ import z from "zod";
 import { baseGetParamsSchema } from "../shared/base-get-params.validator";
 import { nDate, nString, oString } from "@/lib/utils/zod.utils";
 
-export const audioGetAllParamsValidator = z.object({
+export const audioListParamsValidator = z.object({
   ...baseGetParamsSchema,
   type: nString,
 });

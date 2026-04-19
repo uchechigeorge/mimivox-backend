@@ -8,9 +8,11 @@ const adapter = new PrismaPg({ connectionString });
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
+const log: ("error" | "query" | "warn")[] = ["error"];
+if (process.env.NODE_ENV !== "development") log.push("warn", "query");
+
 export const prisma =
-  globalForPrisma.prisma ||
-  new PrismaClient({ adapter, log: ["query", "error", "warn"] });
+  globalForPrisma.prisma || new PrismaClient({ adapter, log });
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
 

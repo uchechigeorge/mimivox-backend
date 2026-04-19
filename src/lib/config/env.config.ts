@@ -12,6 +12,9 @@ const envSchema = z.object({
   JWT_ADMIN_ACCESS_EXPIRATION: z.string(),
   GOOGLE_API_KEY: z.string(),
   ELEVENLABS_API_KEY: z.string(),
+  XAI_API_KEY: z.string(),
+  SUNO_API_KEY: z.string(),
+  SUNO_MUSIC_GENERATE_CALLBACK_URL: z.string(),
   CLOUDINARY_API_SECRET: z.string(),
   CLOUDINARY_API_KEY: z.string(),
   CLOUDINARY_CLOUD_NAME: z.string(),
@@ -21,6 +24,9 @@ const envSchema = z.object({
   INIT_ADMIN_LAST_NAME: z.string().optional(),
   CREDITS_PER_CHARACTER: z.coerce.number(),
   CREDITS_PER_VOICE_CLONE: z.coerce.number(),
+  CREDITS_PER_IMAGE: z.coerce.number(),
+  CREDITS_PER_MUSIC: z.coerce.number(),
+  CREDITS_PER_VIDEO_PER_SECOND: z.coerce.number(),
 });
 
 export const env = envSchema.parse(process.env);

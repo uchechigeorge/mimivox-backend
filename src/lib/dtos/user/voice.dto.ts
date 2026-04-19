@@ -1,9 +1,9 @@
 import {
-  voiceGetAllParamsValidator,
+  voiceListParamsValidator,
   voiceReadDtoValidator,
 } from "@/lib/validators/user/voice.validator";
 import z from "zod";
 
-export type VoiceGetAllParams = z.infer<typeof voiceGetAllParamsValidator>;
+export type VoiceListParams = z.infer<typeof voiceListParamsValidator>;
 
 export type VoiceReadDto = z.infer<typeof voiceReadDtoValidator>;

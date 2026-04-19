@@ -1,13 +1,13 @@
 import voiceRepo from "@/lib/repositories/voice.repo";
 import { GetAllVoicesMetaResponse } from "./types";
-import { VoiceGetAllParams, VoiceReadDto } from "@/lib/dtos/user/voice.dto";
+import { VoiceListParams, VoiceReadDto } from "@/lib/dtos/user/voice.dto";
 import { parseArr } from "@/lib/utils/zod.utils";
 import { voiceReadDtoValidator } from "@/lib/validators/user/voice.validator";
 import { UserAuthItems } from "@/lib/types";
 import { UnauthorizedError } from "@/lib/utils/error.util";
 
 export const getAllVoices = async (
-  params: VoiceGetAllParams,
+  params: VoiceListParams,
   authItems: UserAuthItems,
 ): Promise<[VoiceReadDto[], GetAllVoicesMetaResponse]> => {
   const userId = authItems.userId;

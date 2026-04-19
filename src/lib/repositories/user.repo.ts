@@ -15,6 +15,24 @@ const getById = async (id: User["id"], tc?: Prisma.TransactionClient) => {
   });
 };
 
+const getByIdWithLock = async (
+  id: User["id"],
+  tc?: Prisma.TransactionClient,
+) => {
+  const db: DB = tc || prisma;
+
+  const rows = await db.$queryRaw<User[]>`
+    SELECT * FROM "Users"
+    WHERE id = ${id}
+    FOR UPDATE
+  `;
+
+  console.log({ rows });
+  if (rows.length < 1) return null;
+
+  return rows[0];
+};
+
 const getByEmail = async (email: string, tc?: Prisma.TransactionClient) => {
   const db: DB = tc || prisma;
 
@@ -35,7 +53,9 @@ const create = async (
   data: UserCreateArgs["data"],
   tc?: Prisma.TransactionClient,
 ) => {
-  return await prisma.user.create({
+  const db: DB = tc || prisma;
+
+  return await db.user.create({
     data: {
       ...data,
       fullName: `${data.firstName.trim()} ${data.lastName}`.trim(),
@@ -48,7 +68,9 @@ const update = async (
   data: UserUpdateArgs["data"],
   tc?: Prisma.TransactionClient,
 ) => {
-  return await prisma.user.update({
+  const db: DB = tc || prisma;
+
+  return await db.user.update({
     where: { id },
     data,
   });
@@ -107,6 +129,7 @@ export type UserGetOptions = BaseGetOptions & {};
 
 const userRepo = {
   getById,
+  getByIdWithLock,
   getByEmail,
   getExistsByEmail,
   create,

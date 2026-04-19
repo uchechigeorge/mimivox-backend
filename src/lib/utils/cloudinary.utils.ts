@@ -1,4 +1,4 @@
-import { UploadApiResponse } from "cloudinary";
+import { UploadApiOptions, UploadApiResponse } from "cloudinary";
 import streamifier from "streamifier";
 import cloudinary from "../config/cloudinary.config";
 
@@ -28,6 +28,19 @@ export const uploadAudio = async (file: string, folder: string) => {
     resource_type: "video", // for audio files
     folder: `mimivox/${folder}`,
     format: "mp3",
+  });
+
+  return response;
+};
+
+export const upload = async (
+  file: string,
+  folder: string,
+  options?: UploadApiOptions,
+) => {
+  const response = await cloudinary.uploader.upload(file, {
+    ...options,
+    folder: `mimivox/${folder}`,
   });
 
   return response;
