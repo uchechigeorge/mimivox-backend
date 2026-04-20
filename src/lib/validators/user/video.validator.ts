@@ -2,21 +2,21 @@ import z from "zod";
 import { baseGetParamsSchema } from "../shared/base-get-params.validator";
 import { nDate, nString } from "@/lib/utils/zod.utils";
 
-export const imageListParamsValidator = z.object({
+export const videoListParamsValidator = z.object({
   ...baseGetParamsSchema,
 });
 
-export const imageGetParamsValidator = z.object({
+export const videoGetParamsValidator = z.object({
   id: z.guid(),
 });
 
-export const imageReadDtoValidator = z.object({
+export const videoReadDtoValidator = z.object({
   id: nString,
   url: nString,
   altUrl: nString,
   title: nString,
   prompt: nString,
-  imageServiceType: nString,
+  videoServiceType: nString,
   updatedAt: nDate,
   createdAt: nDate,
 });

@@ -1,9 +1,9 @@
 import { env } from "@/lib/config/env.config";
 import { prisma } from "@/lib/db/prisma";
 import userRepo from "@/lib/repositories/user.repo";
-import { UserAuthItems } from "@/lib/types";
 import { BadRequestError, UnauthorizedError } from "@/lib/utils/error.util";
 import { isNullOrWhitespace } from "@/lib/utils/type.utils";
+import { GenerateMusicValidationOptions } from "./types";
 
 export const validate = async (options: GenerateMusicValidationOptions) => {
   const { prompt, authItems } = options;
@@ -101,9 +101,4 @@ export const reverseCredits = async (userId?: string) => {
     noOfMusicLeft,
     totalMusicUsed,
   });
-};
-
-export type GenerateMusicValidationOptions = {
-  prompt: string;
-  authItems: UserAuthItems;
 };

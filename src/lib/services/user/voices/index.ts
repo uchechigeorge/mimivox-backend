@@ -1,11 +1,11 @@
 import cloneVoiceService from "./clone";
-import { getAllVoices } from "./get-all-voices.service";
+import { listVoices } from "./list-voices.service";
 import listVoiceService from "./list";
 
 const voiceService = {
   clone: cloneVoiceService,
   list: listVoiceService,
-  getAllVoices,
+  getAllVoices: listVoices,
 };
 
 export default voiceService;

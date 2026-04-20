@@ -39,6 +39,19 @@ const create = async (
   });
 };
 
+const update = async (
+  id: Task["id"],
+  data: TaskUpdateArgs["data"],
+  tc?: Prisma.TransactionClient,
+) => {
+  const db: DB = tc || prisma;
+
+  return await db.task.update({
+    where: { id },
+    data,
+  });
+};
+
 // Order column options mapping
 const sortColumnOptions: Record<string, string> = {
   updatedAt: "updatedAt",
@@ -94,19 +107,6 @@ type TaskGetParams = BaseGetParams & {
 };
 
 export type TaskGetOptions = BaseGetOptions & {};
-
-const update = async (
-  id: Task["id"],
-  data: TaskUpdateArgs["data"],
-  tc?: Prisma.TransactionClient,
-) => {
-  const db: DB = tc || prisma;
-
-  return await db.task.update({
-    where: { id },
-    data,
-  });
-};
 
 const taskRepo = {
   getById,

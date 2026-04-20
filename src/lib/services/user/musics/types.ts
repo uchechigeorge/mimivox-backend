@@ -1,10 +1,9 @@
 import { ResponseMeta } from "@/lib/dtos/shared/response-meta";
 import { UserAuthItems } from "@/lib/types";
 
-export type ListVideosMetaResponse = ResponseMeta & {};
+export type ListMusicsMetaResponse = ResponseMeta & {};
 
-export type GenerateVideoValidationOptions = {
+export type GenerateMusicValidationOptions = {
   prompt: string;
   authItems: UserAuthItems;
-  duration?: number;
 };

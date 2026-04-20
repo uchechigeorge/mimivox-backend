@@ -11,6 +11,7 @@ export const getImage = async (
   const [data, total] = await imageRepo.query(
     {
       id: params.id,
+      userId: authItems.userId,
     },
     { includeRelations: true },
   );

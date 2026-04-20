@@ -10,7 +10,7 @@ export const generateVideoCallBack = async (requestId: string) => {
   const task = await taskRepo.getByReference(requestId, "Video", "Xai");
   if (!task) throw new BadRequestError("Task not found");
 
-  const videoRes = await getVideo(task.referenceId);
+  const videoRes = await getVideo(task.referenceId, true);
   if (!videoRes.ok) {
     throw new BadRequestError("Could not get video");
   }
