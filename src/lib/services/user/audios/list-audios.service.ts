@@ -1,15 +1,15 @@
 import audioRepo from "@/lib/repositories/audio.repo";
-import { GetAllAudiosMetaResponse } from "./types";
-import { AudioGetAllParams, AudioReadDto } from "@/lib/dtos/user/audio.dto";
+import { AudioListResponseMeta } from "./types";
+import { AudioListParams, AudioReadDto } from "@/lib/dtos/user/audio.dto";
 import { parseArr } from "@/lib/utils/zod.utils";
 import { audioReadDtoValidator } from "@/lib/validators/user/audio.validator";
 import { UserAuthItems } from "@/lib/types";
 import { UnauthorizedError } from "@/lib/utils/error.util";
 
-export const getAllAudios = async (
-  params: AudioGetAllParams,
+export const listAudios = async (
+  params: AudioListParams,
   authItems: UserAuthItems,
-): Promise<[AudioReadDto[], GetAllAudiosMetaResponse]> => {
+): Promise<[AudioReadDto[], AudioListResponseMeta]> => {
   const userId = authItems.userId;
   if (!userId) throw new UnauthorizedError();
 
@@ -20,7 +20,7 @@ export const getAllAudios = async (
 
   const dto: AudioReadDto[] = await parseArr(data, audioReadDtoValidator);
 
-  const meta: GetAllAudiosMetaResponse = {
+  const meta: AudioListResponseMeta = {
     total,
   };
 

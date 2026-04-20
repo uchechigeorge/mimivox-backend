@@ -1,6 +1,6 @@
 import z from "zod";
 import { baseGetParamsSchema } from "../shared/base-get-params.validator";
-import { nDate, nString } from "@/lib/utils/zod.utils";
+import { nDate, nNumber, nString } from "@/lib/utils/zod.utils";
 
 export const videoListParamsValidator = z.object({
   ...baseGetParamsSchema,
@@ -16,6 +16,7 @@ export const videoReadDtoValidator = z.object({
   altUrl: nString,
   title: nString,
   prompt: nString,
+  durationInSeconds: nNumber,
   videoServiceType: nString,
   updatedAt: nDate,
   createdAt: nDate,

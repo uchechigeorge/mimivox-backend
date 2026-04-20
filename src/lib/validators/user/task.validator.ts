@@ -18,6 +18,7 @@ export const taskReadDtoValidator = z.object({
   type: nString,
   status: nString,
   serviceOption: nString,
+  referenceId: nString,
   updatedAt: nDate,
   createdAt: nDate,
 });

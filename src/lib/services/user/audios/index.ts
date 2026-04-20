@@ -1,9 +1,9 @@
-import { getAllAudios } from "./get-all-audios.service";
+import { listAudios } from "./list-audios.service";
 import textToSpeechService from "./text-to-speech";
 
 const audioService = {
   textToSpeech: textToSpeechService,
-  getAllAudios,
+  listAudios,
 };
 
 export default audioService;

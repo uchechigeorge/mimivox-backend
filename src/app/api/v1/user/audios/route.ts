@@ -10,7 +10,7 @@ export const GET = userHandler(
   async (req: NextRequest, ctx: any, authData: UserAuthItems) => {
     const searchParams = audioListParamsValidator.parse(getQueryParams(req));
 
-    const [result, meta] = await audioService.getAllAudios(
+    const [result, meta] = await audioService.listAudios(
       searchParams,
       authData,
     );

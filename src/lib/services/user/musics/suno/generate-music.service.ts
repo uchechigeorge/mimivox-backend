@@ -44,7 +44,6 @@ export const generateMusic = async (
     return res;
   }
 
-  console.log({ response });
   await createTask(response, user, {
     url,
     body,
