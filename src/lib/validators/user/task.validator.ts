@@ -15,8 +15,6 @@ export const taskGetParamsValidator = z.object({
 
 export const taskReadDtoValidator = z.object({
   id: nString,
-  userId: nString,
-  userName: nString,
   type: nString,
   status: nString,
   serviceOption: nString,

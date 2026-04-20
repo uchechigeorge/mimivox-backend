@@ -21,10 +21,16 @@ export const generateMusicCallBack = async (
   );
   if (!task) throw new BadRequestError("Task not found");
 
+  if (task.status === "Pending") return;
+
   if (body.data.callbackType === "error") {
-    // TODO: delete music on db
     // reverse credits
-    await reverseCredits(task.userId ?? "xxx");
+    await taskRepo.update(task.id, {
+      errorMessage: body.msg,
+      status: "Completed",
+    });
+
+    await reverseCredits(task.userId ?? "");
   } else if (body.data.callbackType === "complete") {
     // Upload
     const uploadMusics = async (

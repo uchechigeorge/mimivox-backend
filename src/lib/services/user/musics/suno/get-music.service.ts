@@ -1,6 +1,9 @@
 import { env } from "@/lib/config/env.config";
+import taskRepo from "@/lib/repositories/task.repo";
+import { generateMusicCallBack } from "./generate-music-callback.service";
+import { SunoMusicCallbackRequestBody } from "./types";
 
-export const getMusic = async (taskId: string) => {
+export const getMusic = async (taskId: string, ignoreUpdate?: boolean) => {
   const url = `https://api.sunoapi.org/api/v1/generate/record-info?taskId=${taskId}`;
   const res = await fetch(url, {
     method: "GET",
@@ -16,6 +19,17 @@ export const getMusic = async (taskId: string) => {
     console.log(errorText);
 
     return res;
+  }
+
+  if (!ignoreUpdate) {
+    const task = await taskRepo.getByReference(taskId, "Music", "Suno");
+    if (task && task.status === "Pending") {
+      if (task.type === "Music" && task.serviceOption === "Suno") {
+        const response =
+          (await clonedRes.json()) as SunoMusicCallbackRequestBody;
+        await generateMusicCallBack(response);
+      }
+    }
   }
 
   return res;

@@ -319,6 +319,7 @@ enum TaskType {
   Video
 }
 
+// TODO: Add Failed
 enum TaskStatus {
   Pending
   Started
