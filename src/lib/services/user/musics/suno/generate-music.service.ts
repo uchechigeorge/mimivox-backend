@@ -37,7 +37,14 @@ export const generateMusic = async (
   }
 
   const response = (await clonedRes.json()) as SunoMusicGenerateResponse;
+  if (response.code != 200) {
+    console.log({ err: response });
 
+    await reverseCredits(authItems.userId);
+    return res;
+  }
+
+  console.log({ response });
   await createTask(response, user, {
     url,
     body,

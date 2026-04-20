@@ -27,7 +27,6 @@ const getByIdWithLock = async (
     FOR UPDATE
   `;
 
-  console.log({ rows });
   if (rows.length < 1) return null;
 
   return rows[0];
