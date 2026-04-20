@@ -1,8 +1,9 @@
 import { env } from "@/lib/config/env.config";
 import { BadRequestError } from "@/lib/utils/error.util";
+import { buildSearchParams } from "@/lib/utils/request.utils";
 
 export const listVoices = async (searchParams?: ListVoiceSearchParams) => {
-  const queryString = buildQuery(searchParams);
+  const queryString = buildSearchParams(searchParams);
   const res = await fetch(
     `https://api.elevenlabs.io/v1/voices?${queryString}`,
     {
@@ -66,24 +67,6 @@ export type ListVoiceSearchParams = {
 export type ElevenLabsVoices = {
   voices: ElevenLabsVoice[];
 };
-
-function buildQuery(params?: Record<string, any>) {
-  if (!params) return "";
-
-  const searchParams = new URLSearchParams();
-
-  Object.entries(params).forEach(([key, value]) => {
-    if (value === undefined || value === null) return;
-
-    if (Array.isArray(value)) {
-      value.forEach((v) => searchParams.append(key, String(v)));
-    } else {
-      searchParams.append(key, String(value));
-    }
-  });
-
-  return searchParams.toString();
-}
 
 const elevenLabsVoiceService = {
   listVoices,
