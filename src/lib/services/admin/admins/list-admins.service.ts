@@ -1,12 +1,12 @@
 import adminRepo from "@/lib/repositories/admin.repo";
-import { ListAdminsMetaResponse } from "./types";
+import { AdminListMetaResponse } from "./types";
 import { AdminListParams, AdminReadDto } from "@/lib/dtos/admin/admin.dto";
 import { parseArr } from "@/lib/utils/zod.utils";
 import { adminReadDtoValidator } from "@/lib/validators/admin/admin.validator";
 
 export const listAdmins = async (
   params: AdminListParams,
-): Promise<[AdminReadDto[], ListAdminsMetaResponse]> => {
+): Promise<[AdminReadDto[], AdminListMetaResponse]> => {
   const [data, total] = await adminRepo.query(
     {
       ...params,
@@ -16,7 +16,7 @@ export const listAdmins = async (
 
   const dto: AdminReadDto[] = await parseArr(data, adminReadDtoValidator);
 
-  const meta: ListAdminsMetaResponse = {
+  const meta: AdminListMetaResponse = {
     total,
   };
 

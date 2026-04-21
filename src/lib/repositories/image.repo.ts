@@ -1,5 +1,6 @@
 import { Image, Prisma, User } from "@/generated/prisma/client";
-import { DB, prisma } from "../db/prisma";
+import { prisma } from "../db/prisma";
+import { DB } from "../db/types";
 import { ImageCreateArgs, ImageFindManyArgs } from "@/generated/prisma/models";
 import { BaseGetOptions, BaseGetParams } from "../dtos/shared/base-get-params";
 

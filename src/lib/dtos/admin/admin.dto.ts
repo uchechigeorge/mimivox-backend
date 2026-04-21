@@ -1,4 +1,5 @@
 import {
+  adminCreateDtoValidator,
   adminGetParamsValidator,
   adminListParamsValidator,
   adminReadDtoValidator,
@@ -9,3 +10,5 @@ export type AdminListParams = z.infer<typeof adminListParamsValidator>;
 export type AdminGetParams = z.infer<typeof adminGetParamsValidator>;
 
 export type AdminReadDto = z.infer<typeof adminReadDtoValidator>;
+
+export type AdminCreateDto = z.infer<typeof adminCreateDtoValidator>;

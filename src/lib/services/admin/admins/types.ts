@@ -1,3 +1,7 @@
 import { ResponseMeta } from "@/lib/dtos/shared/response-meta";
 
-export type ListAdminsMetaResponse = ResponseMeta & {};
+export type AdminListMetaResponse = ResponseMeta & {};
+
+export type AdminCreateResponseMeta = {
+  password: string;
+};

@@ -1,5 +1,6 @@
 import { Video, Prisma, User } from "@/generated/prisma/client";
-import { DB, prisma } from "../db/prisma";
+import { prisma } from "../db/prisma";
+import { DB } from "../db/types";
 import { VideoCreateArgs, VideoFindManyArgs } from "@/generated/prisma/models";
 import { BaseGetOptions, BaseGetParams } from "../dtos/shared/base-get-params";
 

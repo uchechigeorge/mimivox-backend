@@ -5,3 +5,8 @@ export const adminLoginValidator = z.object({
   email: rString,
   password: rString,
 });
+
+export const adminResetPasswordValidator = z.object({
+  oldPassword: rString,
+  newPassword: rString,
+});

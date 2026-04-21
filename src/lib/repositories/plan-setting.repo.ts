@@ -1,5 +1,6 @@
 import { Plan, PlanSetting, Prisma } from "@/generated/prisma/client";
-import { DB, prisma } from "../db/prisma";
+import { prisma } from "../db/prisma";
+import { DB } from "../db/types";
 
 const getById = async (
   id: PlanSetting["id"],

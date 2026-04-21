@@ -2,14 +2,7 @@ import { z, ZodType } from "zod";
 
 export const rString = z.string().trim().min(1);
 export const rNumber = z.coerce.number();
-export const oString = z
-  .string()
-  .nullish()
-  .transform((e) => (e === undefined ? null : e !== null ? e.trim() : null));
-export const oNumber = z.coerce
-  .number()
-  .nullish()
-  .transform((e) => e || null);
+
 export const nNumber = z.coerce.number().nullish();
 export const nString = z.string().nullish();
 export const nDate = z.coerce.date().nullish();

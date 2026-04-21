@@ -1,6 +1,11 @@
 import { Admin, Prisma } from "@/generated/prisma/client";
-import { DB, prisma } from "../db/prisma";
-import { AdminCreateArgs, AdminFindManyArgs } from "@/generated/prisma/models";
+import { prisma } from "../db/prisma";
+import { DB } from "../db/types";
+import {
+  AdminCreateArgs,
+  AdminFindManyArgs,
+  AdminUpdateArgs,
+} from "@/generated/prisma/models";
 import { BaseGetOptions, BaseGetParams } from "../dtos/shared/base-get-params";
 
 const exists = async (tc?: Prisma.TransactionClient) => {
@@ -42,6 +47,18 @@ const create = async (
       ...data,
       fullName: `${data.firstName.trim()} ${data.lastName}`.trim(),
     },
+  });
+};
+
+const update = async (
+  id: Admin["id"],
+  data: AdminUpdateArgs["data"],
+  tc?: Prisma.TransactionClient,
+) => {
+  const db: DB = tc || prisma;
+  return await db.admin.update({
+    where: { id },
+    data,
   });
 };
 
@@ -101,6 +118,7 @@ const adminRepo = {
   getByEmail,
   getExistsByEmail,
   create,
+  update,
   query,
 };
 

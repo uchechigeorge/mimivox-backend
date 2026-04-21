@@ -4,6 +4,7 @@ import {
   nBoolean,
   nDate,
   nString,
+  rString,
   stringToOptionalBoolean,
 } from "@/lib/utils/zod.utils";
 
@@ -27,4 +28,12 @@ export const adminReadDtoValidator = z.object({
   blocked: nBoolean,
   updatedAt: nDate,
   createdAt: nDate,
+});
+
+export const adminCreateDtoValidator = z.object({
+  email: rString,
+  password: z.string().optional(),
+  firstName: rString,
+  lastName: rString,
+  phoneNumber: z.string().optional(),
 });
