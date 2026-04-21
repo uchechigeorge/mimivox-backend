@@ -7,10 +7,12 @@ export const voiceListParamsValidator = z.object({
   type: normalizeOptional(z.enum(["Default", "Cloned"])),
 });
 
+export const voiceGetParamsValidator = z.object({
+  id: z.guid(),
+});
+
 export const voiceReadDtoValidator = z.object({
   id: nString,
-  userId: nString,
-  userName: nString,
   type: nString,
   name: nString,
   description: nString,

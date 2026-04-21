@@ -5,7 +5,7 @@ import listVoiceService from "./list";
 const voiceService = {
   clone: cloneVoiceService,
   list: listVoiceService,
-  getAllVoices: listVoices,
+  listVoices,
 };
 
 export default voiceService;

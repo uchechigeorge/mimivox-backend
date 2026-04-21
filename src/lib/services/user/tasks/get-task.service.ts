@@ -1,7 +1,7 @@
 import { TaskGetParams, TaskReadDto } from "@/lib/dtos/user/task.dto";
 import taskRepo from "@/lib/repositories/task.repo";
 import { UserAuthItems } from "@/lib/types";
-import { NotFoundError } from "@/lib/utils/error.util";
+import { NotFoundError, UnauthorizedError } from "@/lib/utils/error.util";
 import { taskReadDtoValidator } from "@/lib/validators/user/task.validator";
 import xaiVideoService from "../videos/xai";
 
@@ -9,9 +9,13 @@ export const getTask = async (
   params: TaskGetParams,
   authItems: UserAuthItems,
 ): Promise<TaskReadDto> => {
+  const userId = authItems.userId;
+  if (!userId) throw new UnauthorizedError();
+
   const [data, total] = await taskRepo.query(
     {
       id: params.id,
+      userId,
     },
     { includeRelations: true },
   );

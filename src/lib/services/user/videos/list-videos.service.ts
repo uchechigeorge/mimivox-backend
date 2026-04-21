@@ -4,14 +4,18 @@ import { VideoListParams, VideoReadDto } from "@/lib/dtos/user/video.dto";
 import { parseArr } from "@/lib/utils/zod.utils";
 import { videoReadDtoValidator } from "@/lib/validators/user/video.validator";
 import { UserAuthItems } from "@/lib/types";
+import { UnauthorizedError } from "@/lib/utils/error.util";
 
 export const listVideos = async (
   params: VideoListParams,
   authItems: UserAuthItems,
 ): Promise<[VideoReadDto[], ListVideosMetaResponse]> => {
+  const userId = authItems.userId;
+  if (!userId) throw new UnauthorizedError();
+
   const [data, total] = await videoRepo.query({
     ...params,
-    userId: authItems.userId,
+    userId,
   });
 
   const dto: VideoReadDto[] = await parseArr(data, videoReadDtoValidator);

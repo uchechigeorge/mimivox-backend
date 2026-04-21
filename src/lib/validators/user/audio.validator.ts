@@ -7,10 +7,12 @@ export const audioListParamsValidator = z.object({
   type: nString,
 });
 
+export const audioGetParamsValidator = z.object({
+  id: z.guid(),
+});
+
 export const audioReadDtoValidator = z.object({
   id: nString,
-  userId: nString,
-  userName: nString,
   content: nString,
   voiceId: nString,
   voiceName: nString,

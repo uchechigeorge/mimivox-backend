@@ -300,7 +300,7 @@ model Image {
   userId                 String?          @db.VarChar(1024)
   userName               String?          @db.VarChar(1024)
   title                  String           @db.VarChar(1024)
-  prompt                 String           @db.VarChar(1024)
+  prompt                 String
   url                    String?          @db.VarChar(1024)
   altUrl                 String?          @db.VarChar(1024)
   imageServiceType       ImageServiceType @default(None)
@@ -319,11 +319,11 @@ enum TaskType {
   Video
 }
 
-// TODO: Add Failed
 enum TaskStatus {
   Pending
   Started
   Completed
+  Failed
 }
 
 enum TaskServiceOption {
@@ -369,7 +369,7 @@ model Music {
   userId                  String?          @db.VarChar(1024)
   userName                String?          @db.VarChar(1024)
   title                   String           @db.VarChar(1024)
-  prompt                  String           @db.VarChar(1024)
+  prompt                  String
   audioUrl                String?          @db.VarChar(1024)
   audioAltUrl             String?          @db.VarChar(1024)
   streamAudioUrl          String?          @db.VarChar(1024)
@@ -400,7 +400,7 @@ model Video {
   userId                  String?          @db.VarChar(1024)
   userName                String?          @db.VarChar(1024)
   title                   String           @db.VarChar(1024)
-  prompt                  String           @db.VarChar(1024)
+  prompt                  String
   url                     String?          @db.VarChar(1024)
   altUrl                  String?          @db.VarChar(1024)
   thumbnailUrl            String?          @db.VarChar(1024)

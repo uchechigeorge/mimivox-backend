@@ -1,10 +1,6 @@
 import { env } from "@/lib/config/env.config";
 import taskRepo from "@/lib/repositories/task.repo";
-import { generateMusicCallBack } from "./generate-music-callback.service";
-import {
-  SunoMusicCallbackRequestBody,
-  SunoMusicGenerateStatusResponse,
-} from "./types";
+import { SunoMusicGenerateStatusResponse } from "./types";
 import { saveMusics } from "./save-musics.service";
 
 export const getMusic = async (taskId: string, ignoreUpdate?: boolean) => {
@@ -28,10 +24,8 @@ export const getMusic = async (taskId: string, ignoreUpdate?: boolean) => {
   if (!ignoreUpdate) {
     const task = await taskRepo.getByReference(taskId, "Music", "Suno");
     if (task && task.status === "Pending") {
-      // if (task.type === "Music" && task.serviceOption === "Suno") {
       const response =
         (await clonedRes.json()) as SunoMusicGenerateStatusResponse;
-      console.log({ ignoreUpdate, task, response });
 
       if (response.data.status == "SUCCESS") {
         await saveMusics({
@@ -39,7 +33,6 @@ export const getMusic = async (taskId: string, ignoreUpdate?: boolean) => {
           musicItems: response.data.response.sunoData,
         });
       }
-      // }
     }
   }
 
