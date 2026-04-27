@@ -7,6 +7,7 @@ import {
   UserUpdateArgs,
 } from "@/generated/prisma/models";
 import { BaseGetOptions, BaseGetParams } from "../dtos/shared/base-get-params";
+import { isNotNullOrWhitespace } from "../utils/type.utils";
 
 const getById = async (id: User["id"], tc?: Prisma.TransactionClient) => {
   const db: DB = tc || prisma;
@@ -90,9 +91,9 @@ export const query = async (
   // Build `where` filter
   const where: UserFindManyArgs["where"] = {};
 
-  if (params.id != null) where.id = params.id;
+  if (isNotNullOrWhitespace(params.id)) where.id = params.id;
   if (params.blocked != null) where.blocked = params.blocked;
-  if (params.searchString && params.searchString.trim() !== "") {
+  if (isNotNullOrWhitespace(params.searchString)) {
     where.fullName = { contains: params.searchString, mode: "insensitive" }; // LIKE '%searchString%'
   }
 

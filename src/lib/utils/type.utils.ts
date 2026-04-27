@@ -3,8 +3,16 @@
  * @param value Value to check
  * @returns If value is null, undefined, empty or whitespace, returns true. Otherwise, returns false.
  */
-export const isNullOrWhitespace = (value: string | null | undefined) => {
+export const isNullOrWhitespace = (
+  value: string | null | undefined,
+): boolean => {
   return value == null || value.toString()?.trim().length == 0;
+};
+
+export const isNotNullOrWhitespace = (
+  value: string | null | undefined,
+): value is string => {
+  return value != null && value.trim().length > 0;
 };
 
 /**

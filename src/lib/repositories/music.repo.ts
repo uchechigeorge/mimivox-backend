@@ -7,6 +7,7 @@ import {
   MusicUpdateArgs,
 } from "@/generated/prisma/models";
 import { BaseGetOptions, BaseGetParams } from "../dtos/shared/base-get-params";
+import { isNotNullOrWhitespace } from "../utils/type.utils";
 
 const getById = async (id: Music["id"], tc?: Prisma.TransactionClient) => {
   const db: DB = tc || prisma;
@@ -64,11 +65,13 @@ export const query = async (
   // Build `where` filter
   const where: MusicFindManyArgs["where"] = {};
 
-  if (params.id != null) where.id = params.id;
-  if (params.userId != null) where.userId = params.userId;
-  if (params.searchString && params.searchString.trim() !== "") {
+  if (isNotNullOrWhitespace(params.id)) where.id = params.id;
+  if (isNotNullOrWhitespace(params.userId)) where.userId = params.userId;
+  if (isNotNullOrWhitespace(params.searchString)) {
     where.prompt = { contains: params.searchString, mode: "insensitive" };
   }
+
+  console.log({ params, where });
 
   // Determine sort column
   const sortColumn =

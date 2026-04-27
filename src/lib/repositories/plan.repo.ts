@@ -3,7 +3,7 @@ import { prisma } from "../db/prisma";
 import { DB } from "../db/types";
 import { PlanFindManyArgs } from "@/generated/prisma/models";
 import { BaseGetOptions, BaseGetParams } from "../dtos/shared/base-get-params";
-import { isNullOrWhitespace } from "../utils/type.utils";
+import { isNotNullOrWhitespace } from "../utils/type.utils";
 
 const exists = async (tc?: Prisma.TransactionClient) => {
   const db: DB = tc || prisma;
@@ -47,8 +47,8 @@ export const query = async (
   // Build `where` filter
   const where: PlanFindManyArgs["where"] = {};
 
-  if (params.id != null) where.id = params.id;
-  if (!isNullOrWhitespace(params.slug)) where.slug = params.slug;
+  if (isNotNullOrWhitespace(params.id)) where.id = params.id;
+  if (isNotNullOrWhitespace(params.slug)) where.slug = params.slug;
   if (params.searchString && params.searchString.trim() !== "") {
     where.name = { contains: params.searchString, mode: "insensitive" };
   }

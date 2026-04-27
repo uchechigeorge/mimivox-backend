@@ -7,7 +7,7 @@ import {
   SubscriptionUpdateArgs,
 } from "@/generated/prisma/models";
 import { BaseGetOptions, BaseGetParams } from "../dtos/shared/base-get-params";
-import { isNullOrWhitespace } from "../utils/type.utils";
+import { isNotNullOrWhitespace } from "../utils/type.utils";
 
 const getById = async (id: string, tc?: Prisma.TransactionClient) => {
   const db: DB = tc || prisma;
@@ -85,8 +85,9 @@ export const query = async (
 ): Promise<[Subscription[], number]> => {
   const where: SubscriptionFindManyArgs["where"] = {};
 
-  if (params.id != null) where.id = params.id;
-  if (!isNullOrWhitespace(params.reference)) where.reference = params.reference;
+  if (isNotNullOrWhitespace(params.id)) where.id = params.id;
+  if (isNotNullOrWhitespace(params.reference))
+    where.reference = params.reference;
   if (params.searchString && params.searchString.trim() !== "") {
     where.reference = { contains: params.searchString, mode: "insensitive" };
   }

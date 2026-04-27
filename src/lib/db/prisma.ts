@@ -2,6 +2,10 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../../generated/prisma/client";
 import { env } from "../config/env.config";
 import { WITH_DELETED } from "./types";
+import {
+  LogDefinition,
+  LogLevel,
+} from "@/generated/prisma/internal/prismaNamespace";
 
 const connectionString = `${env.DATABASE_URL}`;
 
@@ -9,8 +13,15 @@ const adapter = new PrismaPg({ connectionString });
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
-const log: ("error" | "query" | "warn")[] = ["error"];
-if (process.env.NODE_ENV === "development") log.push("warn", "query");
+const logQueries = process.env.NODE_ENV === "development";
+const log: (LogLevel | LogDefinition)[] = logQueries
+  ? [
+      { level: "query", emit: "event" },
+      { level: "query", emit: "stdout" },
+      { level: "error", emit: "stdout" },
+      { level: "warn", emit: "stdout" },
+    ]
+  : [{ level: "error", emit: "stdout" }];
 
 export const prisma =
   globalForPrisma.prisma ||
@@ -65,21 +76,22 @@ export const prisma =
 
           return query(args);
         },
-        async findUnique({ args, query }) {
+        async findUnique({ args, query, model }) {
           const includeDeleted = (args as any)[WITH_DELETED];
 
           if (!includeDeleted) {
             if (!("deletedAt" in (args.where ?? {}))) {
               args.where = {
                 ...args.where,
-                deletedAt: null,
+                deletedAt: new Date(),
               };
             }
           }
 
           delete (args as any)[WITH_DELETED];
 
-          return (this as any).findFirst(args);
+          // return (this as any).findFirst(args);
+          return query(args);
         },
       },
     },

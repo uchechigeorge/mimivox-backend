@@ -1,15 +1,15 @@
 // import { User } from "@/entities/user.entity";
 import { User } from "@/generated/prisma/client";
-import { isNullOrWhitespace } from "@/lib/utils/type.utils";
+import { isNotNullOrWhitespace } from "@/lib/utils/type.utils";
 
 export const getDefaultDp = (user: User) => {
-  if (!isNullOrWhitespace(user.dpUrl)) return user.dpUrl;
+  if (isNotNullOrWhitespace(user.dpUrl)) return user.dpUrl;
 
   let initials = (
     (user.firstName ?? "")[0] + (user.lastName ?? "")[0]
   ).toUpperCase();
 
-  if (isNullOrWhitespace(initials)) initials = "ME";
+  if (!isNotNullOrWhitespace(initials)) initials = "ME";
 
   const url =
     (process.env.HOST ?? "") +

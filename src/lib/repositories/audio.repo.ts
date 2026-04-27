@@ -3,6 +3,7 @@ import { prisma } from "../db/prisma";
 import { DB } from "../db/types";
 import { AudioCreateArgs, AudioFindManyArgs } from "@/generated/prisma/models";
 import { BaseGetOptions, BaseGetParams } from "../dtos/shared/base-get-params";
+import { isNotNullOrWhitespace } from "../utils/type.utils";
 
 const getById = async (id: Audio["id"], tc?: Prisma.TransactionClient) => {
   const db: DB = tc || prisma;
@@ -35,9 +36,9 @@ export const query = async (
   // Build `where` filter
   const where: AudioFindManyArgs["where"] = {};
 
-  if (params.id != null) where.id = params.id;
-  if (params.userId != null) where.userId = params.userId;
-  if (params.searchString && params.searchString.trim() !== "") {
+  if (isNotNullOrWhitespace(params.id)) where.id = params.id;
+  if (isNotNullOrWhitespace(params.userId)) where.userId = params.userId;
+  if (isNotNullOrWhitespace(params.searchString)) {
     where.voiceName = { contains: params.searchString, mode: "insensitive" };
   }
 

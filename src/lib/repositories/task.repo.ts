@@ -7,6 +7,7 @@ import {
   TaskUpdateArgs,
 } from "@/generated/prisma/models";
 import { BaseGetOptions, BaseGetParams } from "../dtos/shared/base-get-params";
+import { isNotNullOrWhitespace } from "../utils/type.utils";
 
 const getById = async (id: Pricing["id"], tc?: Prisma.TransactionClient) => {
   const db: DB = tc || prisma;
@@ -66,12 +67,13 @@ export const query = async (
   // Build `where` filter
   const where: TaskFindManyArgs["where"] = {};
 
-  if (params.id != null) where.id = params.id;
-  if (params.userId != null) where.userId = params.userId;
-  if (params.type != null) where.type = params.type;
-  if (params.status != null) where.status = params.status;
-  if (params.serviceOption != null) where.serviceOption = params.serviceOption;
-  if (params.searchString && params.searchString.trim() !== "") {
+  if (isNotNullOrWhitespace(params.id)) where.id = params.id;
+  if (isNotNullOrWhitespace(params.userId)) where.userId = params.userId;
+  if (isNotNullOrWhitespace(params.type)) where.type = params.type;
+  if (isNotNullOrWhitespace(params.status)) where.status = params.status;
+  if (isNotNullOrWhitespace(params.serviceOption))
+    where.serviceOption = params.serviceOption;
+  if (isNotNullOrWhitespace(params.searchString)) {
     where.userName = { contains: params.searchString, mode: "insensitive" };
   }
 

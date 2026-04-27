@@ -8,6 +8,7 @@ import {
   VoiceFindManyArgs,
 } from "@/generated/prisma/models";
 import { BaseGetOptions, BaseGetParams } from "../dtos/shared/base-get-params";
+import { isNotNullOrWhitespace } from "../utils/type.utils";
 
 const exists = async (tc?: Prisma.TransactionClient) => {
   const db: DB = tc || prisma;
@@ -87,11 +88,11 @@ export const query = async (
   // Build `where` filter
   const where: VoiceFindManyArgs["where"] = {};
 
-  if (params.id != null) where.id = params.id;
-  if (params.type != null) where.type = params.type;
-  if (params.userId != null)
+  if (isNotNullOrWhitespace(params.id)) where.id = params.id;
+  if (isNotNullOrWhitespace(params.type)) where.type = params.type;
+  if (isNotNullOrWhitespace(params.userId))
     where.OR = [{ userId: params.userId }, { userId: null }];
-  if (params.searchString && params.searchString.trim() !== "") {
+  if (isNotNullOrWhitespace(params.searchString)) {
     where.name = { contains: params.searchString, mode: "insensitive" };
   }
 
