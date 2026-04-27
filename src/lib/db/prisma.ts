@@ -83,14 +83,13 @@ export const prisma =
             if (!("deletedAt" in (args.where ?? {}))) {
               args.where = {
                 ...args.where,
-                deletedAt: new Date(),
+                deletedAt: null,
               };
             }
           }
 
           delete (args as any)[WITH_DELETED];
 
-          // return (this as any).findFirst(args);
           return query(args);
         },
       },
