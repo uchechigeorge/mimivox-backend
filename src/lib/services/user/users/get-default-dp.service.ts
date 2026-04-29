@@ -1,4 +1,3 @@
-// import { User } from "@/entities/user.entity";
 import { User } from "@/generated/prisma/client";
 import { isNotNullOrWhitespace } from "@/lib/utils/type.utils";
 

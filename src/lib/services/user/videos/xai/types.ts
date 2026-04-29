@@ -3,6 +3,7 @@ import { UploadApiErrorResponse, UploadApiResponse } from "cloudinary";
 export interface XaiVideoGenerateRequestBody {
   prompt: string;
   model: string;
+  duration?: number;
 }
 
 export interface XaiVideoData {

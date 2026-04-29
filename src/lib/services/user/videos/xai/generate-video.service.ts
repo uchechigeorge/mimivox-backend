@@ -8,7 +8,11 @@ export const generateVideo = async (
   body: XaiVideoGenerateRequestBody,
   authItems: UserAuthItems,
 ) => {
-  const user = await validate({ prompt: body.prompt, authItems });
+  const { user, duration } = await validate({ prompt: body.prompt, authItems });
+
+  if (duration) {
+    body.duration = duration;
+  }
 
   const url = `https://api.x.ai/v1/videos/generations`;
   const res = await fetch(url, {

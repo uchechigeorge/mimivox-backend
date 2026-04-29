@@ -4,14 +4,23 @@ import userRepo from "@/lib/repositories/user.repo";
 import { UserAuthItems } from "@/lib/types";
 import { BadRequestError, UnauthorizedError } from "@/lib/utils/error.util";
 import { isNullOrWhitespace } from "@/lib/utils/type.utils";
-import { GenerateVideoValidationOptions } from "./types";
+import {
+  GenerateVideoValidationOptions,
+  GenerateVideoValidationResponse,
+} from "./types";
 import { env } from "@/lib/config/env.config";
 
-export const validate = async (options: GenerateVideoValidationOptions) => {
+export const validate = async (
+  options: GenerateVideoValidationOptions,
+): Promise<GenerateVideoValidationResponse> => {
   const { prompt, authItems } = options;
 
   if (isNullOrWhitespace(prompt))
     throw new BadRequestError("No prompt provided");
+
+  if (options.duration && options.duration < 10) {
+    throw new BadRequestError("Minimum duration is 10 seconds");
+  }
 
   const userId = authItems.userId;
   if (!userId) throw new UnauthorizedError();
@@ -20,32 +29,25 @@ export const validate = async (options: GenerateVideoValidationOptions) => {
     const user = await userRepo.getByIdWithLock(userId, tx);
     if (!user) throw new UnauthorizedError();
 
+    const noOfCreditsLeft = user.noOfCreditsLeft;
+    if (
+      noOfCreditsLeft &&
+      noOfCreditsLeft <= env.CREDITS_PER_VIDEO_PER_SECOND * 10
+    ) {
+      throw new BadRequestError("Not enough credits left");
+    }
+
     const noOfVideos = 1;
-    // const creditsPerVideo = env.CREDITS_PER_VIDEO;
-    // const noOfCreditsToUse = noOfVideos * creditsPerVideo;
-    // let noOfCreditsLeft = user.noOfCreditsLeft;
     let noOfVideosLeft = user.noOfVideosLeft;
 
-    if (
-      // noOfCreditsLeft &&
-      // noOfCreditsLeft > noOfCreditsToUse &&
-      noOfVideosLeft &&
-      noOfVideosLeft < 1
-    ) {
+    if (noOfVideosLeft && noOfVideosLeft < 1) {
       throw new BadRequestError("Reached max quota");
     }
 
-    // noOfCreditsLeft =
-    //   user.noOfCreditsAllocated == null || noOfCreditsLeft == null
-    //     ? null
-    //     : noOfCreditsLeft - noOfCreditsToUse;
     noOfVideosLeft =
       user.noOfVideosAllocated == null || noOfVideosLeft == null
         ? null
         : noOfVideosLeft - 1;
-
-    // const noOfCreditsUsed = user.noOfCreditsUsed + noOfCreditsToUse;
-    // const totalCreditsUsed = user.totalCreditsUsed + noOfCreditsToUse;
 
     const noOfVideosUsed = user.noOfVideosUsed + noOfVideos;
     const totalVideosUsed = user.totalVideosUsed + noOfVideos;
@@ -53,9 +55,6 @@ export const validate = async (options: GenerateVideoValidationOptions) => {
     await userRepo.update(
       userId,
       {
-        // noOfCreditsUsed,
-        // totalCreditsUsed,
-        // noOfCreditsLeft,
         noOfVideosUsed,
         noOfVideosLeft: noOfVideosLeft,
         totalVideosUsed,
@@ -66,7 +65,16 @@ export const validate = async (options: GenerateVideoValidationOptions) => {
     return user;
   });
 
-  return user;
+  let duration = options.duration;
+  // Modify duration if user is nearing credit limit
+  const noOfVideoSecondsLeft = user.noOfCreditsLeft
+    ? user.noOfCreditsLeft / env.CREDITS_PER_VIDEO_PER_SECOND
+    : user.noOfCreditsLeft;
+  if (noOfVideoSecondsLeft && noOfVideoSecondsLeft <= 60) {
+    duration = Math.min(duration ?? 60, noOfVideoSecondsLeft);
+  }
+
+  return { user, duration };
 };
 
 export const reverseCredits = async (
