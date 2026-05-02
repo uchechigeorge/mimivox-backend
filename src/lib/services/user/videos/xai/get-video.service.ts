@@ -24,9 +24,11 @@ export const getVideo = async (requestId: string, ignoreUpdate?: boolean) => {
   if (!ignoreUpdate) {
     const task = await taskRepo.getByReference(requestId, "Video", "Xai");
     if (task && task.status === "Pending") {
-      if (task.type === "Video" && task.serviceOption === "Xai") {
-        await generateVideoCallBack(task.referenceId);
-      }
+      await generateVideoCallBack(
+        task.referenceId,
+        await clonedRes.json(),
+        task,
+      );
     }
   }
 

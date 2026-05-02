@@ -1,26 +1,37 @@
-import { XaiVideoGetResponse, XaiVideoData, UploadVideoResult } from "./types";
+import { XaiVideoGetResponse } from "./types";
 import { BadRequestError } from "@/lib/utils/error.util";
-import { upload } from "@/lib/utils/cloudinary.utils";
+import { uploadVideo } from "@/lib/utils/cloudinary.utils";
 import taskRepo from "@/lib/repositories/task.repo";
 import { prisma } from "@/lib/db/prisma";
 import { getVideo } from "./get-video.service";
 import videoRepo from "@/lib/repositories/video.repo";
+import { Task } from "@/generated/prisma/client";
 
-export const generateVideoCallBack = async (requestId: string) => {
-  const task = await taskRepo.getByReference(requestId, "Video", "Xai");
-  if (!task) throw new BadRequestError("Task not found");
+export const generateVideoCallBack = async (
+  requestId: string,
+  videoData?: XaiVideoGetResponse,
+  task?: Task,
+) => {
+  if (!task) {
+    const taskRes = await taskRepo.getByReference(requestId, "Video", "Xai");
+    if (!taskRes) throw new BadRequestError("Task not found");
 
-  const videoRes = await getVideo(task.referenceId, true);
-  if (!videoRes.ok) {
-    throw new BadRequestError("Could not get video");
+    task = taskRes;
   }
 
-  const videoResult = (await videoRes.json()) as XaiVideoGetResponse;
+  if (!videoData) {
+    const videoRes = await getVideo(task.referenceId, true);
+    if (!videoRes.ok) {
+      throw new BadRequestError("Could not get video");
+    }
 
-  if (videoResult.status === "done") {
+    videoData = (await videoRes.json()) as XaiVideoGetResponse;
+  }
+
+  if (videoData.status === "done") {
     // Upload
-    const uploadedVideo = await upload(
-      videoResult.video.url,
+    const uploadedVideo = await uploadVideo(
+      videoData.video.url,
       "generated-videos",
     );
 
@@ -30,12 +41,12 @@ export const generateVideoCallBack = async (requestId: string) => {
           userId: task.userId,
           userName: task.userName,
           prompt: task.serviceRequestLog
-            ? JSON.parse(task.serviceRequestLog?.toString()).body.prompt
+            ? JSON.parse(JSON.stringify(task.serviceRequestLog)).body.prompt
             : "",
           title: "",
-          altUrl: videoResult.video.url,
+          altUrl: videoData.video.url,
           url: uploadedVideo.url,
-          durationInSeconds: videoResult.video.duration,
+          durationInSeconds: videoData.video.duration,
           videoServiceType: "Xai",
           videoServiceReferenceId: null,
           videoServiceRequestLog: task.serviceRequestLog!,
@@ -52,6 +63,6 @@ export const generateVideoCallBack = async (requestId: string) => {
         tx,
       );
     });
-  } else if (videoResult.status === "failed") {
+  } else if (videoData.status === "failed") {
   }
 };

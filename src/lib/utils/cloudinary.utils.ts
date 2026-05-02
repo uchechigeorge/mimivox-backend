@@ -33,6 +33,16 @@ export const uploadAudio = async (file: string, folder: string) => {
   return response;
 };
 
+export const uploadVideo = async (file: string, folder: string) => {
+  const response = await cloudinary.uploader.upload(file, {
+    resource_type: "video", // for video files
+    folder: `mimivox/${folder}`,
+    format: "mp4",
+  });
+
+  return response;
+};
+
 export const upload = async (
   file: string,
   folder: string,

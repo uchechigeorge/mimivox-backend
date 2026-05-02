@@ -42,8 +42,8 @@ export const createImages = async (
     await imageRepo.create({
       prompt: prompt ?? "",
       title: uploadedImage.image.revised_prompt ?? "",
-      url: uploadedImage.image.url,
-      altUrl: uploadedImage.data.url,
+      url: uploadedImage.data.url,
+      altUrl: uploadedImage.image.url,
       imageServiceType: "Xai",
       userId: user.id,
       userName: user.fullName,
