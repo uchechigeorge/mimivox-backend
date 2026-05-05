@@ -50,7 +50,7 @@ export const createAudioAndUpdateUser = async (
 ) => {
   const { user, voice, content, languageCode, requestLog, audioUrl } = options;
 
-  prisma.$transaction(async (tc) => {
+  await prisma.$transaction(async (tc) => {
     await audioRepo.create(
       {
         content,

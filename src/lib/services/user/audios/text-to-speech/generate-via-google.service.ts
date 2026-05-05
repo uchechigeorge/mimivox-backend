@@ -43,9 +43,6 @@ export const generateViaGoogle = async (
     `data:audio/mp3;base64,${base64String}`,
     "tts-audio",
   );
-  // const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
-  // const blob = new Blob([bytes], { type: "audio/mpeg" });
-  // return URL.createObjectURL(blob);
 
   if (!voice) {
     const sequence = await voiceRepo.getMaxSequence({ type: "Default" });
