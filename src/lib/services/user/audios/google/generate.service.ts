@@ -1,22 +1,24 @@
 import { env } from "@/lib/config/env.config";
 import { UserAuthItems } from "@/lib/types";
-import { createAudioAndUpdateUser, validate } from "./generate.service";
 import { GoogleTTSDto } from "@/lib/dtos/user/tts.dto";
 import voiceRepo from "@/lib/repositories/voice.repo";
 import googleService from "@/lib/services/shared/google";
-import { BadRequestError } from "@/lib/utils/error.util";
+import { BadRequestError, UnauthorizedError } from "@/lib/utils/error.util";
 import { uploadAudio } from "@/lib/utils/cloudinary.utils";
+import { createAudio, reverseCredits, validate } from "../base.service";
 
-export const generateViaGoogle = async (
+export const generateSpeechFromText = async (
   body: GoogleTTSDto,
   authItems: UserAuthItems,
 ) => {
-  const content = body.input.text;
+  const userId = authItems.userId;
+  if (!userId) throw new UnauthorizedError();
 
+  const content = body.input.text;
   const voiceId = body.voice.name;
 
   let [user, voice] = await validate({
-    authItems,
+    userId,
     content,
     voiceId,
     audioServiceType: "Google",
@@ -30,6 +32,7 @@ export const generateViaGoogle = async (
 
   const clonedRes = res.clone();
   if (!res.ok) {
+    await reverseCredits({ userId, content, audioServiceType: "Google" });
     const errorText = await clonedRes.text();
 
     console.error("==> ERROR:", errorText);
@@ -67,7 +70,7 @@ export const generateViaGoogle = async (
     }
   }
 
-  await createAudioAndUpdateUser({
+  await createAudio({
     user,
     content,
     audioUrl: uploadResult.url,

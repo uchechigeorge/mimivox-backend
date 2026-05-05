@@ -31,10 +31,10 @@ export const getCredentials = async (userId: string) => {
     noOfCreditsAllocated: user.noOfCreditsAllocated,
     noOfCreditsLeft: user.noOfCreditsLeft,
 
-    noOfCharactersUsed: user.noOfCharactersUsed,
+    // noOfCharactersUsed: user.noOfCharactersUsed,
     // totalCharactersUsed: user.totalCharactersUsed,
-    noOfCharactersAllocated: user.noOfCharactersAllocated,
-    noOfCharactersLeft: user.noOfCharactersLeft,
+    // noOfCharactersAllocated: user.noOfCharactersAllocated,
+    // noOfCharactersLeft: user.noOfCharactersLeft,
     noOfWordsAllowed: user.noOfWordsAllowed,
 
     // noOfVoicesUsed: user.noOfVoicesUsed,

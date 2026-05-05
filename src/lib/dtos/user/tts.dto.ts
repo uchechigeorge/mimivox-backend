@@ -1,4 +1,4 @@
-export type GoogleTTSSDto = {
+export type GoogleTTSDto = {
   audioConfig: {
     audioEncoding: string;
     pitch: number;
@@ -13,6 +13,6 @@ export type GoogleTTSSDto = {
   };
 };
 
-export type ElevenLabsTTSSDto = {
+export type ElevenLabsTTSDto = {
   text: string;
 };

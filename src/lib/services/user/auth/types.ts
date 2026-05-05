@@ -38,10 +38,10 @@ export type UserCredentials = {
   // totalCreditsUsed: number;
   noOfCreditsAllocated: number | null;
   noOfCreditsLeft: number | null;
-  noOfCharactersUsed: number;
+  // noOfCharactersUsed: number;
   // totalCharactersUsed: number;
-  noOfCharactersAllocated: number | null;
-  noOfCharactersLeft: number | null;
+  // noOfCharactersAllocated: number | null;
+  // noOfCharactersLeft: number | null;
   noOfWordsAllowed: number | null;
   // noOfVoicesUsed: number;
   // totalVoicesUsed: number;
