@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db/prisma";
 import musicRepo from "@/lib/repositories/music.repo";
 import { Task } from "@/generated/prisma/client";
 import taskRepo from "@/lib/repositories/task.repo";
+import { isNotNullOrWhitespace } from "@/lib/utils/type.utils";
 
 export const saveMusics = async (data: SaveMusicData) => {
   const { musicItems, task } = data;
@@ -60,12 +61,18 @@ export const saveMusics = async (data: SaveMusicData) => {
       if (!uploadedMusic.success) continue;
 
       const musicData = uploadedMusic.inputData;
+      let title = musicData.title;
+      if (!isNotNullOrWhitespace(title)) {
+        title = task.serviceRequestLog
+          ? JSON.parse(JSON.stringify(task.serviceRequestLog)).body.title
+          : "Untitled Music";
+      }
       await musicRepo.create(
         {
           userId: task.userId,
           userName: task.userName,
           prompt: musicData.prompt,
-          title: musicData.title,
+          title,
           durationInSeconds: musicData.duration,
           musicServiceType: "Suno",
           musicServiceReferenceId: musicData.id,
