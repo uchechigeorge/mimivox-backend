@@ -71,27 +71,67 @@ model User {
   images                     Image[]
   music                      Music[]
   videos                     Video[]
+  userTokens                 UserToken[]
 
   @@map("Users")
 }
 
+enum AuthTokenType {
+  None
+  VerifyEmail
+  ForgotPassword
+}
+
+model UserToken {
+  id        String        @id @default(uuid()) @db.Uuid()
+  userId    String?       @db.VarChar(1024)
+  type      AuthTokenType @default(None)
+  token     String        @unique @db.VarChar(1024)
+  expiresAt DateTime
+  usedAt    DateTime?
+  isRevoked Boolean       @default(false)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  deletedAt DateTime?
+  user      User?         @relation(fields: [userId], references: [id])
+
+  @@map("UserTokens")
+}
+
 model Admin {
-  id            String    @id @default(uuid()) @db.VarChar(1024)
-  email         String    @unique
-  emailVerified Boolean   @default(false)
-  firstName     String    @db.VarChar(1024)
-  lastName      String    @db.VarChar(1024)
-  fullName      String    @default("") @db.VarChar(1024)
-  password      String    @db.VarChar(1024)
-  dpUrl         String?   @db.VarChar(1024)
-  defaultBg     String?   @db.VarChar(1024)
-  phoneNumber   String?   @db.VarChar(1024)
-  blocked       Boolean   @default(false)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id            String       @id @default(uuid()) @db.VarChar(1024)
+  email         String       @unique
+  emailVerified Boolean      @default(false)
+  firstName     String       @db.VarChar(1024)
+  lastName      String       @db.VarChar(1024)
+  fullName      String       @default("") @db.VarChar(1024)
+  password      String       @db.VarChar(1024)
+  dpUrl         String?      @db.VarChar(1024)
+  defaultBg     String?      @db.VarChar(1024)
+  phoneNumber   String?      @db.VarChar(1024)
+  blocked       Boolean      @default(false)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
   deletedAt     DateTime?
+  adminTokens   AdminToken[]
 
   @@map("Admins")
+}
+
+model AdminToken {
+  id        String        @id @default(uuid()) @db.Uuid()
+  adminId   String?       @db.VarChar(1024)
+  type      AuthTokenType @default(None)
+  token     String        @unique @db.VarChar(1024)
+  expiresAt DateTime
+  usedAt    DateTime?
+  isRevoked Boolean       @default(false)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  deletedAt DateTime?
+  admin     Admin?        @relation(fields: [adminId], references: [id])
+
+  @@map("AdminTokens")
 }
 
 /// =====================

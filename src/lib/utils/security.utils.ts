@@ -56,6 +56,9 @@ export const getRandom = (min: number, max: number) => {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 };
 
+export const sleep = (ms: number) =>
+  new Promise((resolve) => setTimeout(resolve, ms));
+
 /**
  * Tries to encrypt a string using aes-256 algorithm
  * @param text String to encrypt

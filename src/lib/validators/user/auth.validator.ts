@@ -17,3 +17,16 @@ export const userResetPasswordValidator = z.object({
   oldPassword: rString,
   newPassword: rString,
 });
+
+export const verifyEmailConfirmTokenValidator = z.object({
+  token: rString,
+});
+
+export const forgotPasswordSendEmailValidator = z.object({
+  email: rString,
+});
+
+export const forgotPasswordConfirmTokenValidator = z.object({
+  token: rString,
+  password: rString,
+});

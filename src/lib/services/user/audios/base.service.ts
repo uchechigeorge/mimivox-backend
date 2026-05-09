@@ -80,18 +80,6 @@ export const validate = async (
           ? user.noOfPremiumVoicesLeft - 1
           : undefined;
 
-    console.log({
-      noOfCharactersUsed,
-      totalCharactersUsed,
-      noOfCharactersLeft,
-      noOfCreditsToUse,
-      noOfCreditsUsed,
-      totalCreditsUsed,
-      noOfCreditsLeft,
-      noOfPremiumVoicesUsed,
-      totalPremiumVoicesUsed,
-      noOfPremiumVoicesLeft,
-    });
     await userRepo.update(
       user.id,
       {
