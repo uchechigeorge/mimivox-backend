@@ -9,56 +9,59 @@ import z from "zod";
 export const handlePaystackWebhookDto = z.object({
   event: rString,
   data: z.object({
-    amount: z.coerce.number().optional(),
-    currency: z.string().optional(),
+    amount: z.coerce.number().nullish(),
+    currency: z.string().nullish(),
     metadata: z
       .object({
         type: normalizeOptional(
           z.enum(["None", "SubscriptionPayment", "OneTimePayment"]),
         ),
-        paymentToken: z.string().optional(),
+        paymentToken: z.string().nullish(),
       })
-      .optional(),
-    subscription_code: z.string().optional(),
+      .nullish(),
+    subscription_code: z.string().nullish(),
     next_payment_date: stringToNullableDate,
     period_start: stringToNullableDate,
     period_end: stringToNullableDate,
     customer: z
       .object({
-        first_name: z.string().optional(),
-        last_name: z.string().optional(),
-        email: z.string().optional(),
-        customer_code: z.string().optional(),
+        first_name: z.string().nullish(),
+        last_name: z.string().nullish(),
+        email: z.string().nullish(),
+        customer_code: z.string().nullish(),
       })
-      .optional(),
+      .nullish(),
     plan: z
       .object({
-        name: z.string().optional(),
-        plan_code: z.string().optional(),
-        amount: z.coerce.number(),
+        name: z.string().nullish(),
+        plan_code: z.string().nullish(),
+        amount: z.coerce.number().nullish(),
       })
-      .optional(),
+      .nullish(),
     subscription: z
       .object({
-        subscription_code: z.string().optional(),
+        subscription_code: z.string().nullish(),
         next_payment_date: stringToNullableDate,
         amount: z.coerce.number(),
-        status: z.string().optional(),
+        status: z.string().nullish(),
       })
-      .optional(),
+      .nullish(),
     authorization: z
       .object({
-        authorization_code: z.string().optional(),
+        authorization_code: z.string().nullish(),
       })
-      .optional(),
+      .nullish(),
   }),
 });
 
-export const getHeaders = (req: Request): HandlePaystackWebhookHeader => {
+export const getHeaders = async (
+  req: Request,
+): Promise<HandlePaystackWebhookHeader> => {
   const cloneRes = req.clone();
+
   return {
     signature: req.headers.get("X-Paystack-Signature"),
-    bodyString: JSON.stringify(cloneRes.json()),
+    bodyString: JSON.stringify(await cloneRes.json()),
     ipAddress: getIp(req),
   };
 };

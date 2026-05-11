@@ -1,1 +1,4 @@
-export type PaystackMetadataTypes = "None" | "Subscription" | "OneTimePayment";
+export type PaystackMetadataTypes =
+  | "None"
+  | "SubscriptionPayment"
+  | "OneTimePayment";

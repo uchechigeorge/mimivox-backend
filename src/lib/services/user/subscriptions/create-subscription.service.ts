@@ -101,7 +101,7 @@ export const createSubscription = async (
 
   const meta: ReadSubscriptionMetaDetailsDto = {
     paystackMetadata: {
-      type: "Subscription",
+      type: "SubscriptionPayment",
       paymentToken,
     },
   };

@@ -8,9 +8,9 @@ import {
 import { NextResponse } from "next/server";
 
 export const POST = userHandler(async (req: Request) => {
+  const headers = await getHeaders(req);
   const body = await req.json();
   const dto = handlePaystackWebhookDto.parse(body);
-  const headers = getHeaders(req);
 
   const result = await paystackService.handleWebhook(dto, headers);
   const response = successResponse(result);

@@ -25,7 +25,7 @@ export const getSubscriptionByPaymentToken = async (
 
   const meta: ReadSubscriptionMetaDetailsDto = {
     paystackMetadata: {
-      type: "Subscription",
+      type: "SubscriptionPayment",
       paymentToken: dto.paymentToken ?? "",
     },
   };
