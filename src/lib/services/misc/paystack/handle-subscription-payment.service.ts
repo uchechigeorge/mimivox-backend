@@ -86,8 +86,9 @@ export const handleSubscriptionPayment = async (
   }
 
   // Validate amount paid
-  const price = Number(paystackPlan.amount ?? 0);
+  // Paystack sends amount in kobo (for NGN) or pesewas (for GHS), so we divide by 100 to get the amount in the main currency unit
   const amountPaid = Number(data.amount ? data.amount / 100 : 0);
+  const price = paystackPlan.amount.toNumber() / 100;
 
   if (price > amountPaid) {
     console.error(
@@ -95,19 +96,6 @@ export const handleSubscriptionPayment = async (
     );
     return;
   }
-
-  // Get initial invoice
-  // const initialInvoice = await invoiceRepo.getBySubscriptionIdAndIsInitial(
-  //   subscription.id,
-  // );
-  // if (!initialInvoice) {
-  //   logger.error(
-  //     `Paystack webhook error: Could not find inital invoice for subscription. ${JSON.stringify(
-  //       { subscription },
-  //     )}`,
-  //   );
-  //   return;
-  // }
 
   // Validate subscription status
   if (subscription.status !== "Pending") {
