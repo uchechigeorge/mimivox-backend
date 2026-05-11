@@ -24,7 +24,7 @@ export const handleWebhook = async (
 
   const currentIp = headers.ipAddress;
 
-  console.log({ currentIp, signature, hash });
+  console.error({ currentIp, signature, hash });
 
   // Optionally skip signature hash and ip check; for dev mode
   if (ignoreAuth === false) {
@@ -47,7 +47,7 @@ export const handleWebhook = async (
     }
   }
 
-  console.log(`Paystack webhook received: ${body}`);
+  console.error(`Paystack webhook received: ${body}`);
 
   if (body.event === "charge.success") {
     await onChargeSuccess(body);
