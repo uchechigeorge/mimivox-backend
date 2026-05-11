@@ -16,8 +16,11 @@ const envSchema = z.object({
   ADMIN_FORGOT_PASSWORD_EXPIRATION: z.string(),
   ADMIN_FORGOT_PASSWORD_URL: z.string(),
   EMAIL_FROM: z.string(),
+  EMAIL_USERNAME: z.string(),
+  EMAIL_PASS: z.string(),
   APP_NAME: z.string(),
   SUPPORT_EMAIL: z.string(),
+  DASHBOARD_LINK: z.string(),
 
   GOOGLE_API_KEY: z.string(),
   ELEVENLABS_API_KEY: z.string(),
@@ -38,6 +41,15 @@ const envSchema = z.object({
   CREDITS_PER_IMAGE: z.coerce.number(),
   CREDITS_PER_MUSIC: z.coerce.number(),
   CREDITS_PER_VIDEO_PER_SECOND: z.coerce.number(),
+
+  PAYSTACK_API_BASE: z.string(),
+  PAYSTACK_SECRET_KEY: z.string(),
+  PAYSTACK_IGNORE_WEBHOOK_AUTH: z.preprocess((value) => {
+    if (value === "true") return true;
+    if (value === "false") return false;
+
+    return false;
+  }, z.boolean()),
 });
 
 export const env = envSchema.parse(process.env);

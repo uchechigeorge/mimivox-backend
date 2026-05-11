@@ -1,10 +1,11 @@
-import { Prisma, Subscription, User } from "@/generated/prisma/client";
+import { $Enums, Prisma, Subscription, User } from "@/generated/prisma/client";
 import { prisma } from "../db/prisma";
 import { DB } from "../db/types";
 import {
   SubscriptionCreateArgs,
   SubscriptionFindManyArgs,
   SubscriptionUpdateArgs,
+  SubscriptionUpsertArgs,
 } from "@/generated/prisma/models";
 import { BaseGetOptions, BaseGetParams } from "../dtos/shared/base-get-params";
 import { isNotNullOrWhitespace } from "../utils/type.utils";
@@ -29,6 +30,27 @@ const getByUserIdAndIsActive = async (
   });
 };
 
+const getExistsByUserIdAndIsActive = async (
+  userId: User["id"],
+  isActive: boolean = true,
+  tc?: Prisma.TransactionClient,
+) => {
+  const result = await getByUserIdAndIsActive(userId, isActive, tc);
+  return result !== null;
+};
+
+const getByUserIdAndStatus = async (
+  userId: User["id"],
+  status: $Enums.SubscriptionStatus,
+  tc?: Prisma.TransactionClient,
+) => {
+  const db: DB = tc || prisma;
+
+  return await db.subscription.findFirst({
+    where: { userId, status },
+  });
+};
+
 const getByReference = async (
   reference: string,
   tc?: Prisma.TransactionClient,
@@ -45,6 +67,25 @@ const getExistsByReference = async (
   tc?: Prisma.TransactionClient,
 ) => {
   const result = await getByReference(reference, tc);
+  return result !== null;
+};
+
+const getByPaymentToken = async (
+  paymentToken: string,
+  tc?: Prisma.TransactionClient,
+) => {
+  const db: DB = tc || prisma;
+
+  return await db.subscription.findFirst({
+    where: { paymentToken },
+  });
+};
+
+const getExistsByPaymentToken = async (
+  paymentToken: string,
+  tc?: Prisma.TransactionClient,
+) => {
+  const result = await getByPaymentToken(paymentToken, tc);
 
   return result !== null;
 };
@@ -73,6 +114,21 @@ const update = async (
   });
 };
 
+const upsert = async (
+  id: Subscription["id"] | undefined,
+  create: SubscriptionUpsertArgs["create"],
+  update: SubscriptionUpsertArgs["update"],
+  tc?: Prisma.TransactionClient,
+) => {
+  const db: DB = tc || prisma;
+
+  return await db.subscription.upsert({
+    where: { id },
+    create,
+    update,
+  });
+};
+
 // Order column options mapping
 const sortColumnOptions: Record<string, string> = {
   updatedAt: "updatedAt",
@@ -86,8 +142,11 @@ export const query = async (
   const where: SubscriptionFindManyArgs["where"] = {};
 
   if (isNotNullOrWhitespace(params.id)) where.id = params.id;
+  if (isNotNullOrWhitespace(params.userId)) where.userId = params.userId;
   if (isNotNullOrWhitespace(params.reference))
     where.reference = params.reference;
+  if (isNotNullOrWhitespace(params.paymentToken))
+    where.paymentToken = params.paymentToken;
   if (params.searchString && params.searchString.trim() !== "") {
     where.reference = { contains: params.searchString, mode: "insensitive" };
   }
@@ -121,7 +180,9 @@ export const query = async (
 };
 
 type SubscriptionGetParams = BaseGetParams & {
+  userId?: string;
   reference?: string;
+  paymentToken?: string;
 };
 
 export type SubscriptionGetOptions = BaseGetOptions & {};
@@ -129,10 +190,15 @@ export type SubscriptionGetOptions = BaseGetOptions & {};
 const subscriptionRepo = {
   getById,
   getByUserIdAndIsActive,
+  getExistsByUserIdAndIsActive,
+  getByUserIdAndStatus,
   getByReference,
   getExistsByReference,
+  getByPaymentToken,
+  getExistsByPaymentToken,
   create,
   update,
+  upsert,
   query,
 };
 

@@ -17,53 +17,53 @@ datasource db {
 /// =====================
 
 model User {
-  id                         String         @id @default(uuid()) @db.VarChar(1024)
-  email                      String         @unique
-  emailVerified              Boolean        @default(false)
-  firstName                  String         @db.VarChar(1024)
-  lastName                   String         @db.VarChar(1024)
-  fullName                   String         @default("") @db.VarChar(1024)
-  password                   String         @db.VarChar(1024)
-  dpUrl                      String?        @db.VarChar(1024)
-  defaultBg                  String?        @db.VarChar(1024)
-  phoneNumber                String?        @db.VarChar(1024)
-  hasActiveSubscription      Boolean        @default(false)
-  noOfCreditsUsed            Int            @default(0)
-  totalCreditsUsed           Int            @default(0)
-  noOfCreditsAllocated       Int?           @default(0)
-  noOfCreditsLeft            Int?           @default(0)
-  noOfCharactersUsed         Int            @default(0)
-  totalCharactersUsed        Int            @default(0)
-  noOfCharactersAllocated    Int?           @default(0)
-  noOfCharactersLeft         Int?           @default(0)
-  noOfVoicesUsed             Int            @default(0)
-  noOfWordsAllowed           Int?           @default(0)
-  totalVoicesUsed            Int            @default(0)
-  noOfVoicesAllocated        Int?           @default(0)
-  noOfVoicesLeft             Int?           @default(0)
-  noOfCloneVoicesUsed        Int            @default(0)
-  totalCloneVoicesUsed       Int            @default(0)
-  noOfCloneVoicesAllocated   Int?           @default(0)
-  noOfCloneVoicesLeft        Int?           @default(0)
-  noOfPremiumVoicesUsed      Int            @default(0)
-  totalPremiumVoicesUsed     Int            @default(0)
-  noOfPremiumVoicesAllocated Int?           @default(0)
-  noOfPremiumVoicesLeft      Int?           @default(0)
-  noOfMusicUsed              Int            @default(0)
-  totalMusicUsed             Int            @default(0)
-  noOfMusicAllocated         Int?           @default(0)
-  noOfMusicLeft              Int?           @default(0)
-  noOfImagesUsed             Int            @default(0)
-  totalImagesUsed            Int            @default(0)
-  noOfImagesAllocated        Int?           @default(0)
-  noOfImagesLeft             Int?           @default(0)
-  noOfVideosUsed             Int            @default(0)
-  totalVideosUsed            Int            @default(0)
-  noOfVideosAllocated        Int?           @default(0)
-  noOfVideosLeft             Int?           @default(0)
-  blocked                    Boolean        @default(false)
-  createdAt                  DateTime       @default(now())
-  updatedAt                  DateTime       @updatedAt
+  id                         String             @id @default(uuid()) @db.VarChar(1024)
+  email                      String             @unique
+  emailVerified              Boolean            @default(false)
+  firstName                  String             @db.VarChar(1024)
+  lastName                   String             @db.VarChar(1024)
+  fullName                   String             @default("") @db.VarChar(1024)
+  password                   String             @db.VarChar(1024)
+  dpUrl                      String?            @db.VarChar(1024)
+  defaultBg                  String?            @db.VarChar(1024)
+  phoneNumber                String?            @db.VarChar(1024)
+  hasActiveSubscription      Boolean            @default(false)
+  noOfCreditsUsed            Int                @default(0)
+  totalCreditsUsed           Int                @default(0)
+  noOfCreditsAllocated       Int?               @default(0)
+  noOfCreditsLeft            Int?               @default(0)
+  noOfCharactersUsed         Int                @default(0)
+  totalCharactersUsed        Int                @default(0)
+  noOfCharactersAllocated    Int?               @default(0)
+  noOfCharactersLeft         Int?               @default(0)
+  noOfVoicesUsed             Int                @default(0)
+  noOfWordsAllowed           Int?               @default(0)
+  totalVoicesUsed            Int                @default(0)
+  noOfVoicesAllocated        Int?               @default(0)
+  noOfVoicesLeft             Int?               @default(0)
+  noOfCloneVoicesUsed        Int                @default(0)
+  totalCloneVoicesUsed       Int                @default(0)
+  noOfCloneVoicesAllocated   Int?               @default(0)
+  noOfCloneVoicesLeft        Int?               @default(0)
+  noOfPremiumVoicesUsed      Int                @default(0)
+  totalPremiumVoicesUsed     Int                @default(0)
+  noOfPremiumVoicesAllocated Int?               @default(0)
+  noOfPremiumVoicesLeft      Int?               @default(0)
+  noOfMusicUsed              Int                @default(0)
+  totalMusicUsed             Int                @default(0)
+  noOfMusicAllocated         Int?               @default(0)
+  noOfMusicLeft              Int?               @default(0)
+  noOfImagesUsed             Int                @default(0)
+  totalImagesUsed            Int                @default(0)
+  noOfImagesAllocated        Int?               @default(0)
+  noOfImagesLeft             Int?               @default(0)
+  noOfVideosUsed             Int                @default(0)
+  totalVideosUsed            Int                @default(0)
+  noOfVideosAllocated        Int?               @default(0)
+  noOfVideosLeft             Int?               @default(0)
+  blocked                    Boolean            @default(false)
+  createdAt                  DateTime           @default(now())
+  updatedAt                  DateTime           @updatedAt
   deletedAt                  DateTime?
   subscriptions              Subscription[]
   voices                     Voice[]
@@ -72,6 +72,7 @@ model User {
   music                      Music[]
   videos                     Video[]
   userTokens                 UserToken[]
+  paystackCustomers          PaystackCustomer[]
 
   @@map("Users")
 }
@@ -207,6 +208,7 @@ model Pricing {
   deletedAt     DateTime?
   plan          Plan           @relation(fields: [planId], references: [id])
   subscriptions Subscription[]
+  paystackPlans PaystackPlan[]
 
   @@map("Pricings")
 }
@@ -227,28 +229,31 @@ enum PaymentGatewayOption {
 }
 
 model Subscription {
-  id                   String                @id @default(uuid()) @db.VarChar(1024)
-  reference            String                @db.VarChar(1024)
-  userId               String                @db.VarChar(1024)
-  userName             String                @db.VarChar(1024)
-  pricingId            String                @db.VarChar(1024)
-  pricingName          String                @db.VarChar(1024)
-  planId               String                @db.VarChar(1024)
-  planName             String                @db.VarChar(1024)
-  isActive             Boolean
-  status               SubscriptionStatus    @default(Pending)
-  startDate            DateTime
-  nextBillingDate      DateTime?
-  endDate              DateTime?
-  initialAmount        Decimal?              @db.Decimal(18, 2)
-  paymentGateway       PaymentGatewayOption  @default(None)
-  user                 User                  @relation(fields: [userId], references: [id])
-  pricing              Pricing               @relation(fields: [pricingId], references: [id])
-  plan                 Plan                  @relation(fields: [planId], references: [id])
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime              @updatedAt
-  deletedAt            DateTime?
-  subscriptionPayments SubscriptionPayment[]
+  id                    String                 @id @default(uuid()) @db.VarChar(1024)
+  reference             String                 @unique @default(cuid()) @db.VarChar(1024)
+  userId                String                 @db.VarChar(1024)
+  userName              String                 @db.VarChar(1024)
+  pricingId             String                 @db.VarChar(1024)
+  pricingName           String                 @db.VarChar(1024)
+  planId                String                 @db.VarChar(1024)
+  planName              String                 @db.VarChar(1024)
+  isActive              Boolean                @default(false)
+  status                SubscriptionStatus     @default(Pending)
+  startDate             DateTime
+  nextBillingDate       DateTime?
+  endDate               DateTime?
+  initialAmount         Decimal?               @db.Decimal(18, 2)
+  paymentToken          String                 @unique @default(cuid()) @db.VarChar(1024)
+  paymentVerified       Boolean                @default(false)
+  paymentGateway        PaymentGatewayOption   @default(None)
+  user                  User                   @relation(fields: [userId], references: [id])
+  pricing               Pricing                @relation(fields: [pricingId], references: [id])
+  plan                  Plan                   @relation(fields: [planId], references: [id])
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  deletedAt             DateTime?
+  subscriptionPayments  SubscriptionPayment[]
+  paystackSubscriptions PaystackSubscription[]
 
   @@map("Subscriptions")
 }
@@ -262,12 +267,51 @@ model SubscriptionPayment {
   isPaymentVerified     Boolean              @default(false)
   paymentGateway        PaymentGatewayOption @default(None)
   paidAt                DateTime?
+  currency              String?              @db.VarChar(1024)
   updatedAt             DateTime             @updatedAt
   createdAt             DateTime             @default(now())
   deletedAt             DateTime?
   subscription          Subscription?        @relation(fields: [subscriptionId], references: [id])
 
   @@map("SubscriptionPayments")
+}
+
+model PaystackCustomer {
+  id        String    @id @default(uuid()) @db.Uuid()
+  userId    String?   @db.VarChar(1024)
+  email     String    @db.VarChar(1024)
+  reference String    @db.VarChar(1024)
+  updatedAt DateTime  @updatedAt
+  createdAt DateTime  @default(now())
+  deletedAt DateTime?
+  user      User?     @relation(fields: [userId], references: [id])
+
+  @@map("PaystackCustomers")
+}
+
+model PaystackPlan {
+  id        String    @id @default(uuid()) @db.Uuid()
+  pricingId String?   @db.VarChar(1024)
+  reference String    @db.VarChar(1024)
+  amount    Decimal   @db.Decimal(18, 2)
+  updatedAt DateTime  @updatedAt
+  createdAt DateTime  @default(now())
+  deletedAt DateTime?
+  pricing   Pricing?  @relation(fields: [pricingId], references: [id])
+
+  @@map("PaystackPlans")
+}
+
+model PaystackSubscription {
+  id             String        @id @default(uuid()) @db.Uuid()
+  subscriptionId String?       @db.VarChar(1024)
+  reference      String        @db.VarChar(1024)
+  updatedAt      DateTime      @updatedAt
+  createdAt      DateTime      @default(now())
+  deletedAt      DateTime?
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
+
+  @@map("PaystackSubscriptions")
 }
 
 /// =====================

@@ -50,3 +50,16 @@ export class InternalServerError extends AppError {
 
   statusCode: number;
 }
+
+export class PaystackServiceError extends AppError {
+  constructor(
+    message: string = "External paystack error",
+    statusCode: number = 400,
+  ) {
+    super(message, statusCode);
+    this.statusCode = statusCode;
+    Error.captureStackTrace(this, this.constructor);
+  }
+
+  statusCode: number;
+}

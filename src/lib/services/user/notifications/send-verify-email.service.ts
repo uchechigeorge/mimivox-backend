@@ -1,6 +1,6 @@
-import { sendEmail } from "@/lib/config/resend.config";
-import VerifyOtp from "../../../../../react-email-starter/emails/verify-email";
-import emailConfig from "@/lib/config/email.config";
+import { emailConfig } from "@/lib/config/email.config";
+import { sendEmail } from "@/lib/utils/email.util";
+import VerifyOtp from "@/react-email/emails/verify-email";
 
 export const sendVerifyEmail = async (
   to: string,

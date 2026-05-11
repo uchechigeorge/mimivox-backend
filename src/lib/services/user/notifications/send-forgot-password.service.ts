@@ -1,7 +1,7 @@
-import { sendEmail } from "@/lib/config/resend.config";
-import ForgotPassword from "../../../../../react-email-starter/emails/forgot-password";
+import { emailConfig } from "@/lib/config/email.config";
 import { env } from "@/lib/config/env.config";
-import emailConfig from "@/lib/config/email.config";
+import { sendEmail } from "@/lib/utils/email.util";
+import ForgotPassword from "@/react-email/emails/forgot-password";
 
 export const sendForgotPassword = async (
   to: string,

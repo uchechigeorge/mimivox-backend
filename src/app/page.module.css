@@ -1,3 +1,8 @@
+.base {
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}
+
 .page {
   --background: #fafafa;
   --foreground: #fff;

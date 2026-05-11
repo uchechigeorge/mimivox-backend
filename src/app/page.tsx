@@ -1,10 +1,21 @@
-import Image from "next/image";
+// import Image from "next/image";
 import styles from "./page.module.css";
 
 export default function Home() {
+  const meta = {
+    status: true,
+    message: "You probably shouldn't be here, but...",
+    data: {
+      service: "Mimivox AI",
+      version: "1.0",
+    },
+  };
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
+    <>
+      <pre className={styles.base}>{JSON.stringify(meta, null, 4)}</pre>
+
+      {/* <main className={styles.main}>
         <Image
           className={styles.logo}
           src="/next.svg"
@@ -60,7 +71,7 @@ export default function Home() {
             Documentation
           </a>
         </div>
-      </main>
-    </div>
+      </main> */}
+    </>
   );
 }
