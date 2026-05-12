@@ -20,7 +20,20 @@ export const updatePricing = async (
     throw new NotFoundError("Pricing not found");
   }
 
-  const { reference, amount, exists } = await handlePaystackUpdates(pricing);
+  const syncPaystack = env.SYNC_PAYSTACK_PRICINGS;
+  let reference: string | null = null;
+  let amount: number | null = null;
+  let exists: boolean = false;
+  if (syncPaystack) {
+    const {
+      reference: _reference,
+      amount: _amount,
+      exists: _exists,
+    } = await handlePaystackUpdates(pricing);
+    reference = _reference;
+    amount = _amount;
+    exists = exists;
+  }
 
   try {
     await prisma.$transaction(async (tx) => {
@@ -36,31 +49,33 @@ export const updatePricing = async (
 
       pricing = pricingRecord;
 
-      if (exists) {
-        const paystackPlan = await paystackPlanRepo.getByPricingId(
-          pricing.id,
-          tx,
-        );
+      if (syncPaystack && reference && amount) {
+        if (exists) {
+          const paystackPlan = await paystackPlanRepo.getByPricingId(
+            pricing.id,
+            tx,
+          );
 
-        if (paystackPlan) {
-          await paystackPlanRepo.update(
-            paystackPlan.id,
+          if (paystackPlan) {
+            await paystackPlanRepo.update(
+              paystackPlan.id,
+              {
+                amount,
+                reference,
+              },
+              tx,
+            );
+          }
+        } else {
+          await paystackPlanRepo.create(
             {
+              pricingId: pricing.id,
               amount,
               reference,
             },
             tx,
           );
         }
-      } else {
-        await paystackPlanRepo.create(
-          {
-            pricingId: pricing.id,
-            amount,
-            reference,
-          },
-          tx,
-        );
       }
 
       return pricingRecord;

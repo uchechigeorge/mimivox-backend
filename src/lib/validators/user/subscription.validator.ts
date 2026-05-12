@@ -26,28 +26,15 @@ export const subscriptionReadValidator = z.object({
   startDate: nDate,
   initialAmount: nNumber,
   paymentToken: nString,
-  // pricing: nObjPromise({
-  //   id: nNumber,
-  //   title: nString,
-  //   price: nNumber,
-  //   oldPrice: nNumber,
-  //   paystackPlan: nObjPromise({
-  //     id: nNumber,
-  //     planCode: nString,
-  //     name: nString,
-  //     amount: nNumber,
-  //     interval: nString,
-  //     description: nString,
-  //   }),
-  // }),
-  // user: nObjPromise({
-  //   id: nNumber,
-  //   email: nString,
-  //   firstName: nString,
-  //   lastName: nString,
-  //   fullName: nString,
-  //   phoneNumber: nString,
-  // }),
+  pricing: z
+    .object({
+      id: nString,
+      name: nString,
+      planName: nString,
+      price: nNumber,
+      oldPrice: nNumber,
+    })
+    .optional(),
   updatedAt: nDate,
   createdAt: nDate,
 });

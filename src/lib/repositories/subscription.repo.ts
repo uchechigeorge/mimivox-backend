@@ -173,6 +173,7 @@ export const query = async (
     take,
     include: {
       user: options?.includeRelations,
+      pricing: options?.includeRelations,
     },
   });
 

@@ -24,6 +24,13 @@ export const listResponse = (
 export const getResponse = (data: any, message = "Success", status = 200) =>
   successResponse(data, message, status);
 
+export const getResponseMeta = (
+  data: any,
+  meta: any,
+  message = "Success",
+  status = 200,
+) => successResponse(data, message, status, meta);
+
 export const createdResponse = (data: any, message = "Success", status = 201) =>
   successResponse(data, message, status);
 

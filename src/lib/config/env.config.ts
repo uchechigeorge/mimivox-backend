@@ -50,6 +50,12 @@ const envSchema = z.object({
 
     return false;
   }, z.boolean()),
+  SYNC_PAYSTACK_PRICINGS: z.preprocess((value) => {
+    if (value === "true") return true;
+    if (value === "false") return false;
+
+    return false;
+  }, z.boolean()),
 });
 
 export const env = envSchema.parse(process.env);

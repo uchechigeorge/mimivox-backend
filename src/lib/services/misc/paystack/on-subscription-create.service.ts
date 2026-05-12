@@ -4,6 +4,7 @@ import subscriptionRepo from "@/lib/repositories/subscription.repo";
 import { BadRequestError } from "@/lib/utils/error.util";
 import notificationService from "../../user/notifications";
 import userRepo from "@/lib/repositories/user.repo";
+import pricingRepo from "@/lib/repositories/pricing.repo";
 
 export const onSubscriptionCreate = async (body: HandlePaystackWebhookDto) => {
   // Logic for handling subscription creation
@@ -55,9 +56,22 @@ export const onSubscriptionCreate = async (body: HandlePaystackWebhookDto) => {
     return;
   }
 
+  const pricing = await pricingRepo.getById(subscription.pricingId);
+  if (!pricing) {
+    console.error(
+      `Paystack webhook error: Uricing not found for subscription; ${JSON.stringify(
+        { subscription },
+      )}`,
+    );
+    return;
+  }
+
   // Send notification
   await notificationService.sendSubscriptionActivated(user.email, {
     userName: user.firstName,
     planName: subscription.planName,
+    amount: pricing.price.toNumber(),
+    intervalType: pricing.intervalType,
+    nextBillingDate: subscription.nextBillingDate,
   });
 };

@@ -13,6 +13,7 @@ import { subscriptionReadValidator } from "@/lib/validators/user/subscription.va
 import { prisma } from "@/lib/db/prisma";
 import userRepo from "@/lib/repositories/user.repo";
 import planRepo from "@/lib/repositories/plan.repo";
+import { getMeta } from "./get-subscription-by-payment-token.service";
 
 export const createSubscription = async (
   body: CreateSubscriptionDto,
@@ -74,6 +75,7 @@ export const createSubscription = async (
           nextBillingDate,
           planId: pricing.planId,
           planName: pricing.planName,
+          initialAmount: body.amount,
         },
         tx,
       );
@@ -91,6 +93,7 @@ export const createSubscription = async (
           nextBillingDate,
           planId: pricing.planId,
           planName: pricing.planName,
+          initialAmount: body.amount,
         },
         tx,
       );
@@ -99,12 +102,11 @@ export const createSubscription = async (
     }
   });
 
-  const meta: ReadSubscriptionMetaDetailsDto = {
-    paystackMetadata: {
-      type: "SubscriptionPayment",
-      paymentToken,
-    },
-  };
+  const meta = getMeta({
+    paymentToken,
+    email: user.email,
+    amount: pricing.price.toNumber(),
+  });
 
   const readDto = subscriptionReadValidator.parse(subscription);
   return [readDto, meta];

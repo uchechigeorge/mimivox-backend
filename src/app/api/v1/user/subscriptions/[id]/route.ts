@@ -1,6 +1,6 @@
 import subscriptionService from "@/lib/services/user/subscriptions";
 import { userHandler } from "@/lib/utils/handler.utils";
-import { getResponse } from "@/lib/utils/response.utils";
+import { getResponseMeta } from "@/lib/utils/response.utils";
 import { AppGetRouteContext } from "@/lib/utils/types";
 import { subscriptionGetByPaymentTokenParamsValidator } from "@/lib/validators/user/subscription.validator";
 import { NextRequest, NextResponse } from "next/server";
@@ -11,11 +11,12 @@ export const GET = userHandler(
       await ctx.params,
     );
 
-    const data = await subscriptionService.getSubscriptionByPaymentToken(
-      params,
-      authItems,
-    );
-    const result = getResponse(data);
+    const [data, meta] =
+      await subscriptionService.getSubscriptionByPaymentToken(
+        params,
+        authItems,
+      );
+    const result = getResponseMeta(data, meta);
     return NextResponse.json(result);
   },
   { authenticate: true },

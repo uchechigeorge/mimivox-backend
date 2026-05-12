@@ -12,18 +12,28 @@ import {
 
 interface SubscriptionWelcomeProps {
   userName: string;
-  planName: string;
   dashboardLink: string;
   appName?: string;
   supportEmail?: string;
+
+  // Subscription Details
+  planName?: string;
+  billingInterval?: string;
+  amount?: string;
+  nextBillingDate?: string;
 }
 
 export default function SubscriptionWelcome({
   userName,
-  planName,
   dashboardLink,
   appName = "AppName",
   supportEmail = "support@example.com",
+
+  // Subscription Details
+  planName = "Creator Pro",
+  billingInterval = "Monthly",
+  amount = "$20",
+  nextBillingDate = "June 11, 2026",
 }: SubscriptionWelcomeProps) {
   return (
     <Html>
@@ -40,16 +50,16 @@ export default function SubscriptionWelcome({
             <Text>
               Hi <strong>{userName}</strong>,
             </Text>
-
             <Text>
-              Thank you for subscribing to <strong>{planName}</strong> plan on{" "}
+              Thank you for subscribing to <strong>{planName}</strong> on{" "}
               {appName}.
             </Text>
-
             <Text>
-              You now have access to powerful AI tools that help you create:
+              Your subscription is now active and you can start creating with
+              our AI tools immediately.
             </Text>
-
+            {/* Features */}
+            <Text style={{ marginTop: "30px" }}>You now have access to:</Text>
             <Section style={featureList}>
               <Text style={featureItem}>✍️ Text-to-Speech (TTS)</Text>
               <Text style={featureItem}>🎙️ Voice Creation</Text>
@@ -57,38 +67,61 @@ export default function SubscriptionWelcome({
               <Text style={featureItem}>🎵 AI Music Creation</Text>
               <Text style={featureItem}>🎬 AI Video Generation</Text>
             </Section>
-
-            <Text>
-              Your subscription is now active, and you can start creating right
-              away.
-            </Text>
-
+            {/* Subscription Summary */}{" "}
+            <Section style={summaryBox}>
+              {" "}
+              <Heading as="h3" style={summaryTitle}>
+                {" "}
+                Subscription Summary{" "}
+              </Heading>{" "}
+              <Section style={summaryTable}>
+                {" "}
+                <Section style={summaryRow}>
+                  {" "}
+                  <Text style={label}>Plan</Text>{" "}
+                  <Text style={value}>{planName}</Text>{" "}
+                </Section>{" "}
+                <Section style={summaryRow}>
+                  {" "}
+                  <Text style={label}>Billing</Text>{" "}
+                  <Text style={value}>{billingInterval}</Text>{" "}
+                </Section>{" "}
+                <Section style={summaryRow}>
+                  {" "}
+                  <Text style={label}>Amount</Text>{" "}
+                  <Text style={value}>
+                    {" "}
+                    {amount}/{billingInterval.toLowerCase()}{" "}
+                  </Text>{" "}
+                </Section>{" "}
+                <Section style={summaryRowNoBorder}>
+                  {" "}
+                  <Text style={label}>Next Billing</Text>{" "}
+                  <Text style={value}>{nextBillingDate}</Text>{" "}
+                </Section>{" "}
+              </Section>{" "}
+            </Section>
             {/* CTA Button */}
             <Section style={buttonContainer}>
               <Button href={dashboardLink} style={button}>
                 Go to Dashboard
               </Button>
             </Section>
-
             <Text>
               If the button above does not work, copy and paste the link below
               into your browser:
             </Text>
-
             <Link href={dashboardLink} style={link}>
               {dashboardLink}
             </Link>
-
             {/* Support */}
             <Text style={{ marginTop: "30px" }}>
-              Need help getting started? Reach out to our support team at{" "}
+              Need help? Contact our support team at{" "}
               <Link href={`mailto:${supportEmail}`} style={supportLink}>
                 {supportEmail}
               </Link>
             </Text>
-
             <Text>We’re excited to see what you create with {appName}.</Text>
-
             <Text>
               Cheers,
               <br />
@@ -120,7 +153,11 @@ SubscriptionWelcome.PreviewProps = {
   userName: "John Doe",
   dashboardLink: "https://example.com/dashboard",
   supportEmail: "support@nebulaai.com",
-  planName: "Starter Plan",
+
+  planName: "Creator Pro",
+  billingInterval: "Monthly",
+  amount: "$20",
+  nextBillingDate: "June 11, 2026",
 } as SubscriptionWelcomeProps;
 
 /* Styles */
@@ -155,10 +192,44 @@ const content = {
   lineHeight: "1.6",
 };
 
+const summaryBox = {
+  backgroundColor: "#f9f5ff",
+  borderRadius: "8px",
+  padding: "18px",
+  marginTop: "20px",
+};
+const summaryTitle = {
+  margin: "0 0 14px 0",
+  fontSize: "18px",
+  color: "#4b0986",
+};
+const summaryTable = { width: "100%" };
+const summaryRow = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  padding: "10px 0",
+  borderBottom: "1px solid #ece7f6",
+};
+const summaryRowNoBorder = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  padding: "10px 0 0 0",
+};
+const label = { margin: "0", color: "#666", fontSize: "14px" };
+const value = {
+  margin: "0",
+  color: "#111",
+  fontWeight: "600",
+  fontSize: "14px",
+  textAlign: "right" as const,
+};
+
 const featureList = {
   margin: "20px 0",
   padding: "16px",
-  backgroundColor: "#f9f5ff",
+  backgroundColor: "#fafafa",
   borderRadius: "8px",
 };
 
@@ -213,3 +284,4 @@ const footerLink = {
   color: "#4b0986",
   textDecoration: "none",
 };
+// ```
