@@ -9,6 +9,9 @@ import paystackSubscriptionRepo from "@/lib/repositories/paystack-subscription.r
 import subscriptionPaymentRepo from "@/lib/repositories/subscription-payment.repo";
 import paystackCustomerRepo from "@/lib/repositories/paystack-customer.repo";
 import { email } from "zod";
+import { UserUpdateArgs } from "@/generated/prisma/models";
+import { PlanSetting } from "@/generated/prisma/client";
+import planSettingRepo from "@/lib/repositories/plan-setting.repo";
 
 export const handleSubscriptionPayment = async (
   body: HandlePaystackWebhookDto,
@@ -140,9 +143,13 @@ export const handleSubscriptionPayment = async (
   }; // customer from webhook data/body
   await prisma.$transaction(async (tx) => {
     // Update subscription, invoice, transaction, and user
+
+    const planSettings = await planSettingRepo.getByPlanId(pricing.planId, tx);
+    const userSettings = getUserSettings(planSettings);
     await userRepo.update(
       user.id,
       {
+        ...userSettings,
         hasActiveSubscription: true,
       },
       tx,
@@ -201,4 +208,38 @@ export const handleSubscriptionPayment = async (
       );
     }
   });
+};
+
+const getUserSettings = (planSettings: PlanSetting | null) => {
+  if (!planSettings) return {};
+
+  const settings: UserUpdateArgs["data"] = {
+    noOfCreditsUsed: 0,
+    noOfCreditsAllocated: planSettings.noOfCredits,
+    noOfCreditsLeft: planSettings.noOfCredits,
+    noOfCharactersUsed: 0,
+    noOfCharactersAllocated: planSettings.noOfCharacters,
+    noOfCharactersLeft: planSettings.noOfCharacters,
+    noOfWordsAllowed: planSettings.noOfWords,
+    noOfVoicesUsed: 0,
+    noOfVoicesAllocated: planSettings.noOfVoices,
+    noOfVoicesLeft: planSettings.noOfVoices,
+    noOfPremiumVoicesUsed: 0,
+    noOfPremiumVoicesAllocated: planSettings.noOfPremiumVoices,
+    noOfPremiumVoicesLeft: planSettings.noOfPremiumVoices,
+    noOfCloneVoicesUsed: 0,
+    noOfCloneVoicesAllocated: planSettings.noOfCloneVoices,
+    noOfCloneVoicesLeft: planSettings.noOfCloneVoices,
+    noOfImagesUsed: 0,
+    noOfImagesAllocated: planSettings.noOfImages,
+    noOfImagesLeft: planSettings.noOfImages,
+    noOfMusicUsed: 0,
+    noOfMusicAllocated: planSettings.noOfMusic,
+    noOfMusicLeft: planSettings.noOfMusic,
+    noOfVideosUsed: 0,
+    noOfVideosAllocated: planSettings.noOfVideos,
+    noOfVideosLeft: planSettings.noOfVideos,
+  };
+
+  return settings;
 };
