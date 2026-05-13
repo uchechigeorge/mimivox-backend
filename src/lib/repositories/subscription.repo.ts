@@ -147,6 +147,8 @@ export const query = async (
     where.reference = params.reference;
   if (isNotNullOrWhitespace(params.paymentToken))
     where.paymentToken = params.paymentToken;
+  if (isNotNullOrWhitespace(params.status)) where.status = params.status;
+  if (params.isActive != null) where.isActive = params.isActive;
   if (params.searchString && params.searchString.trim() !== "") {
     where.reference = { contains: params.searchString, mode: "insensitive" };
   }
@@ -183,6 +185,8 @@ type SubscriptionGetParams = BaseGetParams & {
   userId?: string;
   reference?: string;
   paymentToken?: string;
+  status?: $Enums.SubscriptionStatus;
+  isActive?: boolean;
 };
 
 export type SubscriptionGetOptions = BaseGetOptions & {};

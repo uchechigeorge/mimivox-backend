@@ -21,6 +21,8 @@ export const subscriptionReadDtoValidator = z.object({
   planName: nString,
   pricingId: nString,
   pricingName: nString,
+  userId: nString,
+  userName: nString,
   reference: nString,
   paymentToken: nString,
   status: nString,
