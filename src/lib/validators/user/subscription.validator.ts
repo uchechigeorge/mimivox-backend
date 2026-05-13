@@ -21,20 +21,15 @@ export const subscriptionReadValidator = z.object({
   id: nString,
   pricingId: nString,
   pricingName: nString,
+  planId: nString,
+  planName: nString,
   isActive: nBoolean,
   status: nString,
   startDate: nDate,
+  nextBillingDate: nDate,
+  endDate: nDate,
   initialAmount: nNumber,
   paymentToken: nString,
-  pricing: z
-    .object({
-      id: nString,
-      name: nString,
-      planName: nString,
-      price: nNumber,
-      oldPrice: nNumber,
-    })
-    .optional(),
   updatedAt: nDate,
   createdAt: nDate,
 });

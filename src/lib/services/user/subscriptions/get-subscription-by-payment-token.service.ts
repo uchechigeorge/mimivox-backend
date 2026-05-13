@@ -13,6 +13,7 @@ import { NotFoundError, UnauthorizedError } from "@/lib/utils/error.util";
 import { subscriptionReadValidator } from "@/lib/validators/user/subscription.validator";
 import { UserAuthItems } from "@/lib/types";
 import userRepo from "@/lib/repositories/user.repo";
+import pricingRepo from "@/lib/repositories/pricing.repo";
 
 export const getSubscriptionByPaymentToken = async (
   params: GetSubscriptionByTokenParams,
@@ -35,10 +36,12 @@ export const getSubscriptionByPaymentToken = async (
 
   const dto = subscriptionReadValidator.parse(data[0]);
 
+  const pricing = await pricingRepo.getById(dto.pricingId ?? "");
+
   const meta = getMeta({
     paymentToken: dto.paymentToken ?? "",
     email: user.email,
-    amount: dto.pricing?.price ?? 0,
+    amount: pricing?.price.toNumber() ?? 0,
   });
 
   return [dto, meta];

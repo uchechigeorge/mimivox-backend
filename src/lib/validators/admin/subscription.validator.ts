@@ -1,4 +1,4 @@
-import { nDate, nString } from "@/lib/utils/zod.utils";
+import { nBoolean, nDate, nNumber, nString } from "@/lib/utils/zod.utils";
 import z from "zod";
 import { baseGetParamsSchema } from "../shared/base-get-params.validator";
 
@@ -17,11 +17,27 @@ export const subscriptionExtendParamsValidator = z.object({
 
 export const subscriptionReadDtoValidator = z.object({
   id: nString,
-  referenc3: nString,
   planId: nString,
   planName: nString,
   pricingId: nString,
   pricingName: nString,
+  reference: nString,
+  paymentToken: nString,
+  status: nString,
+  isActive: nBoolean,
+  startDate: nDate,
+  nextBillingDate: nDate,
+  endDate: nDate,
+  initialAmount: nNumber,
+  user: z
+    .object({
+      id: nString,
+      firstName: nString,
+      lastName: nString,
+      fullName: nString,
+      email: nString,
+    })
+    .optional(),
   updatedAt: nDate,
   createdAt: nDate,
 });
