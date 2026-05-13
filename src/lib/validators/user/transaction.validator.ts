@@ -14,8 +14,6 @@ export const transactionReadDtoValidator = z.object({
   id: nString,
   userId: nString,
   userName: nString,
-  subscriptionId: nString,
-  subscriptionReference: nString,
   amount: nNumber,
   type: nString.default("SubscriptionPayment"),
   updatedAt: nDate,

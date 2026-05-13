@@ -31,6 +31,7 @@ const create = async (
 
 // Order column options mapping
 const sortColumnOptions: Record<string, string> = {
+  paidAt: "paidAt",
   updatedAt: "updatedAt",
   createdAt: "createdAt",
 };
