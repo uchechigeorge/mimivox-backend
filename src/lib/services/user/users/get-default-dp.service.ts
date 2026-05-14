@@ -10,9 +10,13 @@ export const getDefaultDp = (user: User) => {
 
   if (!isNotNullOrWhitespace(initials)) initials = "ME";
 
+  const params = new URLSearchParams({
+    bg: user.defaultBg ?? "",
+  });
+
   const url =
     (process.env.HOST ?? "") +
-    `/api/v1/user/users/initials/${initials}?bg=${user.defaultBg}`;
+    `/api/v1/user/users/initials/${initials}?${params.toString()}`;
 
   return url;
 };

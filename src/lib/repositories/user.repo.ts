@@ -8,6 +8,7 @@ import {
 } from "@/generated/prisma/models";
 import { BaseGetOptions, BaseGetParams } from "../dtos/shared/base-get-params";
 import { isNotNullOrWhitespace } from "../utils/type.utils";
+import { getDefaultDp } from "../services/user/users/get-default-dp.service";
 
 const getById = async (id: User["id"], tc?: Prisma.TransactionClient) => {
   const db: DB = tc || prisma;
@@ -117,6 +118,10 @@ export const query = async (
     orderBy,
     skip,
     take,
+  });
+
+  result.forEach((e) => {
+    e.dpUrl = getDefaultDp(e);
   });
 
   return [result, total];
