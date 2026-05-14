@@ -1,7 +1,11 @@
 import { Audio, Prisma, User } from "@/generated/prisma/client";
 import { prisma } from "../db/prisma";
 import { DB } from "../db/types";
-import { AudioCreateArgs, AudioFindManyArgs } from "@/generated/prisma/models";
+import {
+  AudioCountArgs,
+  AudioCreateArgs,
+  AudioFindManyArgs,
+} from "@/generated/prisma/models";
 import { BaseGetOptions, BaseGetParams } from "../dtos/shared/base-get-params";
 import { isNotNullOrWhitespace } from "../utils/type.utils";
 
@@ -10,6 +14,17 @@ const getById = async (id: Audio["id"], tc?: Prisma.TransactionClient) => {
 
   return await db.audio.findUnique({
     where: { id },
+  });
+};
+
+const getCount = async (
+  where?: AudioCountArgs["where"],
+  tc?: Prisma.TransactionClient,
+) => {
+  const db: DB = tc || prisma;
+
+  return await db.audio.count({
+    where,
   });
 };
 
@@ -75,6 +90,7 @@ export type AudioGetOptions = BaseGetOptions & {};
 
 const audioRepo = {
   getById,
+  getCount,
   create,
   query,
 };

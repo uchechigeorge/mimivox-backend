@@ -1,7 +1,11 @@
 import { Image, Prisma, User } from "@/generated/prisma/client";
 import { prisma } from "../db/prisma";
 import { DB } from "../db/types";
-import { ImageCreateArgs, ImageFindManyArgs } from "@/generated/prisma/models";
+import {
+  ImageCountArgs,
+  ImageCreateArgs,
+  ImageFindManyArgs,
+} from "@/generated/prisma/models";
 import { BaseGetOptions, BaseGetParams } from "../dtos/shared/base-get-params";
 import { isNotNullOrWhitespace } from "../utils/type.utils";
 
@@ -10,6 +14,17 @@ const getById = async (id: Image["id"], tc?: Prisma.TransactionClient) => {
 
   return await db.image.findUnique({
     where: { id },
+  });
+};
+
+const getCount = async (
+  where?: ImageCountArgs["where"],
+  tc?: Prisma.TransactionClient,
+) => {
+  const db: DB = tc || prisma;
+
+  return await db.image.count({
+    where,
   });
 };
 
@@ -75,6 +90,7 @@ export type ImageGetOptions = BaseGetOptions & {};
 
 const imageRepo = {
   getById,
+  getCount,
   create,
   query,
 };

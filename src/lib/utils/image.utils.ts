@@ -6,7 +6,6 @@ const fontPath = path.join(process.cwd(), "public/fonts/Inter-Bold.ttf");
 
 GlobalFonts.registerFromPath(fontPath, "Inter");
 
-console.log("==> Fonts", GlobalFonts.families);
 export async function generateTextImage(
   text: string,
   bgColor: string = "#3498db",

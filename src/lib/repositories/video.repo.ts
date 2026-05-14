@@ -1,7 +1,11 @@
 import { Video, Prisma, User } from "@/generated/prisma/client";
 import { prisma } from "../db/prisma";
 import { DB } from "../db/types";
-import { VideoCreateArgs, VideoFindManyArgs } from "@/generated/prisma/models";
+import {
+  VideoCountArgs,
+  VideoCreateArgs,
+  VideoFindManyArgs,
+} from "@/generated/prisma/models";
 import { BaseGetOptions, BaseGetParams } from "../dtos/shared/base-get-params";
 import { isNotNullOrWhitespace } from "../utils/type.utils";
 
@@ -10,6 +14,17 @@ const getById = async (id: Video["id"], tc?: Prisma.TransactionClient) => {
 
   return await db.video.findUnique({
     where: { id },
+  });
+};
+
+const getCount = async (
+  where?: VideoCountArgs["where"],
+  tc?: Prisma.TransactionClient,
+) => {
+  const db: DB = tc || prisma;
+
+  return await db.video.count({
+    where,
   });
 };
 
@@ -75,6 +90,7 @@ export type VideoGetOptions = BaseGetOptions & {};
 
 const videoRepo = {
   getById,
+  getCount,
   create,
   query,
 };

@@ -2,6 +2,7 @@ import { Music, Prisma, User } from "@/generated/prisma/client";
 import { prisma } from "../db/prisma";
 import { DB } from "../db/types";
 import {
+  MusicCountArgs,
   MusicCreateArgs,
   MusicFindManyArgs,
   MusicUpdateArgs,
@@ -26,6 +27,17 @@ const getByReference = async (
 
   return await db.music.findFirst({
     where: { musicServiceReferenceId, musicServiceType },
+  });
+};
+
+const getCount = async (
+  where?: MusicCountArgs["where"],
+  tc?: Prisma.TransactionClient,
+) => {
+  const db: DB = tc || prisma;
+
+  return await db.music.count({
+    where,
   });
 };
 
@@ -71,8 +83,6 @@ export const query = async (
     where.prompt = { contains: params.searchString, mode: "insensitive" };
   }
 
-  console.log({ params, where });
-
   // Determine sort column
   const sortColumn =
     sortColumnOptions[params.sortBy ?? "createdAt"] ?? "createdAt";
@@ -106,6 +116,7 @@ export type MusicGetOptions = BaseGetOptions & {};
 
 const musicRepo = {
   getById,
+  getCount,
   getByReference,
   create,
   update,

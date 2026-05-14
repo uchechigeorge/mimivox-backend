@@ -3,12 +3,32 @@ import { prisma } from "../db/prisma";
 import { DB } from "../db/types";
 import {
   VoiceAggregateArgs,
+  VoiceCountArgs,
   VoiceCreateArgs,
   VoiceCreateManyArgs,
   VoiceFindManyArgs,
 } from "@/generated/prisma/models";
 import { BaseGetOptions, BaseGetParams } from "../dtos/shared/base-get-params";
 import { isNotNullOrWhitespace } from "../utils/type.utils";
+
+const getById = async (id: Voice["id"], tc?: Prisma.TransactionClient) => {
+  const db: DB = tc || prisma;
+
+  return await db.voice.findUnique({
+    where: { id },
+  });
+};
+
+const getCount = async (
+  where?: VoiceCountArgs["where"],
+  tc?: Prisma.TransactionClient,
+) => {
+  const db: DB = tc || prisma;
+
+  return await db.voice.count({
+    where,
+  });
+};
 
 const exists = async (tc?: Prisma.TransactionClient) => {
   const db: DB = tc || prisma;
@@ -28,14 +48,6 @@ const getMaxSequence = async (
   });
 
   return (max._max.sequence ?? 0) + 1;
-};
-
-const getById = async (id: Voice["id"], tc?: Prisma.TransactionClient) => {
-  const db: DB = tc || prisma;
-
-  return await db.voice.findUnique({
-    where: { id },
-  });
 };
 
 const getByAudioServiceReference = async (
@@ -128,9 +140,10 @@ type VoiceGetParams = BaseGetParams & {
 export type VoiceGetOptions = BaseGetOptions & {};
 
 const voiceRepo = {
+  getById,
+  getCount,
   exists,
   getMaxSequence,
-  getById,
   getByAudioServiceReference,
   create,
   createMany,
