@@ -1,5 +1,10 @@
-import { createCanvas } from "@napi-rs/canvas";
+import { createCanvas, GlobalFonts } from "@napi-rs/canvas";
 import sharp from "sharp";
+
+GlobalFonts.registerFromPath(
+  process.cwd() + "/public/fonts/Inter-Bold.ttf",
+  "Inter",
+);
 
 export async function generateTextImage(
   text: string,
@@ -18,8 +23,7 @@ export async function generateTextImage(
 
   // Set text properties
   ctx.fillStyle = textColor;
-  // ctx.font = "bold 80px Arial";
-  ctx.font = `bold ${Math.floor(width * 0.4)}px sans-serif`;
+  ctx.font = `bold ${Math.floor(width * 0.4)}px Inter`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
 

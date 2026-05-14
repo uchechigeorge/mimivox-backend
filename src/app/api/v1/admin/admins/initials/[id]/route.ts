@@ -9,7 +9,6 @@ export const GET = adminHandler(
     const params = await ctx.params;
     const searchParams = getQueryParams(req);
 
-    console.log({ searchParams });
     const buffer = await generateTextImage(
       params.id,
       searchParams.bg.toString(),
