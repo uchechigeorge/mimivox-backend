@@ -55,7 +55,7 @@ export const getMeta = (args: GetMetaArgs) => {
   };
 
   const paystackPayload: PaystackPayload = {
-    amount,
+    amount: amount * 100,
     email,
     channels: ["card"],
     metadata: paystackMetadata,
