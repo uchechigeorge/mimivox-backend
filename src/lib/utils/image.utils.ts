@@ -1,11 +1,12 @@
 import { createCanvas, GlobalFonts } from "@napi-rs/canvas";
 import sharp from "sharp";
+import path from "path";
 
-GlobalFonts.registerFromPath(
-  process.cwd() + "/public/fonts/Inter-Bold.ttf",
-  "Inter",
-);
+const fontPath = path.join(process.cwd(), "public/fonts/Inter-Bold.ttf");
 
+GlobalFonts.registerFromPath(fontPath, "Inter");
+
+console.log("==> Fonts", GlobalFonts.families);
 export async function generateTextImage(
   text: string,
   bgColor: string = "#3498db",
