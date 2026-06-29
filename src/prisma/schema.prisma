@@ -189,6 +189,7 @@ enum IntervalType {
   Month
   Week
   Day
+  Hour
 }
 
 model Pricing {
@@ -221,6 +222,7 @@ enum SubscriptionStatus {
   Cancelled
   PastDue
   Trialing
+  NonRenewing
 }
 
 enum PaymentGatewayOption {

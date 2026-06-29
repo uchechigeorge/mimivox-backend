@@ -12,17 +12,20 @@ export const sendSubscriptionActivated = async (
   let billingInterval = "Monthly";
 
   switch (intervalType) {
-    case "Day":
-      billingInterval = "Daily";
-      break;
-    case "Week":
-      billingInterval = "Weekly";
+    case "Year":
+      billingInterval = "Yearly";
       break;
     case "Month":
       billingInterval = "Monthly";
       break;
-    case "Year":
-      billingInterval = "Yearly";
+    case "Week":
+      billingInterval = "Weekly";
+      break;
+    case "Day":
+      billingInterval = "Daily";
+      break;
+    case "Hour":
+      billingInterval = "Hourly";
       break;
     default:
       billingInterval = "Monthly";

@@ -29,6 +29,17 @@ const getByPricingId = async (
   });
 };
 
+const getByReference = async (
+  reference: string,
+  tc?: Prisma.TransactionClient,
+) => {
+  const db: DB = tc || prisma;
+
+  return await db.paystackPlan.findFirst({
+    where: { reference },
+  });
+};
+
 const create = async (
   data: PaystackPlanCreateArgs["data"],
   tc?: Prisma.TransactionClient,
@@ -69,6 +80,7 @@ const upsert = async (
 const paystackPlanRepo = {
   getById,
   getByPricingId,
+  getByReference,
   create,
   update,
   upsert,

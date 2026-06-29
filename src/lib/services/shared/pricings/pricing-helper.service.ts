@@ -13,6 +13,8 @@ export const toAppIntervalType = (s: $Enums.IntervalType): IntervalTypes => {
       return IntervalTypes.Week;
     case "Day":
       return IntervalTypes.Day;
+    case "Hour":
+      return IntervalTypes.Hour;
     default:
       return IntervalTypes.None;
   }

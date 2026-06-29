@@ -6,6 +6,9 @@ import {
 import crypto from "crypto";
 import { onChargeSuccess } from "./on-charge-success.service";
 import { onSubscriptionCreate } from "./on-subscription-create.service";
+import { onSubscriptionNotRenew } from "./on-subscription-not-renew.service";
+import { onSubscriptionDisable } from "./on-subscription-disable.service";
+import { onInvoicePaymentFailed } from "./on-invoice-payment-failed.service";
 
 export const handleWebhook = async (
   body: HandlePaystackWebhookDto,
@@ -54,15 +57,18 @@ export const handleWebhook = async (
   } else if (body.event === "subscription.create") {
     // Handle subscription creation event
     await onSubscriptionCreate(body);
+  } else if (body.event === "subscription.disable") {
+    // Handle subscription cancellation
+    await onSubscriptionDisable(body);
+  } else if (body.event === "subscription.not_renew") {
+    // Handle subscription future cancellation
+    await onSubscriptionNotRenew(body);
   } else if (body.event === "invoice.created") {
     // Handle invoice created event
     // await onInvoiceCreated(body);
-  } else if (body.event === "subscription.disable") {
-    // Handle subscription cancellation
-    // await onSubscriptionDisable(body);
-  } else if (body.event === "subscription.not_renew") {
+  } else if (body.event === "invoice.payment_failed") {
     // Handle subscription future cancellation
-    // await onSubscriptionNotRenew(body);
+    await onInvoicePaymentFailed(body);
   } else {
     console.warn(
       `Paystack webhook warning: Unhandled event type: ${body.event}`,

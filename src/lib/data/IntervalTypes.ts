@@ -4,4 +4,5 @@ export enum IntervalTypes {
   Month = 2,
   Week = 3,
   Day = 4,
+  Hour = 5,
 }

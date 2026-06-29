@@ -103,20 +103,24 @@ const handlePaystackUpdates = async (
     let interval: string;
 
     switch (pricing.intervalType) {
-      case "Day":
-        interval = "daily";
-        break;
-
-      case "Week":
-        interval = "weekly";
+      case "Year":
+        interval = "annually";
         break;
 
       case "Month":
         interval = "monthly";
         break;
 
-      case "Year":
-        interval = "annually";
+      case "Week":
+        interval = "weekly";
+        break;
+
+      case "Day":
+        interval = "daily";
+        break;
+
+      case "Hour":
+        interval = "hourly";
         break;
 
       default:

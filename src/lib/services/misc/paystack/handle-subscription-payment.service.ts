@@ -184,6 +184,8 @@ export const handleSubscriptionPayment = async (
         paidAt: new Date(),
         subscriptionId: subscription.id,
         currency,
+        userId: user.id,
+        userName: user.fullName,
       },
       tx,
     );
@@ -210,7 +212,7 @@ export const handleSubscriptionPayment = async (
   });
 };
 
-const getUserSettings = (planSettings: PlanSetting | null) => {
+export const getUserSettings = (planSettings: PlanSetting | null) => {
   if (!planSettings) return {};
 
   const settings: UserUpdateArgs["data"] = {

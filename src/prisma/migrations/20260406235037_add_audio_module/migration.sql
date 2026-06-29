@@ -44,10 +44,10 @@
 
 */
 -- CreateEnum
-CREATE TYPE "IntervalType" AS ENUM ('None', 'Year', 'Month', 'Week', 'Day');
+CREATE TYPE "IntervalType" AS ENUM ('None', 'Year', 'Month', 'Week', 'Day', 'Hour');
 
 -- CreateEnum
-CREATE TYPE "SubscriptionStatus" AS ENUM ('Pending', 'WillRenew', 'Completed', 'Cancelled', 'PastDue', 'Trialing');
+CREATE TYPE "SubscriptionStatus" AS ENUM ('Pending', 'WillRenew', 'Completed', 'Cancelled', 'PastDue', 'Trialing', 'NonRenewing');
 
 -- CreateEnum
 CREATE TYPE "PaymentGatewayOption" AS ENUM ('None', 'Manual', 'Paystack');
