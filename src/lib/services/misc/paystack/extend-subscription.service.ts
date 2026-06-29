@@ -108,7 +108,9 @@ export const extendSubscription = async (body: HandlePaystackWebhookDto) => {
     toAppIntervalType(pricing.intervalType),
     pricing.intervalCount,
   );
-  
+
+  console.error({ nextBillingDate });
+
   await prisma.$transaction(async (tx) => {
     const planSettings = await planSettingRepo.getByPlanId(pricing.planId, tx);
     const userSettings = getUserSettings(planSettings);

@@ -50,7 +50,7 @@ export const handleWebhook = async (
     }
   }
 
-  console.error(`Paystack webhook received: ${body}`);
+  console.error(`Paystack webhook received: ${JSON.stringify(body)}`);
 
   if (body.event === "charge.success") {
     await onChargeSuccess(body);

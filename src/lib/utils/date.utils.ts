@@ -65,7 +65,7 @@ export const getNextBillingDate = (
       );
       break;
 
-    case IntervalTypes.Day:
+    case IntervalTypes.Hour:
       nextDate = new Date(
         created.getTime() + intervalCount * 1 * 60 * 60 * 1000,
       );
