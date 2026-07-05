@@ -2,6 +2,7 @@ export type CreateSubscriptionRequestBody = {
   customer: string;
   plan: string;
   authorization?: string;
+  start_date?: Date | null;
 };
 
 export type DisableSubscriptionRequestBody = {

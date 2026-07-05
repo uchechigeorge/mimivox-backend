@@ -13,6 +13,11 @@ export const subscriptionCreateValidator = z.object({
   amount: rNumber,
 });
 
+export const subscriptionChangePlanValidator = z.object({
+  pricingId: rString,
+  amount: rNumber,
+});
+
 export const subscriptionGetByPaymentTokenParamsValidator = z.object({
   id: z.string(),
 });

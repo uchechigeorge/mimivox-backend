@@ -113,7 +113,7 @@ export const extendSubscription = async (body: HandlePaystackWebhookDto) => {
 
   await prisma.$transaction(async (tx) => {
     const planSettings = await planSettingRepo.getByPlanId(pricing.planId, tx);
-    const userSettings = getUserSettings(planSettings);
+    const userSettings = getUserSettings(planSettings, user);
     await userRepo.update(
       user.id,
       {

@@ -1,4 +1,5 @@
 import {
+  subscriptionChangePlanValidator,
   subscriptionCreateValidator,
   subscriptionGetByPaymentTokenParamsValidator,
   subscriptionReadValidator,
@@ -6,6 +7,9 @@ import {
 import z from "zod";
 
 export type CreateSubscriptionDto = z.infer<typeof subscriptionCreateValidator>;
+export type ChangePlanSubscriptionDto = z.infer<
+  typeof subscriptionChangePlanValidator
+>;
 
 export type ReadSubscriptionDto = z.infer<typeof subscriptionReadValidator>;
 export type GetSubscriptionByTokenParams = z.infer<

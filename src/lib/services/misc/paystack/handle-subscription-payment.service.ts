@@ -8,10 +8,17 @@ import { prisma } from "@/lib/db/prisma";
 import paystackSubscriptionRepo from "@/lib/repositories/paystack-subscription.repo";
 import subscriptionPaymentRepo from "@/lib/repositories/subscription-payment.repo";
 import paystackCustomerRepo from "@/lib/repositories/paystack-customer.repo";
-import { email } from "zod";
 import { UserUpdateArgs } from "@/generated/prisma/models";
-import { PlanSetting } from "@/generated/prisma/client";
+import {
+  PaystackSubscription,
+  PlanSetting,
+  Subscription,
+  User,
+} from "@/generated/prisma/client";
 import planSettingRepo from "@/lib/repositories/plan-setting.repo";
+import { BadRequestError } from "@/lib/utils/error.util";
+import paystackService from "../../shared/paystack";
+import { PaystackSubscription as PaystackSub } from "../../shared/paystack/subscriptions/types";
 
 export const handleSubscriptionPayment = async (
   body: HandlePaystackWebhookDto,
@@ -116,6 +123,9 @@ export const handleSubscriptionPayment = async (
       plan: paystackPlan.reference,
       customer: data.customer.customer_code,
       authorization: data.authorization?.authorization_code ?? undefined,
+      start_date: !subscription.isDowngrade
+        ? undefined
+        : subscription.nextBillingDate,
     });
   if (!paystackSubscription || paystackSubscriptionError) {
     console.error(
@@ -127,6 +137,33 @@ export const handleSubscriptionPayment = async (
       )}`,
     );
     return;
+  }
+
+  // If has previous subscription, disable it
+  // Get previous subscription and paystack subscription reference
+  let previousSubscription: Subscription | null = null;
+  let previousPaystackSubscription: PaystackSub | null = null;
+  if (subscription.previousSubscriptionId != null) {
+    previousSubscription = await subscriptionRepo.getById(
+      subscription.previousSubscriptionId,
+    );
+    if (!previousSubscription)
+      throw new BadRequestError("Previous subscription not found");
+
+    const previousPaystackSubscriptionRef =
+      await paystackSubscriptionRepo.getBySubscriptionId(
+        previousSubscription.id,
+      );
+    if (!previousPaystackSubscriptionRef)
+      throw new BadRequestError("Paystack previous subscription not found");
+
+    const [paystackRes, paystackFetchErr] =
+      await paystackService.subscription.fetchSubscription(
+        previousPaystackSubscriptionRef.reference,
+      );
+    if (paystackFetchErr)
+      throw new BadRequestError("Paystack previous subscription not found");
+    previousPaystackSubscription = paystackRes;
   }
 
   // Get currency and exchange rate
@@ -145,7 +182,7 @@ export const handleSubscriptionPayment = async (
     // Update subscription, invoice, transaction, and user
 
     const planSettings = await planSettingRepo.getByPlanId(pricing.planId, tx);
-    const userSettings = getUserSettings(planSettings);
+    const userSettings = getUserSettings(planSettings, user);
     await userRepo.update(
       user.id,
       {
@@ -165,6 +202,18 @@ export const handleSubscriptionPayment = async (
       },
       tx,
     );
+
+    if (previousSubscription) {
+      await subscriptionRepo.update(
+        previousSubscription.id,
+        {
+          isActive: false,
+          status: "NonRenewing",
+          endDate: previousSubscription.nextBillingDate,
+        },
+        tx,
+      );
+    }
 
     await paystackSubscriptionRepo.create(
       {
@@ -210,37 +259,81 @@ export const handleSubscriptionPayment = async (
       );
     }
   });
+
+  if (previousPaystackSubscription) {
+    await paystackService.subscription.disableSubscription({
+      code: previousPaystackSubscription.subscription_code,
+      token: previousPaystackSubscription.email_token,
+    });
+  }
 };
 
-export const getUserSettings = (planSettings: PlanSetting | null) => {
+export const getUserSettings = (
+  planSettings: PlanSetting | null,
+  user: User,
+) => {
   if (!planSettings) return {};
+
+  user.noOfCreditsAllocated;
 
   const settings: UserUpdateArgs["data"] = {
     noOfCreditsUsed: 0,
-    noOfCreditsAllocated: planSettings.noOfCredits,
-    noOfCreditsLeft: planSettings.noOfCredits,
+    noOfCreditsAllocated: !planSettings.noOfCredits
+      ? null
+      : planSettings.noOfCredits + (user.noOfCreditsAllocated ?? 0),
+    noOfCreditsLeft: !planSettings.noOfCredits
+      ? null
+      : planSettings.noOfCredits + (user.noOfCreditsAllocated ?? 0),
     noOfCharactersUsed: 0,
-    noOfCharactersAllocated: planSettings.noOfCharacters,
-    noOfCharactersLeft: planSettings.noOfCharacters,
+    noOfCharactersAllocated: !planSettings.noOfCharacters
+      ? null
+      : planSettings.noOfCharacters + (user.noOfCharactersAllocated ?? 0),
+    noOfCharactersLeft: !planSettings.noOfCharacters
+      ? null
+      : planSettings.noOfCharacters + (user.noOfCharactersAllocated ?? 0),
     noOfWordsAllowed: planSettings.noOfWords,
     noOfVoicesUsed: 0,
-    noOfVoicesAllocated: planSettings.noOfVoices,
-    noOfVoicesLeft: planSettings.noOfVoices,
+    noOfVoicesAllocated: !planSettings.noOfVoices
+      ? null
+      : planSettings.noOfVoices + (user.noOfVoicesAllocated ?? 0),
+    noOfVoicesLeft: !planSettings.noOfVoices
+      ? null
+      : planSettings.noOfVoices + (user.noOfVoicesAllocated ?? 0),
     noOfPremiumVoicesUsed: 0,
-    noOfPremiumVoicesAllocated: planSettings.noOfPremiumVoices,
-    noOfPremiumVoicesLeft: planSettings.noOfPremiumVoices,
+    noOfPremiumVoicesAllocated: !planSettings.noOfPremiumVoices
+      ? null
+      : planSettings.noOfPremiumVoices + (user.noOfPremiumVoicesAllocated ?? 0),
+    noOfPremiumVoicesLeft: !planSettings.noOfPremiumVoices
+      ? null
+      : planSettings.noOfPremiumVoices + (user.noOfPremiumVoicesAllocated ?? 0),
     noOfCloneVoicesUsed: 0,
-    noOfCloneVoicesAllocated: planSettings.noOfCloneVoices,
-    noOfCloneVoicesLeft: planSettings.noOfCloneVoices,
+    noOfCloneVoicesAllocated: !planSettings.noOfCloneVoices
+      ? null
+      : planSettings.noOfCloneVoices + (user.noOfCloneVoicesAllocated ?? 0),
+    noOfCloneVoicesLeft: !planSettings.noOfCloneVoices
+      ? null
+      : planSettings.noOfCloneVoices + (user.noOfCloneVoicesAllocated ?? 0),
     noOfImagesUsed: 0,
-    noOfImagesAllocated: planSettings.noOfImages,
-    noOfImagesLeft: planSettings.noOfImages,
+    noOfImagesAllocated: !planSettings.noOfImages
+      ? null
+      : planSettings.noOfImages + (user.noOfImagesAllocated ?? 0),
+    noOfImagesLeft: !planSettings.noOfImages
+      ? null
+      : planSettings.noOfImages + (user.noOfImagesAllocated ?? 0),
     noOfMusicUsed: 0,
-    noOfMusicAllocated: planSettings.noOfMusic,
-    noOfMusicLeft: planSettings.noOfMusic,
+    noOfMusicAllocated: !planSettings.noOfMusic
+      ? null
+      : planSettings.noOfMusic + (user.noOfMusicAllocated ?? 0),
+    noOfMusicLeft: !planSettings.noOfMusic
+      ? null
+      : planSettings.noOfMusic + (user.noOfMusicAllocated ?? 0),
     noOfVideosUsed: 0,
-    noOfVideosAllocated: planSettings.noOfVideos,
-    noOfVideosLeft: planSettings.noOfVideos,
+    noOfVideosAllocated: !planSettings.noOfVideos
+      ? null
+      : planSettings.noOfVideos + (user.noOfVideosAllocated ?? 0),
+    noOfVideosLeft: !planSettings.noOfVideos
+      ? null
+      : planSettings.noOfVideos + (user.noOfVideosAllocated ?? 0),
   };
 
   return settings;

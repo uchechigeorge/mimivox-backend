@@ -89,6 +89,11 @@ export const onSubscriptionNotRenew = async (
     endDate: subscription.nextBillingDate,
   });
 
+  const isChangingPlan =
+    await subscriptionRepo.getExistsByPreviousSubscriptionId(subscription.id);
+
+  if (isChangingPlan) return;
+
   await sendSubscriptionCancelled(user.email, {
     userName: user.fullName,
     expirationDate: subscription.endDate,

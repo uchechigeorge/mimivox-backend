@@ -232,31 +232,35 @@ enum PaymentGatewayOption {
 }
 
 model Subscription {
-  id                    String                 @id @default(uuid()) @db.VarChar(1024)
-  reference             String                 @unique @default(cuid()) @db.VarChar(1024)
-  userId                String                 @db.VarChar(1024)
-  userName              String                 @db.VarChar(1024)
-  pricingId             String                 @db.VarChar(1024)
-  pricingName           String                 @db.VarChar(1024)
-  planId                String                 @db.VarChar(1024)
-  planName              String                 @db.VarChar(1024)
-  isActive              Boolean                @default(false)
-  status                SubscriptionStatus     @default(Pending)
-  startDate             DateTime
-  nextBillingDate       DateTime?
-  endDate               DateTime?
-  initialAmount         Decimal?               @db.Decimal(18, 2)
-  paymentToken          String                 @unique @default(cuid()) @db.VarChar(1024)
-  paymentVerified       Boolean                @default(false)
-  paymentGateway        PaymentGatewayOption   @default(None)
-  user                  User                   @relation(fields: [userId], references: [id])
-  pricing               Pricing                @relation(fields: [pricingId], references: [id])
-  plan                  Plan                   @relation(fields: [planId], references: [id])
-  createdAt             DateTime               @default(now())
-  updatedAt             DateTime               @updatedAt
-  deletedAt             DateTime?
-  subscriptionPayments  SubscriptionPayment[]
-  paystackSubscriptions PaystackSubscription[]
+  id                     String                 @id @default(uuid()) @db.VarChar(1024)
+  reference              String                 @unique @default(cuid()) @db.VarChar(1024)
+  userId                 String                 @db.VarChar(1024)
+  userName               String                 @db.VarChar(1024)
+  pricingId              String                 @db.VarChar(1024)
+  pricingName            String                 @db.VarChar(1024)
+  planId                 String                 @db.VarChar(1024)
+  planName               String                 @db.VarChar(1024)
+  isActive               Boolean                @default(false)
+  status                 SubscriptionStatus     @default(Pending)
+  startDate              DateTime
+  nextBillingDate        DateTime?
+  endDate                DateTime?
+  initialAmount          Decimal?               @db.Decimal(18, 2)
+  paymentToken           String                 @unique @default(cuid()) @db.VarChar(1024)
+  paymentVerified        Boolean                @default(false)
+  paymentGateway         PaymentGatewayOption   @default(None)
+  isDowngrade            Boolean                @default(false)
+  previousSubscriptionId String?                @unique
+  previousSubscription   Subscription?          @relation("SubscriptionHistory", fields: [previousSubscriptionId], references: [id])
+  nextSubscription       Subscription?          @relation("SubscriptionHistory")
+  user                   User                   @relation(fields: [userId], references: [id])
+  pricing                Pricing                @relation(fields: [pricingId], references: [id])
+  plan                   Plan                   @relation(fields: [planId], references: [id])
+  createdAt              DateTime               @default(now())
+  updatedAt              DateTime               @updatedAt
+  deletedAt              DateTime?
+  subscriptionPayments   SubscriptionPayment[]
+  paystackSubscriptions  PaystackSubscription[]
 
   @@map("Subscriptions")
 }

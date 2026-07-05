@@ -90,6 +90,14 @@ const getExistsByPaymentToken = async (
   return result !== null;
 };
 
+const getExistsByPreviousSubscriptionId = async (
+  previousSubscriptionId: string,
+  tc?: Prisma.TransactionClient,
+) => {
+  const result = await getByReference(previousSubscriptionId, tc);
+  return result !== null;
+};
+
 const create = async (
   data: SubscriptionCreateArgs["data"],
   tc?: Prisma.TransactionClient,
@@ -200,6 +208,7 @@ const subscriptionRepo = {
   getExistsByReference,
   getByPaymentToken,
   getExistsByPaymentToken,
+  getExistsByPreviousSubscriptionId,
   create,
   update,
   upsert,
