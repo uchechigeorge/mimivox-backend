@@ -15,9 +15,6 @@ import { getMeta } from "./get-subscription-by-payment-token.service";
 import { ReadSubscriptionMetaDetailsDto } from "./types";
 import { subscriptionReadValidator } from "@/lib/validators/user/subscription.validator";
 import { Subscription } from "@/generated/prisma/client";
-import paystackSubscriptionRepo from "@/lib/repositories/paystack-subscription.repo";
-import paystackService from "../../shared/paystack";
-import { PaystackSubscription } from "../../shared/paystack/subscriptions/types";
 
 export const changePlan = async (
   body: ChangePlanSubscriptionDto,

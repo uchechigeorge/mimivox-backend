@@ -5,6 +5,7 @@ import { sendSubscriptionCancelled } from "../../user/notifications/subscription
 import paystackPlanRepo from "@/lib/repositories/paystack-pricing.repo";
 import pricingRepo from "@/lib/repositories/pricing.repo";
 import subscriptionRepo from "@/lib/repositories/subscription.repo";
+import paystackSubscriptionRepo from "@/lib/repositories/paystack-subscription.repo";
 
 export const onSubscriptionNotRenew = async (
   body: HandlePaystackWebhookDto,
@@ -14,13 +15,16 @@ export const onSubscriptionNotRenew = async (
   if (
     !data.customer ||
     !data.customer.customer_code ||
+    !data.subscription_code ||
     !data.plan ||
     !data.plan.plan_code
   ) {
     console.error(
-      `Paystack webhook error: Missing customer or plan data; ${JSON.stringify({
-        data,
-      })}`,
+      `Paystack webhook error: Missing customer or plan/subscription data; ${JSON.stringify(
+        {
+          data,
+        },
+      )}`,
     );
     return;
   }
@@ -71,13 +75,26 @@ export const onSubscriptionNotRenew = async (
     return;
   }
 
-  const subscription = await subscriptionRepo.getByUserIdAndIsActive(
-    user.id,
-    true,
+  const paystackSubscription = await paystackSubscriptionRepo.getByReference(
+    data.subscription_code,
+  );
+  if (!paystackSubscription || !paystackSubscription.subscriptionId) {
+    console.error(
+      `Paystack webhook error: Paystack subscription not found; ${JSON.stringify(
+        {
+          subscription: data.subscription_code,
+        },
+      )}`,
+    );
+    return;
+  }
+
+  const subscription = await subscriptionRepo.getById(
+    paystackSubscription.subscriptionId,
   );
   if (!subscription) {
     console.error(
-      `Paystack webhook error: No active subscriptions found; ${JSON.stringify({
+      `Paystack webhook error: Subscription not found; ${JSON.stringify({
         subscription,
       })}`,
     );
