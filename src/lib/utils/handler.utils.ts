@@ -8,6 +8,19 @@ import adminAuthService from "../services/admin/auth";
 import { AppRouteContext, HandlerOptions } from "./types";
 import { AdminAuthItems } from "../types/AuthItems";
 
+export const miscHandler =
+  <TParams>(
+    fn: (req: NextRequest, ctx: AppRouteContext<TParams>) => Promise<Response>,
+    options?: HandlerOptions,
+  ) =>
+  async (req: NextRequest, ctx: AppRouteContext<TParams>) => {
+    try {
+      return await fn(req, ctx);
+    } catch (err: any) {
+      return handleError(err);
+    }
+  };
+
 export const userHandler =
   <TParams>(
     fn: (

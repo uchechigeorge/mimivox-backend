@@ -60,6 +60,7 @@ export const changePlan = async (
 
   const isDowngrade = plan.sequence < currentPlan.sequence;
   let paymentToken = "";
+  // For upgrade, we will set the start date for new subscription to current date and next billing date based on new plan's pricing
   let startDate: Date = new Date();
   let nextBillingDate = getNextBillingDate(
     startDate,
@@ -67,9 +68,12 @@ export const changePlan = async (
     pricing.intervalCount,
   );
 
-  if (!isDowngrade) {
+  // If is downgrade
+  if (isDowngrade) {
+    // Set start date for new subscription to next billing date for current
     startDate = activeSubscription.nextBillingDate ?? new Date();
 
+    // Calculate next billing date for new subscription based on start date and new plan's pricing
     nextBillingDate = getNextBillingDate(
       startDate,
       toAppIntervalType(pricing.intervalType),

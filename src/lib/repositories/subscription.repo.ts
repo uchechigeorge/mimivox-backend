@@ -101,9 +101,9 @@ const getExistsByPreviousSubscriptionId = async (
 const listByExpiredAndIsActive = async (tc?: Prisma.TransactionClient) => {
   const db: DB = tc || prisma;
 
-  await db.subscription.findMany({
+  return await db.subscription.findMany({
     where: {
-      nextBillingDate: { gte: new Date() },
+      nextBillingDate: { lte: new Date() },
       isActive: true,
     },
   });
@@ -220,6 +220,7 @@ const subscriptionRepo = {
   getByPaymentToken,
   getExistsByPaymentToken,
   getExistsByPreviousSubscriptionId,
+  listByExpiredAndIsActive,
   create,
   update,
   upsert,

@@ -4,8 +4,12 @@ import userRepo from "@/lib/repositories/user.repo";
 import { comparePassword, generateAccessToken } from "./auth-helpers.service";
 import { UserLoginResponse } from "./types";
 import { getCredentials } from "./get-credentials.service";
+import subscriptionService from "../../misc/subscriptions";
 
 export const login = async (body: LoginDto) => {
+  // Simulate cron
+  await subscriptionService.checkExpiry();
+
   const user = await userRepo.getByEmail(body.email);
   const invalidCredentialsMessage = "Invalid credentials";
   if (!user) throw new BadRequestError(invalidCredentialsMessage);
