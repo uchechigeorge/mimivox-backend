@@ -29,14 +29,14 @@ export const planReadDtoValidator = z.object({
     .optional(),
   settings: z
     .object({
-      // id: nString,
+      id: nString,
       noOfCredits: nNumber,
-      noOfCharacters: nNumber,
       noOfPremiumVoices: nNumber,
       noOfCloneVoices: nNumber,
       noOfImages: nNumber,
-      noOfOfMusic: nNumber,
-      noOfOfVideos: nNumber,
+      noOfOfMusics: nNumber,
+      noOfVideos: nNumber,
+      maxVideoDurationInSeconds: nNumber,
     })
     .optional(),
   updatedAt: nDate,

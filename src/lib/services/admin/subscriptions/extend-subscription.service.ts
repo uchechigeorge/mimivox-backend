@@ -7,6 +7,7 @@ import { toAppIntervalType } from "../../shared/pricings/pricing-helper.service"
 import { SubscriptionPaymentCreateArgs } from "@/generated/prisma/models";
 import { prisma } from "@/lib/db/prisma";
 import subscriptionPaymentRepo from "@/lib/repositories/subscription-payment.repo";
+import userRepo from "@/lib/repositories/user.repo";
 
 export const extendSubscription = async (params: SubscriptionExtendParams) => {
   const subscriptionId = params.id;
@@ -28,8 +29,12 @@ export const extendSubscription = async (params: SubscriptionExtendParams) => {
     throw new BadRequestError("Only expired subscriptions can be extended");
   }
 
-  if (subscription.nextBillingDate != null)
-    subscription.nextBillingDate = getNextBillingDate(
+  const user = await userRepo.getById(subscription.userId);
+  if (!user) throw new BadRequestError("User not found");
+
+  const nextBillingDate =
+    subscription.nextBillingDate &&
+    getNextBillingDate(
       subscription.nextBillingDate,
       toAppIntervalType(pricing.intervalType),
       pricing.intervalCount,
@@ -43,6 +48,12 @@ export const extendSubscription = async (params: SubscriptionExtendParams) => {
     isInitialPayment: false,
     isPaymentVerified: true,
     paidAt: new Date(),
+    startDate: subscription.nextBillingDate,
+    endDate: nextBillingDate,
+    planId: subscription.planId,
+    planName: subscription.planName,
+    userId: subscription.userId,
+    userName: user.fullName,
   };
 
   await prisma.$transaction(async (tc) => {
@@ -51,7 +62,7 @@ export const extendSubscription = async (params: SubscriptionExtendParams) => {
       {
         isActive: true,
         status: "WillRenew",
-        nextBillingDate: subscription.nextBillingDate,
+        nextBillingDate,
       },
       tc,
     );

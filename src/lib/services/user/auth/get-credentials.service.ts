@@ -68,6 +68,7 @@ export const getCredentials = async (userId: string) => {
     noOfVideosLeft: user.noOfVideosLeft,
     subscription: subscription
       ? {
+          id: subscription.id,
           isActive: subscription.isActive,
           nextBillingDate: subscription.nextBillingDate,
           status: subscription.status,

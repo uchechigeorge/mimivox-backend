@@ -72,6 +72,7 @@ export type UserCredentials = {
 };
 
 export type UserCredentialSubscription = {
+  id: string;
   isActive: boolean;
   status: string;
   planName: string;
