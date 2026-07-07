@@ -18,12 +18,18 @@ export const validate = async (
   if (isNullOrWhitespace(prompt))
     throw new BadRequestError("No prompt provided");
 
-  if (options.duration && options.duration < 10) {
-    throw new BadRequestError("Minimum duration is 10 seconds");
-  }
-
   const userId = authItems.userId;
   if (!userId) throw new UnauthorizedError();
+  const _user = await userRepo.getByIdWithLock(userId);
+  if (!_user) throw new UnauthorizedError();
+
+  if (
+    options.duration &&
+    _user.maxVideoDurationInSeconds &&
+    options.duration > _user.maxVideoDurationInSeconds
+  ) {
+    throw new BadRequestError("Video duration exceeds maximum allowed");
+  }
 
   const user = await prisma.$transaction(async (tx) => {
     const user = await userRepo.getByIdWithLock(userId, tx);

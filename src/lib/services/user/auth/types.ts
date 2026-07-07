@@ -64,6 +64,7 @@ export type UserCredentials = {
   noOfImagesAllocated: number | null;
   noOfImagesLeft: number | null;
   noOfVideosUsed: number;
+  maxVideoDurationInSeconds: number | null;
   // totalVideosUsed: number;
   noOfVideosAllocated: number | null;
   noOfVideosLeft: number | null;

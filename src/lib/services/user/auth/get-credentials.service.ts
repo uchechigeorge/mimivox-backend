@@ -62,6 +62,7 @@ export const getCredentials = async (userId: string) => {
     noOfMusicLeft: user.noOfMusicLeft,
 
     noOfVideosUsed: user.noOfVideosUsed,
+    maxVideoDurationInSeconds: user.maxVideoDurationInSeconds,
     // totalVideosUsed: user.totalVideosUsed,
     noOfVideosAllocated: user.noOfVideosAllocated,
     noOfVideosLeft: user.noOfVideosLeft,

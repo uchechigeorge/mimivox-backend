@@ -37,6 +37,7 @@ const envSchema = z.object({
   INIT_ADMIN_FIRST_NAME: z.string().optional(),
   INIT_ADMIN_LAST_NAME: z.string().optional(),
   CREDITS_PER_CHARACTER: z.coerce.number(),
+  CREDITS_PER_CHARACTER_PREMIUM: z.coerce.number(),
   CREDITS_PER_VOICE_CLONE: z.coerce.number(),
   CREDITS_PER_IMAGE: z.coerce.number(),
   CREDITS_PER_MUSIC: z.coerce.number(),

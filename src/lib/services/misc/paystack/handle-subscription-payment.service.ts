@@ -235,6 +235,10 @@ export const handleSubscriptionPayment = async (
         currency,
         userId: user.id,
         userName: user.fullName,
+        planId: pricing.planId,
+        planName: pricing.planName,
+        startDate: subscription.startDate,
+        endDate: subscription.nextBillingDate,
       },
       tx,
     );
@@ -334,6 +338,7 @@ export const getUserSettings = (
     noOfVideosLeft: !planSettings.noOfVideos
       ? null
       : planSettings.noOfVideos + (user.noOfVideosAllocated ?? 0),
+    maxVideoDurationInSeconds: planSettings.maxVideoDurationInSeconds,
   };
 
   return settings;

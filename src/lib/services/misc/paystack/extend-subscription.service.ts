@@ -114,11 +114,23 @@ export const extendSubscription = async (body: HandlePaystackWebhookDto) => {
   await prisma.$transaction(async (tx) => {
     const planSettings = await planSettingRepo.getByPlanId(pricing.planId, tx);
     const userSettings = getUserSettings(planSettings, user);
-    await userRepo.update(
-      user.id,
+
+    await subscriptionPaymentRepo.create(
       {
-        ...userSettings,
-        hasActiveSubscription: true,
+        amount: amountPaid,
+        subscriptionReference: subscription.reference,
+        paymentGateway: "Paystack",
+        isInitialPayment: true,
+        isPaymentVerified: true,
+        paidAt: new Date(),
+        subscriptionId: subscription.id,
+        currency,
+        userId: user.id,
+        userName: user.fullName,
+        planId: pricing.planId,
+        planName: pricing.planName,
+        startDate: subscription.nextBillingDate,
+        endDate: nextBillingDate,
       },
       tx,
     );
@@ -134,18 +146,11 @@ export const extendSubscription = async (body: HandlePaystackWebhookDto) => {
       tx,
     );
 
-    await subscriptionPaymentRepo.create(
+    await userRepo.update(
+      user.id,
       {
-        amount: amountPaid,
-        subscriptionReference: subscription.reference,
-        paymentGateway: "Paystack",
-        isInitialPayment: true,
-        isPaymentVerified: true,
-        paidAt: new Date(),
-        subscriptionId: subscription.id,
-        currency,
-        userId: user.id,
-        userName: user.fullName,
+        ...userSettings,
+        hasActiveSubscription: true,
       },
       tx,
     );

@@ -40,10 +40,22 @@ export const cancelSubscription = async (authItems: UserAuthItems) => {
     paystackSubscription = paystackRes;
   }
 
+  const isExpired =
+    activeSubscription.status === "PastDue" ||
+    (activeSubscription.nextBillingDate != null &&
+      activeSubscription.nextBillingDate < new Date());
+
   await subscriptionRepo.update(activeSubscription.id, {
-    status: "NonRenewing",
+    status: isExpired ? "Cancelled" : "NonRenewing",
     endDate: activeSubscription.nextBillingDate,
+    isActive: isExpired,
   });
+
+  if (isExpired) {
+    await userRepo.update(userId, {
+      hasActiveSubscription: false,
+    });
+  }
 
   if (activeSubscription.paymentGateway == "Paystack" && paystackSubscription) {
     await paystackService.subscription.disableSubscription({

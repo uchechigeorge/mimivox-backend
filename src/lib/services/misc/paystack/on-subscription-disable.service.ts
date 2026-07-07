@@ -1,9 +1,8 @@
 import { HandlePaystackWebhookDto } from "@/lib/dtos/misc/paystack.dto";
 import paystackCustomerRepo from "@/lib/repositories/paystack-customer.repo";
 import userRepo from "@/lib/repositories/user.repo";
-import paystackPlanRepo from "@/lib/repositories/paystack-pricing.repo";
-import pricingRepo from "@/lib/repositories/pricing.repo";
 import subscriptionRepo from "@/lib/repositories/subscription.repo";
+import paystackSubscriptionRepo from "@/lib/repositories/paystack-subscription.repo";
 
 export const onSubscriptionDisable = async (body: HandlePaystackWebhookDto) => {
   const data = body.data;
@@ -12,12 +11,15 @@ export const onSubscriptionDisable = async (body: HandlePaystackWebhookDto) => {
     !data.customer ||
     !data.customer.customer_code ||
     !data.plan ||
-    !data.plan.plan_code
+    !data.plan.plan_code ||
+    !data.subscription_code
   ) {
     console.error(
-      `Paystack webhook error: Missing customer or plan data; ${JSON.stringify({
-        data,
-      })}`,
+      `Paystack webhook error: Missing customer or subscription/plan data; ${JSON.stringify(
+        {
+          data,
+        },
+      )} [subscription.disable]`,
     );
     return;
   }
@@ -31,7 +33,7 @@ export const onSubscriptionDisable = async (body: HandlePaystackWebhookDto) => {
         {
           customer: data.customer,
         },
-      )}`,
+      )} [subscription.disable]`,
     );
     return;
   }
@@ -41,42 +43,33 @@ export const onSubscriptionDisable = async (body: HandlePaystackWebhookDto) => {
     console.error(
       `Paystack webhook error: User not found for paystack customer; ${JSON.stringify(
         { paystackUser },
-      )}`,
+      )} [subscription.disable]`,
     );
     return;
   }
 
-  const paystackPlan = await paystackPlanRepo.getByReference(
-    data.plan.plan_code,
+  const paystackSubscription = await paystackSubscriptionRepo.getByReference(
+    data.subscription_code,
   );
-  if (!paystackPlan || !paystackPlan.pricingId) {
+  if (!paystackSubscription || !paystackSubscription.subscriptionId) {
     console.error(
-      `Paystack webhook error: Paystack plan not found; ${JSON.stringify({
-        plan: data.plan,
-      })}`,
+      `Paystack webhook error: Paystack subscription not found; ${JSON.stringify(
+        {
+          subscription: data.subscription_code,
+        },
+      )} [subscription.disable]`,
     );
     return;
   }
 
-  const pricing = await pricingRepo.getById(paystackPlan.pricingId);
-  if (!pricing) {
-    console.error(
-      `Paystack webhook error: Pricing not found for paystack plan; ${JSON.stringify(
-        { paystackPlan },
-      )}`,
-    );
-    return;
-  }
-
-  const subscription = await subscriptionRepo.getByUserIdAndIsActive(
-    user.id,
-    true,
+  const subscription = await subscriptionRepo.getById(
+    paystackSubscription.subscriptionId,
   );
   if (!subscription) {
     console.error(
-      `Paystack webhook error: No active subscriptions found; ${JSON.stringify({
+      `Paystack webhook error: Subscription not found; ${JSON.stringify({
         subscription,
-      })}`,
+      })} [subscription.disable]`,
     );
     return;
   }

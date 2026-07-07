@@ -61,6 +61,7 @@ model User {
   totalVideosUsed            Int                   @default(0)
   noOfVideosAllocated        Int?                  @default(0)
   noOfVideosLeft             Int?                  @default(0)
+  maxVideoDurationInSeconds  Int?                  @default(0)
   blocked                    Boolean               @default(false)
   createdAt                  DateTime              @default(now())
   updatedAt                  DateTime              @updatedAt
@@ -141,18 +142,19 @@ model AdminToken {
 /// =====================
 
 model Plan {
-  id            String         @id @default(uuid()) @db.VarChar(1024)
-  name          String         @db.VarChar(1024)
-  description   String?        @db.VarChar(1024)
-  slug          String         @unique @db.VarChar(1024)
-  isFree        Boolean        @default(false)
-  sequence      Int            @default(0)
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  deletedAt     DateTime?
-  pricings      Pricing[]
-  subscriptions Subscription[]
-  settings      PlanSetting?
+  id                   String                @id @default(uuid()) @db.VarChar(1024)
+  name                 String                @db.VarChar(1024)
+  description          String?               @db.VarChar(1024)
+  slug                 String                @unique @db.VarChar(1024)
+  isFree               Boolean               @default(false)
+  sequence             Int                   @default(0)
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  deletedAt            DateTime?
+  pricings             Pricing[]
+  subscriptions        Subscription[]
+  settings             PlanSetting?
+  subscriptionPayments SubscriptionPayment[]
 
   @@map("Plans")
 }
@@ -164,12 +166,14 @@ model PlanSetting {
   noOfCredits                 Int?      @default(0)
   noOfCharacters              Int?      @default(0)
   noOfWords                   Int?      @default(0)
+  noOfWordsAllowed            Int?      @default(0)
   noOfVoices                  Int?      @default(0)
   noOfPremiumVoices           Int?      @default(0)
   noOfCloneVoices             Int?      @default(0)
   noOfMusic                   Int?      @default(0)
   noOfImages                  Int?      @default(0)
   noOfVideos                  Int?      @default(0)
+  maxVideoDurationInSeconds   Int?      @default(0)
   hasCommunitySupport         Boolean   @default(true)
   hasEmailSupport             Boolean   @default(false)
   socialMediaGuidelines       Int       @default(1)
@@ -183,6 +187,33 @@ model PlanSetting {
   @@map("PlanSettings")
 }
 
+model PricingSetting {
+  id                          String    @id @default(uuid()) @db.VarChar(1024)
+  pricingId                   String    @unique
+  pricingName                 String    @db.VarChar(1024)
+  noOfCredits                 Int?      @default(0)
+  noOfCharacters              Int?      @default(0)
+  noOfWordsAllowed            Int?      @default(0)
+  noOfVoices                  Int?      @default(0)
+  noOfPremiumVoices           Int?      @default(0)
+  noOfCloneVoices             Int?      @default(0)
+  noOfMusic                   Int?      @default(0)
+  noOfImages                  Int?      @default(0)
+  noOfVideos                  Int?      @default(0)
+  maxVideoDurationInSeconds   Int?      @default(0)
+  hasCommunitySupport         Boolean   @default(true)
+  hasEmailSupport             Boolean   @default(false)
+  socialMediaGuidelines       Int       @default(1)
+  hasDedicatedCustomerSupport Boolean   @default(false)
+  hasApiAccess                Boolean   @default(false)
+  createdAt                   DateTime  @default(now())
+  updatedAt                   DateTime  @updatedAt
+  deletedAt                   DateTime?
+  pricing                     Pricing   @relation(fields: [pricingId], references: [id])
+
+  @@map("PricingSettings")
+}
+
 enum IntervalType {
   None
   Year
@@ -193,24 +224,25 @@ enum IntervalType {
 }
 
 model Pricing {
-  id            String         @id @default(uuid()) @db.VarChar(1024)
-  planId        String         @db.VarChar(1024)
-  planName      String         @db.VarChar(1024)
-  slug          String         @unique @db.VarChar(1024)
-  name          String         @db.VarChar(1024)
-  description   String?        @db.VarChar(1024)
-  price         Decimal        @db.Decimal(18, 2)
-  oldPrice      Decimal?       @db.Decimal(18, 2)
-  interval      String         @db.VarChar(1024)
-  intervalCount Int
-  intervalType  IntervalType   @default(None)
-  sequence      Int            @default(0)
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  deletedAt     DateTime?
-  plan          Plan           @relation(fields: [planId], references: [id])
-  subscriptions Subscription[]
-  paystackPlans PaystackPlan[]
+  id             String          @id @default(uuid()) @db.VarChar(1024)
+  planId         String          @db.VarChar(1024)
+  planName       String          @db.VarChar(1024)
+  slug           String          @unique @db.VarChar(1024)
+  name           String          @db.VarChar(1024)
+  description    String?         @db.VarChar(1024)
+  price          Decimal         @db.Decimal(18, 2)
+  oldPrice       Decimal?        @db.Decimal(18, 2)
+  interval       String          @db.VarChar(1024)
+  intervalCount  Int
+  intervalType   IntervalType    @default(None)
+  sequence       Int             @default(0)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  deletedAt      DateTime?
+  plan           Plan            @relation(fields: [planId], references: [id])
+  subscriptions  Subscription[]
+  paystackPlans  PaystackPlan[]
+  pricingSetting PricingSetting?
 
   @@map("Pricings")
 }
@@ -277,11 +309,16 @@ model SubscriptionPayment {
   userName              String?              @db.VarChar(1024)
   paidAt                DateTime?
   currency              String?              @db.VarChar(1024)
+  startDate             DateTime?
+  endDate               DateTime?
+  planId                String?              @db.VarChar(1024)
+  planName              String?              @db.VarChar(1024)
   updatedAt             DateTime             @updatedAt
   createdAt             DateTime             @default(now())
   deletedAt             DateTime?
   subscription          Subscription?        @relation(fields: [subscriptionId], references: [id])
   user                  User?                @relation(fields: [userId], references: [id])
+  plan                  Plan?                @relation(fields: [planId], references: [id])
 
   @@map("SubscriptionPayments")
 }

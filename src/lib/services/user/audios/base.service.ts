@@ -31,7 +31,11 @@ export const validate = async (
     }
 
     const noOfCharacters = content.trim().length;
-    const creditsPerCharacter = env.CREDITS_PER_CHARACTER;
+    const isPremiumVoice = audioServiceType === "ElevenLabs";
+    const creditsPerCharacter = isPremiumVoice
+      ? env.CREDITS_PER_CHARACTER_PREMIUM
+      : env.CREDITS_PER_CHARACTER;
+
     const noOfCreditsToUse = noOfCharacters * creditsPerCharacter;
     let noOfCreditsLeft = user.noOfCreditsLeft;
     let noOfCharactersLeft = user.noOfCharactersLeft;
@@ -49,8 +53,6 @@ export const validate = async (
     ) {
       throw new BadRequestError("Reached max word quota");
     }
-
-    const isPremiumVoice = audioServiceType === "ElevenLabs";
 
     const noOfCharactersUsed = user.noOfCharactersUsed + noOfCharacters;
     const totalCharactersUsed = user.totalCharactersUsed + noOfCharacters;
@@ -109,7 +111,10 @@ export const reverseCredits = async (data: TTSReverseOptions) => {
   if (!user) throw new UnauthorizedError();
 
   const noOfCharacters = content.trim().length;
-  const creditsPerCharacter = env.CREDITS_PER_CHARACTER;
+  const creditsPerCharacter =
+    data.audioServiceType === "ElevenLabs"
+      ? env.CREDITS_PER_CHARACTER_PREMIUM
+      : env.CREDITS_PER_CHARACTER;
   const noOfCreditsToUse = noOfCharacters * creditsPerCharacter;
   let noOfCreditsLeft = user.noOfCreditsLeft;
   let noOfCharactersLeft = user.noOfCharactersLeft;
