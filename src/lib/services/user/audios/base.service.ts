@@ -54,6 +54,14 @@ export const validate = async (
       throw new BadRequestError("Reached max word quota");
     }
 
+    if (
+      isPremiumVoice &&
+      user.noOfPremiumVoicesLeft !== null &&
+      user.noOfPremiumVoicesLeft <= 0
+    ) {
+      throw new BadRequestError("No premium voices left");
+    }
+
     const noOfCharactersUsed = user.noOfCharactersUsed + noOfCharacters;
     const totalCharactersUsed = user.totalCharactersUsed + noOfCharacters;
     noOfCharactersLeft =
