@@ -8,7 +8,7 @@ export const checkExpiry = async () => {
 
   for (const subscription of subscriptions) {
     await subscriptionRepo.update(subscription.id, {
-      isActive: true,
+      isActive: false,
       status: "Cancelled",
     });
     const user = await userRepo.getById(subscription.userId);
