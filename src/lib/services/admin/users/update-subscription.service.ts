@@ -1,8 +1,4 @@
-import {
-  PlanSetting,
-  Pricing,
-  PricingSetting,
-} from "@/generated/prisma/client";
+import { Pricing, PricingSetting } from "@/generated/prisma/client";
 import {
   UpdateUserSubscriptionDto,
   UpdateUserSubscriptionParams,
@@ -14,11 +10,8 @@ import { getNextBillingDate } from "@/lib/utils/date.utils";
 import { BadRequestError } from "@/lib/utils/error.util";
 import { toAppIntervalType } from "../../shared/pricings/pricing-helper.service";
 import { Decimal } from "@prisma/client/runtime/client";
-import planSettingRepo from "@/lib/repositories/plan-setting.repo";
-import planRepo from "@/lib/repositories/plan.repo";
 import { prisma } from "@/lib/db/prisma";
 import sharedSubscriptionService from "../../shared/subscriptions";
-import { UserUpdateArgs } from "@/generated/prisma/models";
 import pricingSettingsService from "../../shared/pricing-settings";
 import pricingSettingRepo from "@/lib/repositories/pricing-setting.repo";
 
@@ -111,17 +104,17 @@ export const updateUserSubscription = async (
           tc,
         );
 
-        const freePlan = await planRepo.getByIsFree(tc);
-        let freePlanSettings: PricingSetting | null = null;
-        if (freePlan) {
-          freePlanSettings = await pricingSettingRepo.getByPricingId(
-            freePlan.id,
+        const freePricing = await pricingRepo.getByIsFree(tc);
+        let freePricingSettings: PricingSetting | null = null;
+        if (freePricing) {
+          freePricingSettings = await pricingSettingRepo.getByPricingId(
+            freePricing.id,
             tc,
           );
         }
 
-        const userSettings = freePlanSettings
-          ? pricingSettingsService.topUpCredits(freePlanSettings, user)
+        const userSettings = freePricingSettings
+          ? pricingSettingsService.topUpCredits(freePricingSettings, user)
           : {};
         await userRepo.update(
           user.id,

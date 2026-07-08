@@ -37,6 +37,7 @@ export const generateImage = async (
     body,
   });
 
+  // Replace url with our saved resource
   response.data.forEach((e) => {
     e.url = images.find((e) => e.altUrl)?.url ?? "";
   });
@@ -46,8 +47,6 @@ export const generateImage = async (
   // header cleanup
   headers.delete("content-encoding");
   headers.delete("transfer-encoding");
-  // headers.delete("content-length");
-  // headers.delete("content-type");
 
   return new Response(JSON.stringify(response), {
     status: res.status,

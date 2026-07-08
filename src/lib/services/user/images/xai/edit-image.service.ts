@@ -37,6 +37,7 @@ export const editImage = async (
     body,
   });
 
+  // Replace url with our saved resource
   response.data.forEach((e) => {
     e.url = images.find((e) => e.altUrl)?.url ?? "";
   });

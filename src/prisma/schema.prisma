@@ -187,6 +187,40 @@ model PlanSetting {
   @@map("PlanSettings")
 }
 
+enum IntervalType {
+  None
+  Year
+  Month
+  Week
+  Day
+  Hour
+}
+
+model Pricing {
+  id            String          @id @default(uuid()) @db.VarChar(1024)
+  planId        String          @db.VarChar(1024)
+  planName      String          @db.VarChar(1024)
+  slug          String          @unique @db.VarChar(1024)
+  name          String          @db.VarChar(1024)
+  description   String?         @db.VarChar(1024)
+  price         Decimal         @db.Decimal(18, 2)
+  oldPrice      Decimal?        @db.Decimal(18, 2)
+  interval      String          @db.VarChar(1024)
+  intervalCount Int
+  intervalType  IntervalType    @default(None)
+  isFree        Boolean         @default(false)
+  sequence      Int             @default(0)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  deletedAt     DateTime?
+  plan          Plan            @relation(fields: [planId], references: [id])
+  subscriptions Subscription[]
+  paystackPlans PaystackPlan[]
+  settings      PricingSetting?
+
+  @@map("Pricings")
+}
+
 model PricingSetting {
   id                          String    @id @default(uuid()) @db.VarChar(1024)
   pricingId                   String    @unique
@@ -212,39 +246,6 @@ model PricingSetting {
   pricing                     Pricing   @relation(fields: [pricingId], references: [id])
 
   @@map("PricingSettings")
-}
-
-enum IntervalType {
-  None
-  Year
-  Month
-  Week
-  Day
-  Hour
-}
-
-model Pricing {
-  id            String          @id @default(uuid()) @db.VarChar(1024)
-  planId        String          @db.VarChar(1024)
-  planName      String          @db.VarChar(1024)
-  slug          String          @unique @db.VarChar(1024)
-  name          String          @db.VarChar(1024)
-  description   String?         @db.VarChar(1024)
-  price         Decimal         @db.Decimal(18, 2)
-  oldPrice      Decimal?        @db.Decimal(18, 2)
-  interval      String          @db.VarChar(1024)
-  intervalCount Int
-  intervalType  IntervalType    @default(None)
-  sequence      Int             @default(0)
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  deletedAt     DateTime?
-  plan          Plan            @relation(fields: [planId], references: [id])
-  subscriptions Subscription[]
-  paystackPlans PaystackPlan[]
-  settings      PricingSetting?
-
-  @@map("Pricings")
 }
 
 enum SubscriptionStatus {

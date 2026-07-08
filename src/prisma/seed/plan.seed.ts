@@ -25,6 +25,7 @@ export default async function seedPlans() {
             intervalType: "None",
             planName: "Free",
             price: 0,
+            isFree: true,
             settings: {
               create: {
                 pricingName: "Free",
@@ -294,15 +295,11 @@ export default async function seedPlans() {
       const pricings = pricingsData.create as PricingCreateWithoutPlanInput[];
 
       for (let j = 0; j < pricings.length; j++) {
-        const pricing = pricings[j];
-        const settings = pricing.settings?.create as
-          | PricingSettingCreateInput
-          | undefined;
-        if (!settings) {
-          throw new Error(
-            `Settings data is required for pricing: ${pricing.name}`,
-          );
-        }
+        const { settings: settingsData, ...pricing } = pricings[j];
+        // const settings = pricing.settings?.create as
+        //   | PricingSettingCreateInput
+        //   | undefined;
+
         pricing.sequence = pricingSequenceCounter++;
 
         const createdPricing = await prisma.pricing.upsert({
@@ -320,6 +317,13 @@ export default async function seedPlans() {
             },
           },
         });
+
+        if (!settingsData || !settingsData.create) {
+          throw new Error(
+            `Settings data is required for pricing: ${pricing.name}`,
+          );
+        }
+        const settings = settingsData.create;
 
         await prisma.pricingSetting.upsert({
           where: { pricingId: createdPricing.id },

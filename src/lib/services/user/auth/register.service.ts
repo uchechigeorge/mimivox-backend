@@ -4,10 +4,11 @@ import { BadRequestError } from "@/lib/utils/error.util";
 import { generateAccessToken, hashPassword } from "./auth-helpers.service";
 import { UserRegisterResponse } from "./types";
 import { getCredentials } from "./get-credentials.service";
-import planSettingRepo from "@/lib/repositories/plan-setting.repo";
-import planRepo from "@/lib/repositories/plan.repo";
 import { UserCreateArgs } from "@/generated/prisma/models";
 import { randomColor } from "@/lib/utils/constants.utils";
+import pricingRepo from "@/lib/repositories/pricing.repo";
+import pricingSettingRepo from "@/lib/repositories/pricing-setting.repo";
+import pricingSettingsService from "../../shared/pricing-settings";
 
 export const register = async (dto: RegisterDto) => {
   const exists = await userRepo.getExistsByEmail(dto.email);
@@ -16,36 +17,24 @@ export const register = async (dto: RegisterDto) => {
     throw new BadRequestError("User with this email already exists");
   }
 
-  const freePlan = await planRepo.getByIsFree();
-  if (!freePlan) {
-    throw new BadRequestError("Free plan not found");
+  const freePricing = await pricingRepo.getByIsFree();
+  if (!freePricing) {
+    throw new BadRequestError("Free pricing not found");
   }
-  const freePlanSettings = await planSettingRepo.getByPlanId(freePlan.id);
-  if (!freePlanSettings) {
-    throw new BadRequestError("Free plan settings not found");
+  const freePricingSettings = await pricingSettingRepo.getByPricingId(
+    freePricing.id,
+  );
+  if (!freePricingSettings) {
+    throw new BadRequestError("Free pricing settings not found");
   }
 
+  const userSettings = pricingSettingsService.topUpCredits(freePricingSettings);
+
   const data: UserCreateArgs["data"] = {
+    ...userSettings,
     ...dto,
     defaultBg: randomColor,
     password: await hashPassword(dto.password),
-    noOfCreditsAllocated: freePlanSettings.noOfCredits,
-    noOfCreditsLeft: freePlanSettings.noOfCredits,
-    noOfCharactersAllocated: freePlanSettings.noOfCharacters,
-    noOfCharactersLeft: freePlanSettings.noOfCharacters,
-    noOfWordsAllowed: freePlanSettings.noOfWords,
-    noOfVoicesAllocated: freePlanSettings.noOfVoices,
-    noOfVoicesLeft: freePlanSettings.noOfVoices,
-    noOfPremiumVoicesAllocated: freePlanSettings.noOfPremiumVoices,
-    noOfPremiumVoicesLeft: freePlanSettings.noOfPremiumVoices,
-    noOfCloneVoicesAllocated: freePlanSettings.noOfCloneVoices,
-    noOfCloneVoicesLeft: freePlanSettings.noOfCloneVoices,
-    noOfImagesAllocated: freePlanSettings.noOfImages,
-    noOfImagesLeft: freePlanSettings.noOfImages,
-    noOfMusicAllocated: freePlanSettings.noOfMusic,
-    noOfMusicLeft: freePlanSettings.noOfMusic,
-    noOfVideosAllocated: freePlanSettings.noOfVideos,
-    noOfVideosLeft: freePlanSettings.noOfVideos,
   };
   const user = await userRepo.create(data);
 

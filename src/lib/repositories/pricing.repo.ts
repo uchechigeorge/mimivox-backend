@@ -17,6 +17,14 @@ const getById = async (id: Pricing["id"], tc?: Prisma.TransactionClient) => {
   });
 };
 
+const getByIsFree = async (tc?: Prisma.TransactionClient) => {
+  const db: DB = tc || prisma;
+
+  return await db.pricing.findFirst({
+    where: { isFree: true },
+  });
+};
+
 const create = async (
   data: PricingCreateArgs["data"],
   tc?: Prisma.TransactionClient,
@@ -96,6 +104,7 @@ export type PricingGetOptions = BaseGetOptions & {};
 
 const pricingRepo = {
   getById,
+  getByIsFree,
   create,
   update,
   query,
