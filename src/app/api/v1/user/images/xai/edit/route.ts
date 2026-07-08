@@ -8,16 +8,7 @@ export const POST = userHandler(
 
     const result = await imageService.xai.editImage(body, authItems);
 
-    const headers = new Headers(result.headers);
-
-    // header cleanup
-    headers.delete("content-encoding");
-    headers.delete("transfer-encoding");
-
-    return new Response(result.body, {
-      status: result.status,
-      headers,
-    });
+    return result;
   },
   { authenticate: true },
 );

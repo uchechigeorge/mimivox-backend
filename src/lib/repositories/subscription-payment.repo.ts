@@ -1,9 +1,14 @@
-import { SubscriptionPayment, Prisma } from "@/generated/prisma/client";
+import {
+  SubscriptionPayment,
+  Prisma,
+  Subscription,
+} from "@/generated/prisma/client";
 import { prisma } from "../db/prisma";
 import { DB } from "../db/types";
 import {
   SubscriptionPaymentCreateArgs,
   SubscriptionPaymentFindManyArgs,
+  SubscriptionPaymentUpdateArgs,
 } from "@/generated/prisma/models";
 import { BaseGetOptions, BaseGetParams } from "../dtos/shared/base-get-params";
 import { isNotNullOrWhitespace } from "../utils/type.utils";
@@ -25,6 +30,32 @@ const create = async (
 ) => {
   const db: DB = tc || prisma;
   return await db.subscriptionPayment.create({
+    data,
+  });
+};
+
+const update = async (
+  id: SubscriptionPayment["id"],
+  data: SubscriptionPaymentUpdateArgs["data"],
+  tc?: Prisma.TransactionClient,
+) => {
+  const db: DB = tc || prisma;
+
+  return await db.subscriptionPayment.update({
+    where: { id },
+    data,
+  });
+};
+
+const updateBySubscriptionId = async (
+  subscriptionId: Subscription["id"],
+  data: SubscriptionPaymentUpdateArgs["data"],
+  tc?: Prisma.TransactionClient,
+) => {
+  const db: DB = tc || prisma;
+
+  return await db.subscriptionPayment.updateMany({
+    where: { subscriptionId },
     data,
   });
 };
@@ -91,6 +122,8 @@ export type SubscriptionPaymentGetOptions = BaseGetOptions & {};
 const subscriptionPaymentRepo = {
   getById,
   create,
+  update,
+  updateBySubscriptionId,
   query,
 };
 

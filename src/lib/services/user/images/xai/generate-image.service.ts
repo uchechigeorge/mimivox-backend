@@ -32,10 +32,25 @@ export const generateImage = async (
 
   const response = (await clonedRes.json()) as XaiImageResponse;
 
-  await createImages(response, user, body.prompt, {
+  const images = await createImages(response, user, body.prompt, {
     url,
     body,
   });
 
-  return res;
+  response.data.forEach((e) => {
+    e.url = images.find((e) => e.altUrl)?.url ?? "";
+  });
+
+  const headers = new Headers(res.headers);
+
+  // header cleanup
+  headers.delete("content-encoding");
+  headers.delete("transfer-encoding");
+  // headers.delete("content-length");
+  // headers.delete("content-type");
+
+  return new Response(JSON.stringify(response), {
+    status: res.status,
+    headers,
+  });
 };

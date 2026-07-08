@@ -2,7 +2,7 @@ import { upload } from "@/lib/utils/cloudinary.utils";
 import { UploadImageResult, XaiImageData, XaiImageResponse } from "./types";
 import { UploadApiErrorResponse } from "cloudinary";
 import imageRepo from "@/lib/repositories/image.repo";
-import { User } from "@/generated/prisma/client";
+import { Image, User } from "@/generated/prisma/client";
 
 export const createImages = async (
   response: XaiImageResponse,
@@ -34,12 +34,13 @@ export const createImages = async (
     return await Promise.all(uploads);
   };
 
+  const images: Image[] = [];
   const uploadedImages = await uploadImages(response.data);
   for (let i = 0; i < uploadedImages.length; i++) {
     const uploadedImage = uploadedImages[i];
     if (!uploadedImage.success) continue;
 
-    await imageRepo.create({
+    const image = await imageRepo.create({
       prompt: prompt ?? "",
       title: uploadedImage.image.revised_prompt ?? "",
       url: uploadedImage.data.url,
@@ -49,5 +50,9 @@ export const createImages = async (
       userName: user.fullName,
       imageServiceRequestLog: log,
     });
+
+    images.push(image);
   }
+
+  return images;
 };

@@ -19,6 +19,8 @@ import planSettingRepo from "@/lib/repositories/plan-setting.repo";
 import { BadRequestError } from "@/lib/utils/error.util";
 import paystackService from "../../shared/paystack";
 import { PaystackSubscription as PaystackSub } from "../../shared/paystack/subscriptions/types";
+import pricingSettingRepo from "@/lib/repositories/pricing-setting.repo";
+import pricingSettingsService from "../../shared/pricing-settings";
 
 export const handleSubscriptionPayment = async (
   body: HandlePaystackWebhookDto,
@@ -181,8 +183,13 @@ export const handleSubscriptionPayment = async (
   await prisma.$transaction(async (tx) => {
     // Update subscription, invoice, transaction, and user
 
-    const planSettings = await planSettingRepo.getByPlanId(pricing.planId, tx);
-    const userSettings = getUserSettings(planSettings, user);
+    const pricingSettings = await pricingSettingRepo.getByPricingId(
+      pricing.id,
+      tx,
+    );
+    const userSettings = pricingSettings
+      ? pricingSettingsService.topUpCredits(pricingSettings, user)
+      : {};
     await userRepo.update(
       user.id,
       {
@@ -264,82 +271,12 @@ export const handleSubscriptionPayment = async (
     }
   });
 
+  // If this subscription is coming as an upgrade or downgrade
+  // Disable the source subscription
   if (previousPaystackSubscription) {
     await paystackService.subscription.disableSubscription({
       code: previousPaystackSubscription.subscription_code,
       token: previousPaystackSubscription.email_token,
     });
   }
-};
-
-export const getUserSettings = (
-  planSettings: PlanSetting | null,
-  user: User,
-) => {
-  if (!planSettings) return {};
-
-  user.noOfCreditsAllocated;
-
-  const settings: UserUpdateArgs["data"] = {
-    noOfCreditsUsed: 0,
-    noOfCreditsAllocated: !planSettings.noOfCredits
-      ? null
-      : planSettings.noOfCredits + (user.noOfCreditsAllocated ?? 0),
-    noOfCreditsLeft: !planSettings.noOfCredits
-      ? null
-      : planSettings.noOfCredits + (user.noOfCreditsAllocated ?? 0),
-    noOfCharactersUsed: 0,
-    noOfCharactersAllocated: !planSettings.noOfCharacters
-      ? null
-      : planSettings.noOfCharacters + (user.noOfCharactersAllocated ?? 0),
-    noOfCharactersLeft: !planSettings.noOfCharacters
-      ? null
-      : planSettings.noOfCharacters + (user.noOfCharactersAllocated ?? 0),
-    noOfWordsAllowed: planSettings.noOfWords,
-    noOfVoicesUsed: 0,
-    noOfVoicesAllocated: !planSettings.noOfVoices
-      ? null
-      : planSettings.noOfVoices + (user.noOfVoicesAllocated ?? 0),
-    noOfVoicesLeft: !planSettings.noOfVoices
-      ? null
-      : planSettings.noOfVoices + (user.noOfVoicesAllocated ?? 0),
-    noOfPremiumVoicesUsed: 0,
-    noOfPremiumVoicesAllocated: !planSettings.noOfPremiumVoices
-      ? null
-      : planSettings.noOfPremiumVoices + (user.noOfPremiumVoicesAllocated ?? 0),
-    noOfPremiumVoicesLeft: !planSettings.noOfPremiumVoices
-      ? null
-      : planSettings.noOfPremiumVoices + (user.noOfPremiumVoicesAllocated ?? 0),
-    noOfCloneVoicesUsed: 0,
-    noOfCloneVoicesAllocated: !planSettings.noOfCloneVoices
-      ? null
-      : planSettings.noOfCloneVoices + (user.noOfCloneVoicesAllocated ?? 0),
-    noOfCloneVoicesLeft: !planSettings.noOfCloneVoices
-      ? null
-      : planSettings.noOfCloneVoices + (user.noOfCloneVoicesAllocated ?? 0),
-    noOfImagesUsed: 0,
-    noOfImagesAllocated: !planSettings.noOfImages
-      ? null
-      : planSettings.noOfImages + (user.noOfImagesAllocated ?? 0),
-    noOfImagesLeft: !planSettings.noOfImages
-      ? null
-      : planSettings.noOfImages + (user.noOfImagesAllocated ?? 0),
-    noOfMusicUsed: 0,
-    noOfMusicAllocated: !planSettings.noOfMusic
-      ? null
-      : planSettings.noOfMusic + (user.noOfMusicAllocated ?? 0),
-    noOfMusicLeft: !planSettings.noOfMusic
-      ? null
-      : planSettings.noOfMusic + (user.noOfMusicAllocated ?? 0),
-    noOfVideosUsed: 0,
-    noOfVideosAllocated: !planSettings.noOfVideos
-      ? null
-      : planSettings.noOfVideos + (user.noOfVideosAllocated ?? 0),
-    noOfVideosLeft: !planSettings.noOfVideos
-      ? null
-      : planSettings.noOfVideos + (user.noOfVideosAllocated ?? 0),
-    maxVideoDurationInSeconds: planSettings.maxVideoDurationInSeconds,
-  };
-
-  return settings;
 };

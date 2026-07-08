@@ -25,6 +25,7 @@ export const subscriptionPaymentReadDtoValidator = z.object({
   startDate: nDate,
   endDate: nDate,
   paidAt: nDate,
+  isCurrent: nBoolean,
   updatedAt: nDate,
   createdAt: nDate,
 });

@@ -9,6 +9,8 @@ import { onSubscriptionCreate } from "./on-subscription-create.service";
 import { onSubscriptionNotRenew } from "./on-subscription-not-renew.service";
 import { onSubscriptionDisable } from "./on-subscription-disable.service";
 import { onInvoicePaymentFailed } from "./on-invoice-payment-failed.service";
+import { onInvoiceCreate } from "./on-invoice-create.service";
+import { onInvoiceUpdate } from "./on-invoice-update.service";
 
 export const handleWebhook = async (
   body: HandlePaystackWebhookDto,
@@ -54,22 +56,33 @@ export const handleWebhook = async (
 
   if (body.event === "charge.success") {
     await onChargeSuccess(body);
-  } else if (body.event === "subscription.create") {
-    // Handle subscription creation event
+  }
+  // Handle subscription creation event
+  else if (body.event === "subscription.create") {
     await onSubscriptionCreate(body);
-  } else if (body.event === "subscription.disable") {
-    // Handle subscription cancellation
+  }
+  // Handle subscription cancellation
+  else if (body.event === "subscription.disable") {
     await onSubscriptionDisable(body);
-  } else if (body.event === "subscription.not_renew") {
-    // Handle subscription future cancellation
+  }
+  // Handle subscription future cancellation
+  else if (body.event === "subscription.not_renew") {
     await onSubscriptionNotRenew(body);
-  } else if (body.event === "invoice.created") {
-    // Handle invoice created event
-    // await onInvoiceCreated(body);
-  } else if (body.event === "invoice.payment_failed") {
-    // Handle subscription future cancellation
+  }
+  // Handle invoice create event
+  else if (body.event === "invoice.create") {
+    await onInvoiceCreate(body);
+  }
+  // Handle invoice update event
+  else if (body.event === "invoice.update") {
+    await onInvoiceUpdate(body);
+  }
+  // Handle subscription payment failure
+  else if (body.event === "invoice.payment_failed") {
     await onInvoicePaymentFailed(body);
-  } else {
+  }
+  // Default
+  else {
     console.warn(
       `Paystack webhook warning: Unhandled event type: ${body.event}`,
     );

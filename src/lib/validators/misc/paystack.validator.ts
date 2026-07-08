@@ -1,5 +1,6 @@
 import { HandlePaystackWebhookHeader } from "@/lib/dtos/misc/paystack.dto";
 import {
+  nBoolean,
   normalizeOptional,
   rString,
   stringToNullableDate,
@@ -9,6 +10,7 @@ import z from "zod";
 export const handlePaystackWebhookDto = z.object({
   event: rString,
   data: z.object({
+    domain: z.string().nullish(),
     amount: z.coerce.number().nullish(),
     currency: z.string().nullish(),
     metadata: z
@@ -20,9 +22,15 @@ export const handlePaystackWebhookDto = z.object({
       })
       .nullish(),
     subscription_code: z.string().nullish(),
+    invoice_code: z.string().nullish(),
     next_payment_date: stringToNullableDate,
     period_start: stringToNullableDate,
     period_end: stringToNullableDate,
+    paid: nBoolean,
+    paid_at: stringToNullableDate,
+    status: z.string().nullish(),
+    description: z.string().nullish(),
+
     customer: z
       .object({
         first_name: z.string().nullish(),

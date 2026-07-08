@@ -1,4 +1,8 @@
-import { PlanSetting, Pricing } from "@/generated/prisma/client";
+import {
+  PlanSetting,
+  Pricing,
+  PricingSetting,
+} from "@/generated/prisma/client";
 import {
   UpdateUserSubscriptionDto,
   UpdateUserSubscriptionParams,
@@ -15,6 +19,8 @@ import planRepo from "@/lib/repositories/plan.repo";
 import { prisma } from "@/lib/db/prisma";
 import sharedSubscriptionService from "../../shared/subscriptions";
 import { UserUpdateArgs } from "@/generated/prisma/models";
+import pricingSettingsService from "../../shared/pricing-settings";
+import pricingSettingRepo from "@/lib/repositories/pricing-setting.repo";
 
 export const updateUserSubscription = async (
   params: UpdateUserSubscriptionParams,
@@ -26,7 +32,7 @@ export const updateUserSubscription = async (
   }
 
   let pricing: Pricing | null = null;
-  let planSettings: PlanSetting | null = null;
+  let pricingSettings: PricingSetting | null = null;
 
   if (updateDto.pricingId) {
     pricing = await pricingRepo.getById(updateDto.pricingId);
@@ -34,8 +40,8 @@ export const updateUserSubscription = async (
       throw new BadRequestError("Pricing not found");
     }
 
-    planSettings = await planSettingRepo.getByPlanId(pricing.planId);
-    if (!planSettings) {
+    pricingSettings = await pricingSettingRepo.getByPricingId(pricing.id);
+    if (!pricingSettings) {
       throw new BadRequestError("Plan settings not found");
     }
   }
@@ -55,15 +61,82 @@ export const updateUserSubscription = async (
     true,
   );
 
-  await prisma.$transaction(
-    async (tc) => {
-      // Activate subscriptions
-      if (activeSubscription == null && updateDto.isActive && pricing != null) {
-        await subscriptionRepo.create(
+  await prisma.$transaction(async (tc) => {
+    // Activate subscriptions
+    if (activeSubscription == null && updateDto.isActive && pricing != null) {
+      await subscriptionRepo.create(
+        {
+          isActive: true,
+          userId: user.id,
+          userName: user.fullName,
+          planId: pricing.planId,
+          planName: pricing.planName,
+          pricingId: pricing.id,
+          pricingName: pricing.name,
+          startDate,
+          nextBillingDate: getNextBillingDate(
+            startDate,
+            toAppIntervalType(pricing.intervalType),
+            pricing.intervalCount,
+          ),
+          status: "WillRenew",
+          initialAmount,
+          paymentGateway: "Manual",
+          reference: await sharedSubscriptionService.generateReference(tc),
+        },
+        tc,
+      );
+
+      const userSettings = pricingSettings
+        ? pricingSettingsService.topUpCredits(pricingSettings, user)
+        : {};
+      await userRepo.update(
+        user.id,
+        {
+          ...userSettings,
+          hasActiveSubscription: true,
+        },
+        tc,
+      );
+    } else if (activeSubscription != null) {
+      // Cancelling subscriptions
+      if (updateDto.isActive == false) {
+        await subscriptionRepo.update(
+          activeSubscription.id,
           {
-            isActive: true,
-            userId: user.id,
-            userName: user.fullName,
+            isActive: false,
+            status: "Completed",
+            endDate: new Date(),
+          },
+          tc,
+        );
+
+        const freePlan = await planRepo.getByIsFree(tc);
+        let freePlanSettings: PricingSetting | null = null;
+        if (freePlan) {
+          freePlanSettings = await pricingSettingRepo.getByPricingId(
+            freePlan.id,
+            tc,
+          );
+        }
+
+        const userSettings = freePlanSettings
+          ? pricingSettingsService.topUpCredits(freePlanSettings, user)
+          : {};
+        await userRepo.update(
+          user.id,
+          {
+            ...userSettings,
+            hasActiveSubscription: false,
+          },
+          tc,
+        );
+      }
+      // Changing plans
+      else if (pricing != null) {
+        await subscriptionRepo.update(
+          activeSubscription.id,
+          {
             planId: pricing.planId,
             planName: pricing.planName,
             pricingId: pricing.id,
@@ -74,15 +147,14 @@ export const updateUserSubscription = async (
               toAppIntervalType(pricing.intervalType),
               pricing.intervalCount,
             ),
-            status: "WillRenew",
             initialAmount,
-            paymentGateway: "Manual",
-            reference: await sharedSubscriptionService.generateReference(tc),
           },
           tc,
         );
 
-        const userSettings = getUserSettings(planSettings);
+        const userSettings = pricingSettings
+          ? pricingSettingsService.topUpCredits(pricingSettings, user)
+          : {};
         await userRepo.update(
           user.id,
           {
@@ -91,107 +163,7 @@ export const updateUserSubscription = async (
           },
           tc,
         );
-      } else if (activeSubscription != null) {
-        // Cancelling subscriptions
-        if (updateDto.isActive == false) {
-          await subscriptionRepo.update(
-            activeSubscription.id,
-            {
-              isActive: false,
-              status: "Completed",
-              endDate: new Date(),
-            },
-            tc,
-          );
-
-          const freePlan = await planRepo.getByIsFree(tc);
-          let freePlanSettings: PlanSetting | null = null;
-          if (freePlan) {
-            freePlanSettings = await planSettingRepo.getByPlanId(
-              freePlan.id,
-              tc,
-            );
-          }
-
-          const userSettings = getUserSettings(freePlanSettings);
-          await userRepo.update(
-            user.id,
-            {
-              ...userSettings,
-              hasActiveSubscription: false,
-            },
-            tc,
-          );
-        }
-        // Changing plans
-        else if (pricing != null) {
-          await subscriptionRepo.update(
-            activeSubscription.id,
-            {
-              planId: pricing.planId,
-              planName: pricing.planName,
-              pricingId: pricing.id,
-              pricingName: pricing.name,
-              startDate,
-              nextBillingDate: getNextBillingDate(
-                startDate,
-                toAppIntervalType(pricing.intervalType),
-                pricing.intervalCount,
-              ),
-              initialAmount,
-            },
-            tc,
-          );
-
-          const userSettings = getUserSettings(planSettings);
-          await userRepo.update(
-            user.id,
-            {
-              ...userSettings,
-              hasActiveSubscription: true,
-            },
-            tc,
-          );
-        }
       }
-    },
-    {
-      // maxWait: 10000,
-      // timeout: 20000,
-    },
-  );
-};
-
-const getUserSettings = (planSettings: PlanSetting | null) => {
-  if (!planSettings) return {};
-
-  const settings: UserUpdateArgs["data"] = {
-    noOfCreditsUsed: 0,
-    noOfCreditsAllocated: planSettings.noOfCredits,
-    noOfCreditsLeft: planSettings.noOfCredits,
-    noOfCharactersUsed: 0,
-    noOfCharactersAllocated: planSettings.noOfCharacters,
-    noOfCharactersLeft: planSettings.noOfCharacters,
-    noOfWordsAllowed: planSettings.noOfWords,
-    noOfVoicesUsed: 0,
-    noOfVoicesAllocated: planSettings.noOfVoices,
-    noOfVoicesLeft: planSettings.noOfVoices,
-    noOfPremiumVoicesUsed: 0,
-    noOfPremiumVoicesAllocated: planSettings.noOfPremiumVoices,
-    noOfPremiumVoicesLeft: planSettings.noOfPremiumVoices,
-    noOfCloneVoicesUsed: 0,
-    noOfCloneVoicesAllocated: planSettings.noOfCloneVoices,
-    noOfCloneVoicesLeft: planSettings.noOfCloneVoices,
-    noOfImagesUsed: 0,
-    noOfImagesAllocated: planSettings.noOfImages,
-    noOfImagesLeft: planSettings.noOfImages,
-    noOfMusicUsed: 0,
-    noOfMusicAllocated: planSettings.noOfMusic,
-    noOfMusicLeft: planSettings.noOfMusic,
-    noOfVideosUsed: 0,
-    noOfVideosAllocated: planSettings.noOfVideos,
-    noOfVideosLeft: planSettings.noOfVideos,
-  };
-
-  return settings;
+    }
+  });
 };

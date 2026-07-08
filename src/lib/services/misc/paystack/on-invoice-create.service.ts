@@ -3,14 +3,15 @@ import paystackCustomerRepo from "@/lib/repositories/paystack-customer.repo";
 import userRepo from "@/lib/repositories/user.repo";
 import subscriptionRepo from "@/lib/repositories/subscription.repo";
 import paystackSubscriptionRepo from "@/lib/repositories/paystack-subscription.repo";
-import { sendSubscriptionPaymentFailed } from "../../user/notifications/subscription-payment-failed.service";
+import subscriptionPaymentRepo from "@/lib/repositories/subscription-payment.repo";
+import paystackInvoiceRepo from "@/lib/repositories/paystack-invoice.repo";
+import { prisma } from "@/lib/db/prisma";
 
-export const onInvoicePaymentFailed = async (
-  body: HandlePaystackWebhookDto,
-) => {
+export const onInvoiceCreate = async (body: HandlePaystackWebhookDto) => {
   const data = body.data;
 
   if (
+    !data.invoice_code ||
     !data.subscription ||
     !data.subscription.subscription_code ||
     !data.customer ||
@@ -21,10 +22,12 @@ export const onInvoicePaymentFailed = async (
         {
           data,
         },
-      )} [invoice.payment_failed]`,
+      )}`,
     );
     return;
   }
+
+  const invoiceCode = data.invoice_code;
 
   const paystackUser = await paystackCustomerRepo.getByReference(
     data.customer.customer_code,
@@ -35,7 +38,7 @@ export const onInvoicePaymentFailed = async (
         {
           customer: data.customer,
         },
-      )} [invoice.payment_failed]`,
+      )}`,
     );
     return;
   }
@@ -45,7 +48,7 @@ export const onInvoicePaymentFailed = async (
     console.error(
       `Paystack webhook error: User not found for paystack customer; ${JSON.stringify(
         { paystackUser },
-      )} [invoice.payment_failed]`,
+      )}`,
     );
     return;
   }
@@ -59,35 +62,57 @@ export const onInvoicePaymentFailed = async (
         {
           plan: data.plan,
         },
-      )} [invoice.payment_failed]`,
+      )}`,
     );
     return;
   }
 
-  const subscription = await subscriptionRepo.getByUserIdAndIsActive(
-    user.id,
-    true,
+  const subscription = await subscriptionRepo.getById(
+    paystackSubscription.subscriptionId,
   );
   if (!subscription) {
     console.error(
-      `Paystack webhook error: No active subscriptions found; ${JSON.stringify({
+      `Paystack webhook error: Subscription not found; ${JSON.stringify({
         subscription,
-      })} [invoice.payment_failed]`,
+      })}`,
     );
     return;
   }
 
-  if (data.subscription.status === "attention") {
-    await subscriptionRepo.update(subscription.id, {
-      status: "PastDue",
-      endDate: subscription.nextBillingDate,
-    });
-  }
+  await prisma.$transaction(async (tc) => {
+    await subscriptionPaymentRepo.updateBySubscriptionId(
+      subscription.id,
+      {
+        isCurrent: false,
+      },
+      tc,
+    );
 
-  await sendSubscriptionPaymentFailed(user.email, {
-    userName: user.fullName,
-    amount: data.amount ? data.amount / 100 : 0,
-    planName: subscription.planName,
-    retryDate: null,
+    const subscriptionPayment = await subscriptionPaymentRepo.create(
+      {
+        amount: data.amount ? data.amount / 100 : 0,
+        subscriptionReference: subscription.reference,
+        paymentGateway: "Paystack",
+        isInitialPayment: false,
+        isPaymentVerified: false,
+        subscriptionId: subscription.id,
+        userId: user.id,
+        userName: user.fullName,
+        planId: subscription.planId,
+        planName: subscription.planName,
+        startDate: data.period_start,
+        endDate: data.period_end,
+        isCurrent: true,
+      },
+      tc,
+    );
+
+    await paystackInvoiceRepo.create(
+      {
+        reference: invoiceCode,
+        subscriptionPaymentId: subscriptionPayment.id,
+      },
+      tc,
+    );
   });
 };
