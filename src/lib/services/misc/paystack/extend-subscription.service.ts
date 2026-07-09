@@ -7,10 +7,8 @@ import userRepo from "@/lib/repositories/user.repo";
 import { getNextBillingDate } from "@/lib/utils/date.utils";
 import { toAppIntervalType } from "../../shared/pricings/pricing-helper.service";
 import { prisma } from "@/lib/db/prisma";
-import subscriptionPaymentRepo from "@/lib/repositories/subscription-payment.repo";
 import pricingSettingRepo from "@/lib/repositories/pricing-setting.repo";
 import pricingSettingsService from "../../shared/pricing-settings";
-import paystackSubscriptionRepo from "@/lib/repositories/paystack-subscription.repo";
 
 export const extendSubscription = async (body: HandlePaystackWebhookDto) => {
   const data = body.data;
@@ -76,23 +74,6 @@ export const extendSubscription = async (body: HandlePaystackWebhookDto) => {
     return;
   }
 
-  const paystackSubscription = await paystackSubscriptionRepo.getByReference(
-    data.subscription_code,
-  );
-  if (!paystackSubscription || !paystackSubscription.subscriptionId) {
-    console.error(
-      `Paystack webhook error: Paystack subscription not found; ${JSON.stringify(
-        {
-          plan: data.plan,
-        },
-      )} [charge.success]`,
-    );
-    return;
-  }
-
-  // const subscription = await subscriptionRepo.getById(
-  //   paystackSubscription.subscriptionId,
-  // );
   const subscription = await subscriptionRepo.getByUserIdAndIsActive(
     user.id,
     true,
@@ -115,13 +96,6 @@ export const extendSubscription = async (body: HandlePaystackWebhookDto) => {
     return;
   }
 
-  // const amountPaid = Number(data.amount ? data.amount / 100 : 0);
-  // const currency = data.currency?.toLowerCase() ?? null;
-
-  // const currencyOption = await currencyRepo.getByCode(currency ?? "");
-  // Default naira to dollar exchange rate if currency not found
-  // const exchangeRateToBase = currencyOption?.exchangeRateToBase ?? 1500;
-
   const nextBillingDate = getNextBillingDate(
     subscription.nextBillingDate ?? new Date(),
     toAppIntervalType(pricing.intervalType),
@@ -136,26 +110,6 @@ export const extendSubscription = async (body: HandlePaystackWebhookDto) => {
     const userSettings = pricingSettings
       ? pricingSettingsService.topUpCredits(pricingSettings, user)
       : {};
-
-    // await subscriptionPaymentRepo.create(
-    //   {
-    //     amount: amountPaid,
-    //     subscriptionReference: subscription.reference,
-    //     paymentGateway: "Paystack",
-    //     isInitialPayment: true,
-    //     isPaymentVerified: true,
-    //     paidAt: new Date(),
-    //     subscriptionId: subscription.id,
-    //     currency,
-    //     userId: user.id,
-    //     userName: user.fullName,
-    //     planId: pricing.planId,
-    //     planName: pricing.planName,
-    //     startDate: subscription.nextBillingDate,
-    //     endDate: nextBillingDate,
-    //   },
-    //   tx,
-    // );
 
     await subscriptionRepo.update(
       subscription.id,

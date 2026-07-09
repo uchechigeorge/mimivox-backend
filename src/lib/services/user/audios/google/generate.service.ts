@@ -73,7 +73,7 @@ export const generateSpeechFromText = async (
   await createAudio({
     user,
     content,
-    audioUrl: uploadResult.url,
+    audioUrl: uploadResult.secure_url,
     voice,
     languageCode: body.voice.languageCode,
     requestLog: {

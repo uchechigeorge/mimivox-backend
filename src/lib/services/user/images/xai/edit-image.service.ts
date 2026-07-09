@@ -24,7 +24,7 @@ export const editImage = async (
   // Handle non-200 responses
   if (!res.ok) {
     const errorText = await clonedRes.text();
-    console.log(errorText);
+    console.error(errorText);
 
     await reverseCredits(authItems);
     return res;

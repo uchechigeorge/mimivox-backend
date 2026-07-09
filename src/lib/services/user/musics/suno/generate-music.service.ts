@@ -30,7 +30,7 @@ export const generateMusic = async (
   // Handle non-200 responses
   if (!res.ok) {
     const errorText = await clonedRes.text();
-    console.log(errorText);
+    console.error(errorText);
 
     await reverseCredits(authItems.userId);
     return res;
@@ -38,8 +38,6 @@ export const generateMusic = async (
 
   const response = (await clonedRes.json()) as SunoMusicGenerateResponse;
   if (response.code != 200) {
-    console.log({ err: response });
-
     await reverseCredits(authItems.userId);
     return res;
   }

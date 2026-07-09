@@ -16,7 +16,7 @@ export const getMusic = async (taskId: string, ignoreUpdate?: boolean) => {
   // Handle non-200 responses
   if (!res.ok) {
     const errorText = await clonedRes.text();
-    console.log(errorText);
+    console.error(errorText);
 
     return res;
   }

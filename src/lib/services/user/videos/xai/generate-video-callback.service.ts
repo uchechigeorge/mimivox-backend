@@ -5,13 +5,13 @@ import taskRepo from "@/lib/repositories/task.repo";
 import { prisma } from "@/lib/db/prisma";
 import { getVideo } from "./get-video.service";
 import videoRepo from "@/lib/repositories/video.repo";
-import { Task } from "@/generated/prisma/client";
+import { Task, Video } from "@/generated/prisma/client";
 
 export const generateVideoCallBack = async (
   requestId: string,
   videoData?: XaiVideoGetResponse,
   task?: Task,
-) => {
+): Promise<Video | null> => {
   if (!task) {
     const taskRes = await taskRepo.getByReference(requestId, "Video", "Xai");
     if (!taskRes) throw new BadRequestError("Task not found");
@@ -28,6 +28,8 @@ export const generateVideoCallBack = async (
     videoData = (await videoRes.json()) as XaiVideoGetResponse;
   }
 
+  let video: Video | null = null;
+
   if (videoData.status === "done") {
     // Upload
     const uploadedVideo = await uploadVideo(
@@ -36,7 +38,7 @@ export const generateVideoCallBack = async (
     );
 
     await prisma.$transaction(async (tx) => {
-      await videoRepo.create(
+      video = await videoRepo.create(
         {
           userId: task.userId,
           userName: task.userName,
@@ -65,4 +67,6 @@ export const generateVideoCallBack = async (
     });
   } else if (videoData.status === "failed") {
   }
+
+  return video;
 };
