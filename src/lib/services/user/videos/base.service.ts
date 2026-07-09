@@ -1,7 +1,6 @@
 import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import userRepo from "@/lib/repositories/user.repo";
-import { UserAuthItems } from "@/lib/types";
 import { BadRequestError, UnauthorizedError } from "@/lib/utils/error.util";
 import { isNullOrWhitespace } from "@/lib/utils/type.utils";
 import {
@@ -31,6 +30,8 @@ export const validate = async (
     throw new BadRequestError("Video duration exceeds maximum allowed");
   }
 
+  const defaultDuration = 5;
+
   const user = await prisma.$transaction(async (tx) => {
     const user = await userRepo.getByIdWithLock(userId, tx);
     if (!user) throw new UnauthorizedError();
@@ -38,7 +39,8 @@ export const validate = async (
     const noOfCreditsLeft = user.noOfCreditsLeft;
     if (
       noOfCreditsLeft &&
-      noOfCreditsLeft <= env.CREDITS_PER_VIDEO_PER_SECOND * 10
+      noOfCreditsLeft <=
+        env.CREDITS_PER_VIDEO_PER_SECOND * (options.duration ?? defaultDuration)
     ) {
       throw new BadRequestError("Not enough credits left");
     }
@@ -47,7 +49,7 @@ export const validate = async (
     let noOfVideosLeft = user.noOfVideosLeft;
 
     if (noOfVideosLeft && noOfVideosLeft < 1) {
-      throw new BadRequestError("Reached max quota");
+      throw new BadRequestError("Reached max video quota");
     }
 
     noOfVideosLeft =
@@ -62,7 +64,7 @@ export const validate = async (
       userId,
       {
         noOfVideosUsed,
-        noOfVideosLeft: noOfVideosLeft,
+        noOfVideosLeft,
         totalVideosUsed,
       },
       tx,
@@ -75,21 +77,18 @@ export const validate = async (
   // Modify duration if user is nearing credit limit
   const noOfVideoSecondsLeft = user.noOfCreditsLeft
     ? user.noOfCreditsLeft / env.CREDITS_PER_VIDEO_PER_SECOND
-    : user.noOfCreditsLeft;
-  if (noOfVideoSecondsLeft && noOfVideoSecondsLeft <= 60) {
-    duration = Math.min(duration ?? 60, noOfVideoSecondsLeft);
+    : 0;
+  if (noOfVideoSecondsLeft && noOfVideoSecondsLeft <= defaultDuration) {
+    duration = Math.min(duration ?? defaultDuration, noOfVideoSecondsLeft);
   }
 
   return { user, duration };
 };
 
 export const reverseCredits = async (
-  authItems: UserAuthItems,
+  userId: string,
   tc?: Prisma.TransactionClient,
 ) => {
-  const userId = authItems.userId;
-  if (!userId) throw new UnauthorizedError();
-
   const user = await userRepo.getById(userId);
   if (!user) throw new UnauthorizedError();
 
@@ -104,16 +103,21 @@ export const reverseCredits = async (
   const noOfVideosUsed = user.noOfVideosUsed - noOfVideos;
   const totalVideosUsed = user.totalVideosUsed - noOfVideos;
 
-  await userRepo.update(userId, {
-    noOfVideosUsed,
-    noOfVideosLeft,
-    totalVideosUsed,
-  });
+  await userRepo.update(
+    userId,
+    {
+      noOfVideosUsed,
+      noOfVideosLeft,
+      totalVideosUsed,
+    },
+    tc,
+  );
 };
 
 export const applyCredits = async (
   userId: string,
   videoDurationInSeconds: number,
+  tc?: Prisma.TransactionClient,
 ) => {
   if (!userId) throw new UnauthorizedError();
 
@@ -125,13 +129,6 @@ export const applyCredits = async (
   const noOfCreditsToUse = videoDurationInSeconds * creditsPerVideoPerSecond;
   let noOfCreditsLeft = user.noOfCreditsLeft;
 
-  // if (
-  //   // noOfCreditsLeft &&
-  //   // noOfCreditsLeft > noOfCreditsToUse
-  // ) {
-  //   throw new BadRequestError("Reached max quota");
-  // }
-
   noOfCreditsLeft =
     user.noOfCreditsAllocated == null || noOfCreditsLeft == null
       ? null
@@ -140,11 +137,15 @@ export const applyCredits = async (
   const noOfCreditsUsed = user.noOfCreditsUsed + noOfCreditsToUse;
   const totalCreditsUsed = user.totalCreditsUsed + noOfCreditsToUse;
 
-  await userRepo.update(userId, {
-    noOfCreditsUsed,
-    totalCreditsUsed,
-    noOfCreditsLeft,
-  });
+  await userRepo.update(
+    userId,
+    {
+      noOfCreditsUsed,
+      totalCreditsUsed,
+      noOfCreditsLeft,
+    },
+    tc,
+  );
 
   return user;
 };

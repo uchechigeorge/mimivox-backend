@@ -36,7 +36,7 @@ export const getVideo = async (requestId: string, ignoreUpdate?: boolean) => {
   }
 
   const videoData = (await res.json()) as XaiVideoGetResponse;
-  if (videoData.video.url && video && video.url) {
+  if (videoData?.video?.url && video && video.url) {
     videoData.video.url = video.url;
   }
   const headers = new Headers(res.headers);

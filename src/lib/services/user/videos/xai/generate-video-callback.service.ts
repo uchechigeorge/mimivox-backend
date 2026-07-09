@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db/prisma";
 import { getVideo } from "./get-video.service";
 import videoRepo from "@/lib/repositories/video.repo";
 import { Task, Video } from "@/generated/prisma/client";
+import { applyCredits, reverseCredits } from "../base.service";
 
 export const generateVideoCallBack = async (
   requestId: string,
@@ -47,7 +48,7 @@ export const generateVideoCallBack = async (
             : "",
           title: "",
           altUrl: videoData.video.url,
-          url: uploadedVideo.url,
+          url: uploadedVideo.secure_url,
           durationInSeconds: videoData.video.duration,
           videoServiceType: "Xai",
           videoServiceReferenceId: null,
@@ -64,8 +65,15 @@ export const generateVideoCallBack = async (
         },
         tx,
       );
+
+      if (task.userId) {
+        await applyCredits(task.userId, videoData.video.duration, tx);
+      }
     });
   } else if (videoData.status === "failed") {
+    if (task.userId) {
+      await reverseCredits(task.userId);
+    }
   }
 
   return video;

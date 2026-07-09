@@ -3,11 +3,14 @@ import { XaiVideoGenerateRequestBody, XaiVideoGenerateResponse } from "./types";
 import { UserAuthItems } from "@/lib/types";
 import { reverseCredits, validate } from "../base.service";
 import { createTask } from "./base.service";
+import { UnauthorizedError } from "@/lib/utils/error.util";
 
 export const generateVideo = async (
   body: XaiVideoGenerateRequestBody,
   authItems: UserAuthItems,
 ) => {
+  if (!authItems.userId) throw new UnauthorizedError();
+
   const { user, duration } = await validate({ prompt: body.prompt, authItems });
 
   if (duration) {
@@ -28,9 +31,9 @@ export const generateVideo = async (
   // Handle non-200 responses
   if (!res.ok) {
     const errorText = await clonedRes.text();
-    console.log(errorText);
+    console.error(errorText);
 
-    await reverseCredits(authItems);
+    await reverseCredits(authItems.userId);
     return res;
   }
 
