@@ -40,7 +40,7 @@ export const createSubscription = async (
   }
 
   const plan = await planRepo.getById(pricing.planId);
-  if (!plan || plan.isFree) {
+  if (!plan || plan.isFree || pricing.isFree) {
     throw new BadRequestError("Invalid subscription plan");
   }
 
