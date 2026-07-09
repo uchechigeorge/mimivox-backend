@@ -4,7 +4,6 @@ import { baseGetParamsSchema } from "../shared/base-get-params.validator";
 
 export const subscriptionPaymentListParamsValidator = z.object({
   ...baseGetParamsSchema,
-  slug: z.string().optional(),
   subscriptionId: z.string().optional(),
 });
 

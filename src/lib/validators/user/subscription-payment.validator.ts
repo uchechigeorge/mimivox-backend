@@ -4,6 +4,7 @@ import { baseGetParamsSchema } from "../shared/base-get-params.validator";
 
 export const subscriptionPaymentListParamsValidator = z.object({
   ...baseGetParamsSchema,
+  subscriptionId: z.string().optional(),
 });
 
 export const subscriptionPaymentGetParamsValidator = z.object({
@@ -20,6 +21,7 @@ export const subscriptionPaymentReadDtoValidator = z.object({
   isInitialPayment: nBoolean,
   isPaymentVerified: nBoolean,
   paymentGateway: nString,
+  status: nString,
   planId: nString,
   planName: nString,
   startDate: nDate,

@@ -86,6 +86,8 @@ export const query = async (
 
   if (isNotNullOrWhitespace(params.id)) where.id = params.id;
   if (isNotNullOrWhitespace(params.userId)) where.userId = params.userId;
+  if (isNotNullOrWhitespace(params.subscriptionId))
+    where.subscriptionId = params.subscriptionId;
   if (isNotNullOrWhitespace(params.subscriptionReference))
     where.subscriptionReference = params.subscriptionReference;
   if (params.searchString && params.searchString.trim() !== "") {
@@ -124,6 +126,7 @@ export const query = async (
 
 type SubscriptionPaymentGetParams = BaseGetParams & {
   userId?: string;
+  subscriptionId?: string;
   subscriptionReference?: string;
   paymentToken?: string;
 };

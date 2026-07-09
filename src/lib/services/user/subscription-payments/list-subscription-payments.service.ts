@@ -3,9 +3,9 @@ import { ListSubscriptionPaymentsMetaResponse } from "./types";
 import {
   SubscriptionPaymentListParams,
   SubscriptionPaymentReadDto,
-} from "@/lib/dtos/admin/subscription-payment.dto";
+} from "@/lib/dtos/user/subscription-payment.dto";
 import { parseArr } from "@/lib/utils/zod.utils";
-import { subscriptionPaymentReadDtoValidator } from "@/lib/validators/admin/subscription-payment.validator";
+import { subscriptionPaymentReadDtoValidator } from "@/lib/validators/user/subscription-payment.validator";
 import { UserAuthItems } from "@/lib/types";
 
 export const listSubscriptionPayments = async (
