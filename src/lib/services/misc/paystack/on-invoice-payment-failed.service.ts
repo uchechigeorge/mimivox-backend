@@ -4,6 +4,8 @@ import userRepo from "@/lib/repositories/user.repo";
 import subscriptionRepo from "@/lib/repositories/subscription.repo";
 import paystackSubscriptionRepo from "@/lib/repositories/paystack-subscription.repo";
 import { sendSubscriptionPaymentFailed } from "../../user/notifications/subscription-payment-failed.service";
+import paystackInvoiceRepo from "@/lib/repositories/paystack-invoice.repo";
+import subscriptionPaymentRepo from "@/lib/repositories/subscription-payment.repo";
 
 export const onInvoicePaymentFailed = async (
   body: HandlePaystackWebhookDto,
@@ -11,6 +13,7 @@ export const onInvoicePaymentFailed = async (
   const data = body.data;
 
   if (
+    !data.invoice_code ||
     !data.subscription ||
     !data.subscription.subscription_code ||
     !data.customer ||
@@ -64,23 +67,63 @@ export const onInvoicePaymentFailed = async (
     return;
   }
 
-  const subscription = await subscriptionRepo.getByUserIdAndIsActive(
-    user.id,
-    true,
+  const subscription = await subscriptionRepo.getById(
+    paystackSubscription.subscriptionId,
   );
   if (!subscription) {
     console.error(
-      `Paystack webhook error: No active subscriptions found; ${JSON.stringify({
+      `Paystack webhook error: Subscription not found; ${JSON.stringify({
         subscription,
       })} [invoice.payment_failed]`,
     );
     return;
   }
 
+  const paystackInvoice = await paystackInvoiceRepo.getByReference(
+    data.invoice_code,
+  );
+  if (!paystackInvoice || !paystackInvoice.subscriptionPaymentId) {
+    let subscriptionPayment =
+      await subscriptionPaymentRepo.getByIsCurrentAndPending(subscription.id);
+    if (!subscriptionPayment) {
+      subscriptionPayment = await subscriptionPaymentRepo.create({
+        amount: data.amount ? data.amount / 100 : 0,
+        subscriptionReference: subscription.reference,
+        paymentGateway: "Paystack",
+        isInitialPayment: false,
+        isPaymentVerified: data.paid,
+        paidAt: data.paid_at,
+        subscriptionId: subscription.id,
+        status: data.status == "success" ? "Paid" : "Failed",
+        userId: user.id,
+        userName: user.fullName,
+        planId: subscription.planId,
+        planName: subscription.planName,
+        startDate: data.period_start,
+        endDate: data.period_end,
+        isCurrent: true,
+      });
+    }
+
+    await paystackInvoiceRepo.create({
+      reference: data.invoice_code,
+      subscriptionPaymentId: subscriptionPayment.id,
+    });
+  } else {
+    const subscriptionPayment = await subscriptionPaymentRepo.getById(
+      paystackInvoice.subscriptionPaymentId,
+    );
+    if (subscriptionPayment) {
+      await subscriptionPaymentRepo.update(subscriptionPayment.id, {
+        isPaymentVerified: data.paid,
+        status: data.status == "success" ? "Paid" : "Failed",
+      });
+    }
+  }
+
   if (data.subscription.status === "attention") {
     await subscriptionRepo.update(subscription.id, {
       status: "PastDue",
-      endDate: subscription.nextBillingDate,
     });
   }
 

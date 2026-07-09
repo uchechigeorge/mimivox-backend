@@ -21,7 +21,7 @@ export const onInvoiceUpdate = async (body: HandlePaystackWebhookDto) => {
         {
           data,
         },
-      )}`,
+      )} [invoice.update]`,
     );
     return;
   }
@@ -35,7 +35,7 @@ export const onInvoiceUpdate = async (body: HandlePaystackWebhookDto) => {
         {
           customer: data.customer,
         },
-      )}`,
+      )} [invoice.update]`,
     );
     return;
   }
@@ -45,7 +45,7 @@ export const onInvoiceUpdate = async (body: HandlePaystackWebhookDto) => {
     console.error(
       `Paystack webhook error: User not found for paystack customer; ${JSON.stringify(
         { paystackUser },
-      )}`,
+      )} [invoice.update]`,
     );
     return;
   }
@@ -59,7 +59,7 @@ export const onInvoiceUpdate = async (body: HandlePaystackWebhookDto) => {
         {
           plan: data.plan,
         },
-      )}`,
+      )} [invoice.update]`,
     );
     return;
   }
@@ -71,7 +71,7 @@ export const onInvoiceUpdate = async (body: HandlePaystackWebhookDto) => {
     console.error(
       `Paystack webhook error: Subscription not found; ${JSON.stringify({
         subscription,
-      })}`,
+      })} [invoice.update]`,
     );
     return;
   }
@@ -80,22 +80,27 @@ export const onInvoiceUpdate = async (body: HandlePaystackWebhookDto) => {
     data.invoice_code,
   );
   if (!paystackInvoice || !paystackInvoice.subscriptionPaymentId) {
-    const subscriptionPayment = await subscriptionPaymentRepo.create({
-      amount: data.amount ? data.amount / 100 : 0,
-      subscriptionReference: subscription.reference,
-      paymentGateway: "Paystack",
-      isInitialPayment: false,
-      isPaymentVerified: true,
-      paidAt: data.paid_at,
-      subscriptionId: subscription.id,
-      userId: user.id,
-      userName: user.fullName,
-      planId: subscription.planId,
-      planName: subscription.planName,
-      startDate: data.period_start,
-      endDate: data.period_end,
-      isCurrent: true,
-    });
+    let subscriptionPayment =
+      await subscriptionPaymentRepo.getByIsCurrentAndPending(subscription.id);
+    if (!subscriptionPayment) {
+      subscriptionPayment = await subscriptionPaymentRepo.create({
+        amount: data.amount ? data.amount / 100 : 0,
+        subscriptionReference: subscription.reference,
+        paymentGateway: "Paystack",
+        isInitialPayment: false,
+        isPaymentVerified: data.paid,
+        paidAt: data.paid_at,
+        subscriptionId: subscription.id,
+        status: data.status == "success" ? "Paid" : "Failed",
+        userId: user.id,
+        userName: user.fullName,
+        planId: subscription.planId,
+        planName: subscription.planName,
+        startDate: data.period_start,
+        endDate: data.period_end,
+        isCurrent: true,
+      });
+    }
 
     await paystackInvoiceRepo.create({
       reference: data.invoice_code,
@@ -107,7 +112,7 @@ export const onInvoiceUpdate = async (body: HandlePaystackWebhookDto) => {
     );
     if (subscriptionPayment) {
       await subscriptionPaymentRepo.update(subscriptionPayment.id, {
-        isPaymentVerified: true,
+        isPaymentVerified: data.paid,
         paidAt: data.paid_at,
       });
     }

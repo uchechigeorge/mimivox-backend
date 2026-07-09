@@ -24,6 +24,17 @@ const getById = async (
   });
 };
 
+const getByIsCurrentAndPending = async (
+  subscriptionId: Subscription["id"],
+  tc?: Prisma.TransactionClient,
+) => {
+  const db: DB = tc || prisma;
+
+  return await db.subscriptionPayment.findFirst({
+    where: { subscriptionId, isCurrent: true, status: "Pending" },
+  });
+};
+
 const create = async (
   data: SubscriptionPaymentCreateArgs["data"],
   tc?: Prisma.TransactionClient,
@@ -121,6 +132,7 @@ export type SubscriptionPaymentGetOptions = BaseGetOptions & {};
 
 const subscriptionPaymentRepo = {
   getById,
+  getByIsCurrentAndPending,
   create,
   update,
   updateBySubscriptionId,

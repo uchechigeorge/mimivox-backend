@@ -30,7 +30,6 @@ export const handlePaystackWebhookDto = z.object({
     paid_at: stringToNullableDate,
     status: z.string().nullish(),
     description: z.string().nullish(),
-
     customer: z
       .object({
         first_name: z.string().nullish(),
