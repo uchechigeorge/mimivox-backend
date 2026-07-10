@@ -21,7 +21,7 @@ export const generateInvoices = async () => {
     if (currentInvoice) continue;
 
     const pricing = await pricingRepo.getById(subscription.pricingId);
-    if (!pricing) continue;
+    if (!pricing || pricing.isFree) continue;
 
     const intervalType = toAppIntervalType(pricing.intervalType);
     const intervalCount = pricing.intervalCount;
