@@ -83,32 +83,14 @@ export const onInvoicePaymentFailed = async (
     data.invoice_code,
   );
   if (!paystackInvoice || !paystackInvoice.subscriptionPaymentId) {
-    let subscriptionPayment =
+    const subscriptionPayment =
       await subscriptionPaymentRepo.getByIsCurrentAndPending(subscription.id);
-    if (!subscriptionPayment) {
-      subscriptionPayment = await subscriptionPaymentRepo.create({
-        amount: data.amount ? data.amount / 100 : 0,
-        subscriptionReference: subscription.reference,
-        paymentGateway: "Paystack",
-        isInitialPayment: false,
-        isPaymentVerified: data.paid,
-        paidAt: data.paid_at,
-        subscriptionId: subscription.id,
-        status: data.status == "success" ? "Paid" : "Failed",
-        userId: user.id,
-        userName: user.fullName,
-        planId: subscription.planId,
-        planName: subscription.planName,
-        startDate: data.period_start,
-        endDate: data.period_end,
-        isCurrent: true,
+    if (subscriptionPayment) {
+      await paystackInvoiceRepo.create({
+        reference: data.invoice_code,
+        subscriptionPaymentId: subscriptionPayment.id,
       });
     }
-
-    await paystackInvoiceRepo.create({
-      reference: data.invoice_code,
-      subscriptionPaymentId: subscriptionPayment.id,
-    });
   } else {
     const subscriptionPayment = await subscriptionPaymentRepo.getById(
       paystackInvoice.subscriptionPaymentId,
@@ -117,6 +99,8 @@ export const onInvoicePaymentFailed = async (
       await subscriptionPaymentRepo.update(subscriptionPayment.id, {
         isPaymentVerified: data.paid,
         status: data.status == "success" ? "Paid" : "Failed",
+        startDate: data.period_start,
+        endDate: data.period_end,
       });
     }
   }

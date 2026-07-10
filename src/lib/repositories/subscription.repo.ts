@@ -109,6 +109,23 @@ const listByExpiredAndIsActive = async (tc?: Prisma.TransactionClient) => {
   });
 };
 
+const listByIsActive = async (tc?: Prisma.TransactionClient) => {
+  const db: DB = tc || prisma;
+
+  return await db.subscription.findMany({
+    where: {
+      OR: [
+        {
+          nextBillingDate: { lte: new Date() },
+        },
+        {
+          isActive: true,
+        },
+      ],
+    },
+  });
+};
+
 const create = async (
   data: SubscriptionCreateArgs["data"],
   tc?: Prisma.TransactionClient,
@@ -221,6 +238,7 @@ const subscriptionRepo = {
   getExistsByPaymentToken,
   getExistsByPreviousSubscriptionId,
   listByExpiredAndIsActive,
+  listByIsActive,
   create,
   update,
   upsert,

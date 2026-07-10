@@ -6,6 +6,7 @@ import paystackSubscriptionRepo from "@/lib/repositories/paystack-subscription.r
 import subscriptionPaymentRepo from "@/lib/repositories/subscription-payment.repo";
 import paystackInvoiceRepo from "@/lib/repositories/paystack-invoice.repo";
 import { prisma } from "@/lib/db/prisma";
+import { BadRequestError } from "@/lib/utils/error.util";
 
 export const onInvoiceCreate = async (body: HandlePaystackWebhookDto) => {
   const data = body.data;
@@ -73,44 +74,31 @@ export const onInvoiceCreate = async (body: HandlePaystackWebhookDto) => {
   if (!subscription) {
     console.error(
       `Paystack webhook error: Subscription not found; ${JSON.stringify({
-        subscription,
+        paystackSubscription,
       })}`,
     );
     return;
   }
 
+  const recentSubscriptionPayment =
+    await subscriptionPaymentRepo.getByIsCurrentAndPending(subscription.id);
+
+  if (!recentSubscriptionPayment) {
+    console.error(
+      `Paystack webhook error: Recent invoice not found; ${JSON.stringify({
+        subscription,
+      })} | [invoice.create]`,
+    );
+    throw new BadRequestError(
+      "Paystack webhook error: Recent invoice not found; [invoice.create]",
+    );
+  }
+
   await prisma.$transaction(async (tc) => {
-    await subscriptionPaymentRepo.updateBySubscriptionId(
-      subscription.id,
-      {
-        isCurrent: false,
-      },
-      tc,
-    );
-
-    const subscriptionPayment = await subscriptionPaymentRepo.create(
-      {
-        amount: data.amount ? data.amount / 100 : 0,
-        subscriptionReference: subscription.reference,
-        paymentGateway: "Paystack",
-        isInitialPayment: false,
-        isPaymentVerified: false,
-        subscriptionId: subscription.id,
-        userId: user.id,
-        userName: user.fullName,
-        planId: subscription.planId,
-        planName: subscription.planName,
-        startDate: data.period_start,
-        endDate: data.period_end,
-        isCurrent: true,
-      },
-      tc,
-    );
-
     await paystackInvoiceRepo.create(
       {
         reference: invoiceCode,
-        subscriptionPaymentId: subscriptionPayment.id,
+        subscriptionPaymentId: recentSubscriptionPayment.id,
       },
       tc,
     );

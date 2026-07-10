@@ -23,10 +23,10 @@ export const editImage = async (
   const clonedRes = res.clone();
   // Handle non-200 responses
   if (!res.ok) {
+    await reverseCredits(authItems);
+
     const errorText = await clonedRes.text();
     console.error(errorText);
-
-    await reverseCredits(authItems);
     return res;
   }
 

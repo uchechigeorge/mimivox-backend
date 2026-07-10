@@ -79,3 +79,84 @@ export const getNextBillingDate = (
 
   return nextDate;
 };
+
+const SECOND = 1_000;
+const MINUTE = 60 * SECOND;
+const HOUR = 60 * MINUTE;
+const DAY = 24 * HOUR;
+
+const InvoiceLeadTime: Record<string, any> = {
+  hour: {
+    1: { minutes: 10 },
+    6: { minutes: 30 },
+    12: { hours: 1 },
+  },
+  day: {
+    1: { hours: 2 },
+    7: { days: 1 },
+  },
+  month: {
+    1: { days: 3 },
+    3: { days: 7 },
+    12: { days: 30 },
+  },
+  year: {
+    1: { days: 30 },
+  },
+} as const;
+
+export function getInvoiceLeadTime(
+  intervalType: IntervalTypes,
+  intervalCount: number,
+): number {
+  const config = InvoiceLeadTime[intervalType.toString().toLowerCase()];
+
+  if (!config) {
+    throw new Error(`Unsupported interval type: ${intervalType}`);
+  }
+
+  // Exact match first
+  const duration = config[intervalCount as keyof typeof config];
+
+  if (!duration) {
+    throw new Error(
+      `No lead time configured for ${intervalCount} ${intervalType}(s)`,
+    );
+  }
+
+  if ("minutes" in duration) {
+    return duration.minutes * MINUTE;
+  }
+
+  if ("hours" in duration) {
+    return duration.hours * HOUR;
+  }
+
+  if ("days" in duration) {
+    return duration.days * DAY;
+  }
+
+  throw new Error("Invalid lead time configuration");
+}
+
+// export const getInvoiceLeadTime = (
+//   intervalType: IntervalTypes,
+//   intervalCount: number,
+// ) => {
+//   switch (intervalType) {
+//     case IntervalTypes.Hour:
+//       return { minutes: Math.min(intervalCount * 10, 60) };
+
+//     case IntervalTypes.Day:
+//       return { hours: Math.min(intervalCount * 2, 24) };
+
+//     case IntervalTypes.Month:
+//       return { days: Math.min(intervalCount * 3, 14) };
+
+//     case IntervalTypes.Year:
+//       return { days: 30 };
+
+//     default:
+//       return { minutes: 10 };
+//   }
+// };
