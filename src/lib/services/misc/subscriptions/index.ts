@@ -1,5 +1,5 @@
 import { checkExpiry } from "./check-expiry.service";
-import { generateInvoices } from "./create-invoice.service";
+import { generateInvoices } from "./generate-invoices.service";
 
 const subscriptionService = {
   checkExpiry,
