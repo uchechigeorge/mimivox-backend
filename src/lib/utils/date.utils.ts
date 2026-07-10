@@ -109,10 +109,14 @@ export function getInvoiceLeadTime(
   intervalType: IntervalTypes,
   intervalCount: number,
 ): number {
-  const config = InvoiceLeadTime[intervalType.toString().toLowerCase()];
+  console.log({ intervalType, intervalCount });
+  const config =
+    InvoiceLeadTime[IntervalTypes[intervalType].toString().toLowerCase()];
 
   if (!config) {
-    throw new Error(`Unsupported interval type: ${intervalType}`);
+    throw new Error(
+      `Unsupported interval type: ${IntervalTypes[intervalType].toString()}`,
+    );
   }
 
   // Exact match first

@@ -8,8 +8,10 @@ import { prisma } from "@/lib/db/prisma";
 export const generateInvoices = async () => {
   const subscriptions = await subscriptionRepo.listByIsActive();
 
-  const subscriptionIds = subscriptions.map((subscription) => subscription.id);
-  const subscriptionPaymentIds: string[] = [];
+  const activeSubscriptionIds = subscriptions.map(
+    (subscription) => subscription.id,
+  );
+  const newSubscriptionPaymentIds: string[] = [];
 
   for (const subscription of subscriptions) {
     if (!subscription.nextBillingDate) continue;
@@ -53,7 +55,7 @@ export const generateInvoices = async () => {
             isInitialPayment: false,
             isPaymentVerified: false,
             subscriptionId: subscription.id,
-            userId: subscription.id,
+            userId: subscription.userId,
             userName: subscription.userName,
             planId: subscription.planId,
             planName: subscription.planName,
@@ -68,10 +70,10 @@ export const generateInvoices = async () => {
           tc,
         );
 
-        subscriptionPaymentIds.push(subscriptionPayment.id);
+        newSubscriptionPaymentIds.push(subscriptionPayment.id);
       });
     }
   }
 
-  return { subscriptionIds, subscriptionPaymentIds };
+  return { activeSubscriptionIds, newSubscriptionPaymentIds };
 };
