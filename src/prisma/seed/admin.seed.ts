@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db/prisma";
 import { hashPassword } from "@/lib/services/admin/auth/auth-helpers.service";
 import { randomColor } from "@/lib/utils/constants.utils";
 
-export const seedAdmins = async () => {
+export default async function seedAdmins() {
   const email = env.INIT_ADMIN_EMAIL;
   const password = env.INIT_ADMIN_PASSWORD;
   const firstName = env.INIT_ADMIN_FIRST_NAME;
@@ -25,4 +25,4 @@ export const seedAdmins = async () => {
     create: data,
     update: data,
   });
-};
+}

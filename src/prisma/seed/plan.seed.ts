@@ -1,8 +1,6 @@
 import {
   PlanCreateInput,
-  PlanSettingCreateInput,
   PricingCreateWithoutPlanInput,
-  PricingSettingCreateInput,
 } from "@/generated/prisma/models";
 import { prisma } from "@/lib/db/prisma";
 import planRepo from "@/lib/repositories/plan.repo";
@@ -275,10 +273,6 @@ export default async function seedPlans() {
   for (let i = 0; i < plans.length; i++) {
     const plan = plans[i];
     const { pricings: pricingsData, ...data } = plan;
-    // const settings = settingsData?.create as PlanSettingCreateInput | undefined;
-    // if (!settings) {
-    //   throw new Error(`Settings data is required for plan: ${plan.name}`);
-    // }
 
     data.sequence = i + 1;
     const createdPlan = await prisma.plan.upsert({
@@ -296,9 +290,6 @@ export default async function seedPlans() {
 
       for (let j = 0; j < pricings.length; j++) {
         const { settings: settingsData, ...pricing } = pricings[j];
-        // const settings = pricing.settings?.create as
-        //   | PricingSettingCreateInput
-        //   | undefined;
 
         pricing.sequence = pricingSequenceCounter++;
 
@@ -342,22 +333,5 @@ export default async function seedPlans() {
         });
       }
     }
-
-    // // Create setting
-    // await prisma.planSetting.upsert({
-    //   where: { planId: createdPlan.id },
-    //   create: {
-    //     ...settings,
-    //     plan: {
-    //       connect: { id: createdPlan.id },
-    //     },
-    //   },
-    //   update: {
-    //     ...settings,
-    //     plan: {
-    //       connect: { id: createdPlan.id },
-    //     },
-    //   },
-    // });
   }
 }

@@ -82,8 +82,8 @@ export const handleSubscriptionPayment = async (
   const pricing = await pricingRepo.getById(subscription.pricingId);
   if (!pricing) {
     console.error(
-      `Paystack webhook error: Subscription pricing not found for subscription;
-      ${JSON.stringify({ subscription })}`,
+      `Paystack webhook error: Pricing not found for subscription;
+      ${JSON.stringify({ subscription })} [charge.success]`,
     );
     return;
   }
@@ -246,6 +246,8 @@ export const handleSubscriptionPayment = async (
         planName: pricing.planName,
         startDate: subscription.startDate,
         endDate: subscription.nextBillingDate,
+        isCurrent: true,
+        status: "Paid",
       },
       tx,
     );

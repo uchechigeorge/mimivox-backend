@@ -1,7 +1,7 @@
-import { prisma } from "@/lib/db/prisma";
+import seedAdmins from "./seed/admin.seed";
 import seedPlans from "./seed/plan.seed";
 import seedVoices from "./seed/voice.seed";
-import { seedAdmins } from "./seed/admin.seed";
+import { prisma } from "@/lib/db/prisma";
 
 async function main() {
   await seedAdmins();

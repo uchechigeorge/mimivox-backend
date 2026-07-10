@@ -109,7 +109,6 @@ export function getInvoiceLeadTime(
   intervalType: IntervalTypes,
   intervalCount: number,
 ): number {
-  console.log({ intervalType, intervalCount });
   const config =
     InvoiceLeadTime[IntervalTypes[intervalType].toString().toLowerCase()];
 
