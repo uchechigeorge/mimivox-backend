@@ -5,7 +5,7 @@ import { getInvoiceLeadTime, getNextBillingDate } from "@/lib/utils/date.utils";
 import { toAppIntervalType } from "../../shared/pricings/pricing-helper.service";
 import { prisma } from "@/lib/db/prisma";
 
-export const createInvoice = async () => {
+export const generateInvoices = async () => {
   const subscriptions = await subscriptionRepo.listByIsActive();
 
   const subscriptionIds = subscriptions.map((subscription) => subscription.id);

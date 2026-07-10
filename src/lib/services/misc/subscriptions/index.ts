@@ -1,9 +1,9 @@
 import { checkExpiry } from "./check-expiry.service";
-import { createInvoice } from "./create-invoice.service";
+import { generateInvoices } from "./create-invoice.service";
 
 const subscriptionService = {
   checkExpiry,
-  createInvoice,
+  generateInvoices,
 };
 
 export default subscriptionService;
