@@ -1,4 +1,15 @@
-export type UpdatePaystackPlanDto = {
+export type CreatePaystackPlanOptions = {
+  name?: string;
+  interval?: string;
+  amount?: number;
+  description?: string;
+  send_invoices?: boolean;
+  send_sms?: boolean;
+  currency?: string;
+  invoice_limit?: number;
+};
+
+export type UpdatePaystackPlanOptions = {
   name?: string;
   interval?: string;
   amount?: number;
@@ -10,7 +21,7 @@ export type UpdatePaystackPlanDto = {
   update_existing_subscriptions?: boolean;
 };
 
-export type ReadPaystackPlanDto = {
+export type PaystackPlan = {
   id: number;
   name?: string;
   amount: number;
@@ -38,21 +49,10 @@ export type GetPaystackPlanParams = {
   amount?: number;
 };
 
-export type CreatePaystackPlanDto = {
-  name?: string;
-  interval?: string;
-  amount?: number;
-  description?: string;
-  send_invoices?: boolean;
-  send_sms?: boolean;
-  currency?: string;
-  invoice_limit?: number;
-};
-
-export type CreatePaystackPlanResponseDto = ReadPaystackPlanDto;
+export type CreatePaystackPlanResponseDto = PaystackPlan;
 
 export type CreatePlanResponse =
   | [CreatePaystackPlanResponseDto, null]
   | [null, Error];
-export type ListPlanResponse = [ReadPaystackPlanDto[], null] | [null, Error];
-export type UpdatePlanResponse = [true, null] | [false, Error];
+export type ListPlanResponse = [PaystackPlan[], null] | [null, Error];
+export type UpdatePlanResponse = [true, null] | [null, Error];

@@ -8,17 +8,9 @@ import { prisma } from "@/lib/db/prisma";
 import paystackSubscriptionRepo from "@/lib/repositories/paystack-subscription.repo";
 import subscriptionPaymentRepo from "@/lib/repositories/subscription-payment.repo";
 import paystackCustomerRepo from "@/lib/repositories/paystack-customer.repo";
-import { UserUpdateArgs } from "@/generated/prisma/models";
-import {
-  PaystackSubscription,
-  PlanSetting,
-  Subscription,
-  User,
-} from "@/generated/prisma/client";
-import planSettingRepo from "@/lib/repositories/plan-setting.repo";
+import { PaystackSubscription, Subscription } from "@/generated/prisma/client";
 import { BadRequestError } from "@/lib/utils/error.util";
 import paystackService from "../../shared/paystack";
-import { PaystackSubscription as PaystackSub } from "../../shared/paystack/subscriptions/types";
 import pricingSettingRepo from "@/lib/repositories/pricing-setting.repo";
 import pricingSettingsService from "../../shared/pricing-settings";
 
@@ -100,7 +92,7 @@ export const handleSubscriptionPayment = async (
   // Validate amount paid
   // Paystack sends amount in kobo (for NGN) or pesewas (for GHS), so we divide by 100 to get the amount in the main currency unit
   const amountPaid = Number(data.amount ? data.amount / 100 : 0);
-  const price = paystackPlan.amount.toNumber() / 100;
+  const price = paystackPlan.amount / 100;
 
   if (price > amountPaid) {
     console.error(
@@ -144,7 +136,7 @@ export const handleSubscriptionPayment = async (
   // If has previous subscription, disable it
   // Get previous subscription and paystack subscription reference
   let previousSubscription: Subscription | null = null;
-  let previousPaystackSubscription: PaystackSub | null = null;
+  let previousPaystackSubscription: PaystackSubscription | null = null;
   if (subscription.previousSubscriptionId != null) {
     previousSubscription = await subscriptionRepo.getById(
       subscription.previousSubscriptionId,
@@ -152,20 +144,12 @@ export const handleSubscriptionPayment = async (
     if (!previousSubscription)
       throw new BadRequestError("Previous subscription not found");
 
-    const previousPaystackSubscriptionRef =
+    previousPaystackSubscription =
       await paystackSubscriptionRepo.getBySubscriptionId(
         previousSubscription.id,
       );
-    if (!previousPaystackSubscriptionRef)
+    if (!previousPaystackSubscription)
       throw new BadRequestError("Paystack previous subscription not found");
-
-    const [paystackRes, paystackFetchErr] =
-      await paystackService.subscription.fetchSubscription(
-        previousPaystackSubscriptionRef.reference,
-      );
-    if (paystackFetchErr)
-      throw new BadRequestError("Paystack previous subscription not found");
-    previousPaystackSubscription = paystackRes;
   }
 
   // Get currency and exchange rate
@@ -224,8 +208,9 @@ export const handleSubscriptionPayment = async (
 
     await paystackSubscriptionRepo.create(
       {
-        reference: pSub.subscription_code,
         subscriptionId: subscription.id,
+        reference: pSub.subscription_code,
+        token: pSub.email_token,
       },
       tx,
     );
@@ -277,8 +262,8 @@ export const handleSubscriptionPayment = async (
   // Disable the source subscription
   if (previousPaystackSubscription) {
     await paystackService.subscription.disableSubscription({
-      code: previousPaystackSubscription.subscription_code,
-      token: previousPaystackSubscription.email_token,
+      code: previousPaystackSubscription.reference,
+      token: previousPaystackSubscription.token,
     });
   }
 };
