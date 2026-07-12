@@ -6,6 +6,7 @@ import paystackSubscriptionRepo from "@/lib/repositories/paystack-subscription.r
 import { sendSubscriptionPaymentFailed } from "../../user/notifications/subscription-payment-failed.service";
 import paystackInvoiceRepo from "@/lib/repositories/paystack-invoice.repo";
 import subscriptionPaymentRepo from "@/lib/repositories/subscription-payment.repo";
+import paystackSubscriptionService from "../../shared/paystack/subscriptions";
 
 export const onInvoicePaymentFailed = async (
   body: HandlePaystackWebhookDto,
@@ -111,10 +112,20 @@ export const onInvoicePaymentFailed = async (
     });
   }
 
-  await sendSubscriptionPaymentFailed(user.email, {
-    userName: user.fullName,
-    amount: data.amount ? data.amount / 100 : 0,
-    planName: subscription.planName,
-    retryDate: null,
-  });
+  // Cancel subscription if expired
+  if (!subscription.isActive) {
+    paystackSubscriptionService.disableSubscription({
+      code: paystackSubscription.reference,
+      token: paystackSubscription.token,
+    });
+  }
+
+  if (subscription.isActive) {
+    await sendSubscriptionPaymentFailed(user.email, {
+      userName: user.fullName,
+      amount: data.amount ? data.amount / 100 : 0,
+      planName: subscription.planName,
+      retryDate: null,
+    });
+  }
 };
