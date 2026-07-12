@@ -10,6 +10,8 @@ import {
 } from "@/lib/utils/error.util";
 import paystackPlanService from "../../shared/paystack/plan";
 import { env } from "@/lib/config/env.config";
+import { pricingReadDtoValidator } from "@/lib/validators/admin/pricing.validator";
+import { Decimal } from "@prisma/client/runtime/client";
 
 export const updatePricing = async (
   id: string,
@@ -19,6 +21,9 @@ export const updatePricing = async (
   if (!pricing) {
     throw new NotFoundError("Pricing not found");
   }
+
+  pricing.price = new Decimal(updateDto.price);
+  pricing.oldPrice = updateDto.oldPrice ? new Decimal(updateDto.price) : null;
 
   const syncPaystack = env.SYNC_PAYSTACK_PRICINGS;
   let reference: string | null = null;
@@ -32,7 +37,7 @@ export const updatePricing = async (
     } = await handlePaystackUpdates(pricing);
     reference = _reference;
     amount = _amount;
-    exists = exists;
+    exists = _exists;
   }
 
   try {
@@ -84,7 +89,7 @@ export const updatePricing = async (
     throw new BadRequestError(`Could not update record: ${error.message}`);
   }
 
-  const readDto = pricing;
+  const readDto = pricingReadDtoValidator.parse(pricing);
   return readDto;
 };
 
@@ -94,6 +99,7 @@ const handlePaystackUpdates = async (
   const paystackPricing = await paystackPlanRepo.getByPricingId(pricing.id);
 
   const exists = !!paystackPricing;
+  const amount = pricing.price.toNumber() * 100;
 
   // No paystack pricing exists yet
   if (!paystackPricing) {
@@ -151,12 +157,12 @@ const handlePaystackUpdates = async (
 
       // Update existing plan
       await paystackPlanService.updatePlan(existingPlan.plan_code, {
-        amount: pricing.price.toNumber() * 100,
+        amount,
       });
 
       return {
         reference: existingPlan.plan_code,
-        amount: existingPlan.amount,
+        amount,
         exists,
       };
     }
@@ -164,7 +170,7 @@ const handlePaystackUpdates = async (
     // Create new plan
     const [newPlan, newPlanError] = await paystackPlanService.createPlan({
       name: `${appName}: ${pricing.name}`,
-      amount: pricing.price.toNumber() * 100,
+      amount,
       interval,
     });
 
@@ -174,7 +180,7 @@ const handlePaystackUpdates = async (
 
     return {
       reference: newPlan.plan_code,
-      amount: newPlan.amount,
+      amount,
       exists,
     };
   }
@@ -187,15 +193,15 @@ const handlePaystackUpdates = async (
   }
 
   // Update existing paystack plan
-  if (paystackPricing.amount !== pricing.price.mul(100)) {
+  if (paystackPricing.amount !== pricing.price.mul(100).toNumber()) {
     await paystackPlanService.updatePlan(paystackPricing.reference, {
-      amount: pricing.price.toNumber() * 100,
+      amount,
     });
   }
 
   return {
     reference: paystackPricing.reference,
-    amount: paystackPricing.amount.toNumber(),
+    amount,
     exists,
   };
 };

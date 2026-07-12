@@ -4,7 +4,7 @@ import { UserAuthItems } from "@/lib/types";
 import { BadRequestError, UnauthorizedError } from "@/lib/utils/error.util";
 import paystackService from "../../shared/paystack";
 import paystackSubscriptionRepo from "@/lib/repositories/paystack-subscription.repo";
-import { PaystackSubscription } from "../../shared/paystack/subscriptions/types";
+import { PaystackSubscription } from "@/generated/prisma/client";
 
 export const cancelSubscription = async (authItems: UserAuthItems) => {
   const userId = authItems.userId;
@@ -26,18 +26,11 @@ export const cancelSubscription = async (authItems: UserAuthItems) => {
 
   let paystackSubscription: PaystackSubscription | null = null;
   if (activeSubscription.paymentGateway == "Paystack") {
-    const paystackSubscriptionRef =
-      await paystackSubscriptionRepo.getBySubscriptionId(activeSubscription.id);
-    if (!paystackSubscriptionRef)
+    paystackSubscription = await paystackSubscriptionRepo.getBySubscriptionId(
+      activeSubscription.id,
+    );
+    if (!paystackSubscription)
       throw new BadRequestError("Paystack subscription not found");
-
-    const [paystackRes, paystackFetchErr] =
-      await paystackService.subscription.fetchSubscription(
-        paystackSubscriptionRef.reference,
-      );
-    if (paystackFetchErr)
-      throw new BadRequestError("Paystack subscription not found");
-    paystackSubscription = paystackRes;
   }
 
   const isExpired =
@@ -59,8 +52,8 @@ export const cancelSubscription = async (authItems: UserAuthItems) => {
 
   if (activeSubscription.paymentGateway == "Paystack" && paystackSubscription) {
     await paystackService.subscription.disableSubscription({
-      code: paystackSubscription.subscription_code,
-      token: paystackSubscription.email_token,
+      code: paystackSubscription.reference,
+      token: paystackSubscription.token,
     });
   }
 };
