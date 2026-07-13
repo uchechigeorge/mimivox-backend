@@ -23,12 +23,11 @@ export const validate = async (options: GenerateMusicValidationOptions) => {
     let noOfCreditsLeft = user.noOfCreditsLeft;
     let noOfMusicLeft = user.noOfMusicLeft;
 
-    if (
-      noOfCreditsLeft &&
-      noOfCreditsLeft > noOfCreditsToUse &&
-      noOfMusicLeft &&
-      noOfMusicLeft < 1
-    ) {
+    if (noOfCreditsLeft !== null && noOfCreditsLeft < noOfCreditsToUse) {
+      throw new BadRequestError("Not enough credits");
+    }
+
+    if (noOfMusicLeft !== null && noOfMusicLeft < noOfMusic) {
       throw new BadRequestError("Reached max quota");
     }
 

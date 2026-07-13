@@ -1,5 +1,4 @@
 import { PricingSetting, User } from "@/generated/prisma/client";
-import { UserUpdateArgs } from "@/generated/prisma/models";
 
 export const topUpCredits = (
   pricingSettings: PricingSetting,
@@ -22,62 +21,78 @@ export const topUpCredits = (
 
   const userSettings: Partial<User> = {
     noOfCreditsUsed: 0,
-    noOfCreditsAllocated: !pricingSettings.noOfCredits
-      ? null
-      : pricingSettings.noOfCredits + noOfCreditsAllocated,
-    noOfCreditsLeft: !pricingSettings.noOfCredits
-      ? null
-      : pricingSettings.noOfCredits + noOfCreditsAllocated,
+    noOfCreditsAllocated:
+      pricingSettings.noOfCredits === null
+        ? null
+        : pricingSettings.noOfCredits + noOfCreditsAllocated,
+    noOfCreditsLeft:
+      pricingSettings.noOfCredits === null
+        ? null
+        : pricingSettings.noOfCredits + noOfCreditsAllocated,
     noOfCharactersUsed: 0,
-    noOfCharactersAllocated: !pricingSettings.noOfCharacters
-      ? null
-      : pricingSettings.noOfCharacters + noOfCharactersAllocated,
-    noOfCharactersLeft: !pricingSettings.noOfCharacters
-      ? null
-      : pricingSettings.noOfCharacters + noOfCharactersAllocated,
+    noOfCharactersAllocated:
+      pricingSettings.noOfCharacters === null
+        ? null
+        : pricingSettings.noOfCharacters + noOfCharactersAllocated,
+    noOfCharactersLeft:
+      pricingSettings.noOfCharacters === null
+        ? null
+        : pricingSettings.noOfCharacters + noOfCharactersAllocated,
     noOfWordsAllowed: pricingSettings.noOfWordsAllowed,
     noOfVoicesUsed: 0,
-    noOfVoicesAllocated: !pricingSettings.noOfVoices
-      ? null
-      : pricingSettings.noOfVoices + noOfVoicesAllocated,
-    noOfVoicesLeft: !pricingSettings.noOfVoices
-      ? null
-      : pricingSettings.noOfVoices + noOfVoicesAllocated,
+    noOfVoicesAllocated:
+      pricingSettings.noOfVoices === null
+        ? null
+        : pricingSettings.noOfVoices + noOfVoicesAllocated,
+    noOfVoicesLeft:
+      pricingSettings.noOfVoices === null
+        ? null
+        : pricingSettings.noOfVoices + noOfVoicesAllocated,
     noOfPremiumVoicesUsed: 0,
-    noOfPremiumVoicesAllocated: !pricingSettings.noOfPremiumVoices
-      ? null
-      : pricingSettings.noOfPremiumVoices + noOfPremiumVoicesAllocated,
-    noOfPremiumVoicesLeft: !pricingSettings.noOfPremiumVoices
-      ? null
-      : pricingSettings.noOfPremiumVoices + noOfPremiumVoicesAllocated,
+    noOfPremiumVoicesAllocated:
+      pricingSettings.noOfPremiumVoices === null
+        ? null
+        : pricingSettings.noOfPremiumVoices + noOfPremiumVoicesAllocated,
+    noOfPremiumVoicesLeft:
+      pricingSettings.noOfPremiumVoices === null
+        ? null
+        : pricingSettings.noOfPremiumVoices + noOfPremiumVoicesAllocated,
     noOfCloneVoicesUsed: 0,
-    noOfCloneVoicesAllocated: !pricingSettings.noOfCloneVoices
-      ? null
-      : pricingSettings.noOfCloneVoices + noOfCloneVoicesAllocated,
-    noOfCloneVoicesLeft: !pricingSettings.noOfCloneVoices
-      ? null
-      : pricingSettings.noOfCloneVoices + noOfCloneVoicesAllocated,
+    noOfCloneVoicesAllocated:
+      pricingSettings.noOfCloneVoices === null
+        ? null
+        : pricingSettings.noOfCloneVoices + noOfCloneVoicesAllocated,
+    noOfCloneVoicesLeft:
+      pricingSettings.noOfCloneVoices === null
+        ? null
+        : pricingSettings.noOfCloneVoices + noOfCloneVoicesAllocated,
     noOfImagesUsed: 0,
-    noOfImagesAllocated: !pricingSettings.noOfImages
-      ? null
-      : pricingSettings.noOfImages + noOfImagesAllocated,
-    noOfImagesLeft: !pricingSettings.noOfImages
-      ? null
-      : pricingSettings.noOfImages + noOfImagesAllocated,
+    noOfImagesAllocated:
+      pricingSettings.noOfImages === null
+        ? null
+        : pricingSettings.noOfImages + noOfImagesAllocated,
+    noOfImagesLeft:
+      pricingSettings.noOfImages === null
+        ? null
+        : pricingSettings.noOfImages + noOfImagesAllocated,
     noOfMusicUsed: 0,
-    noOfMusicAllocated: !pricingSettings.noOfMusic
-      ? null
-      : pricingSettings.noOfMusic + noOfMusicAllocated,
-    noOfMusicLeft: !pricingSettings.noOfMusic
-      ? null
-      : pricingSettings.noOfMusic + noOfMusicAllocated,
+    noOfMusicAllocated:
+      pricingSettings.noOfMusic === null
+        ? null
+        : pricingSettings.noOfMusic + noOfMusicAllocated,
+    noOfMusicLeft:
+      pricingSettings.noOfMusic === null
+        ? null
+        : pricingSettings.noOfMusic + noOfMusicAllocated,
     noOfVideosUsed: 0,
-    noOfVideosAllocated: !pricingSettings.noOfVideos
-      ? null
-      : pricingSettings.noOfVideos + noOfVideosAllocated,
-    noOfVideosLeft: !pricingSettings.noOfVideos
-      ? null
-      : pricingSettings.noOfVideos + noOfVideosAllocated,
+    noOfVideosAllocated:
+      pricingSettings.noOfVideos === null
+        ? null
+        : pricingSettings.noOfVideos + noOfVideosAllocated,
+    noOfVideosLeft:
+      pricingSettings.noOfVideos === null
+        ? null
+        : pricingSettings.noOfVideos + noOfVideosAllocated,
     maxVideoDurationInSeconds: pricingSettings.maxVideoDurationInSeconds,
   };
 

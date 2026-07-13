@@ -26,12 +26,11 @@ export const validate = async (options: GenerateImageValidationOptions) => {
     let noOfCreditsLeft = user.noOfCreditsLeft;
     let noOfImagesLeft = user.noOfImagesLeft;
 
-    if (
-      noOfCreditsLeft &&
-      noOfCreditsLeft > noOfCreditsToUse &&
-      noOfImagesLeft &&
-      noOfImagesLeft < 1
-    ) {
+    if (noOfCreditsLeft !== null && noOfCreditsLeft < noOfCreditsToUse) {
+      throw new BadRequestError("Not enough credits");
+    }
+
+    if (noOfImagesLeft !== null && noOfImagesLeft < noOfImages) {
       throw new BadRequestError("Reached max quota");
     }
 

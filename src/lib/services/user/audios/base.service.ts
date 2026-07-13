@@ -41,14 +41,14 @@ export const validate = async (
     let noOfCharactersLeft = user.noOfCharactersLeft;
 
     if (
-      (noOfCreditsLeft && noOfCreditsLeft < noOfCreditsToUse) ||
-      (noOfCharactersLeft && noOfCharactersLeft < noOfCharacters)
+      (noOfCreditsLeft !== null && noOfCreditsLeft < noOfCreditsToUse) ||
+      (noOfCharactersLeft !== null && noOfCharactersLeft < noOfCharacters)
     ) {
       throw new BadRequestError("Reached max quota");
     }
 
     if (
-      !user.noOfWordsAllowed ||
+      user.noOfWordsAllowed !== null &&
       user.noOfWordsAllowed < content.trim().split(" ").length
     ) {
       throw new BadRequestError("Reached max word quota");
@@ -57,7 +57,7 @@ export const validate = async (
     if (
       isPremiumVoice &&
       user.noOfPremiumVoicesLeft !== null &&
-      user.noOfPremiumVoicesLeft <= 0
+      user.noOfPremiumVoicesLeft < 1
     ) {
       throw new BadRequestError("No premium voices left");
     }
