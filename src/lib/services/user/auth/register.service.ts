@@ -36,6 +36,7 @@ export const register = async (dto: RegisterDto) => {
     defaultBg: randomColor,
     password: await hashPassword(dto.password),
   };
+
   const user = await userRepo.create(data);
 
   const accessToken = generateAccessToken(user);

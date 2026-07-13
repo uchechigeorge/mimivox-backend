@@ -36,13 +36,16 @@ export const validate = async (
     const user = await userRepo.getByIdWithLock(userId, tx);
     if (!user) throw new UnauthorizedError();
 
+    const noOfVideo = 1;
+    const creditsPerVideoPerSecond = env.CREDITS_PER_VIDEO_PER_SECOND;
+    const noOfCreditsToUse =
+      noOfVideo *
+      creditsPerVideoPerSecond *
+      (options.duration ?? defaultDuration);
     const noOfCreditsLeft = user.noOfCreditsLeft;
-    if (
-      noOfCreditsLeft &&
-      noOfCreditsLeft <=
-        env.CREDITS_PER_VIDEO_PER_SECOND * (options.duration ?? defaultDuration)
-    ) {
-      throw new BadRequestError("Not enough credits left");
+
+    if (noOfCreditsLeft !== null && noOfCreditsLeft < noOfCreditsToUse) {
+      throw new BadRequestError("Not enough credits");
     }
 
     const noOfVideos = 1;
