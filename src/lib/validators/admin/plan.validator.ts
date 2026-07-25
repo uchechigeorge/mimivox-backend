@@ -24,20 +24,25 @@ export const planReadDtoValidator = z.object({
       slug: nString,
       price: nNumber,
       oldPrice: nNumber,
+      settings: z
+        .object({
+          id: nString,
+          noOfCredits: nNumber,
+          noOfWordsAllowed: nNumber,
+          noOfPremiumVoices: nNumber,
+          noOfCloneVoices: nNumber,
+          noOfImages: nNumber,
+          noOfMusic: nNumber,
+          noOfVideos: nNumber,
+          maxVideoDurationInSeconds: nNumber,
+          hasCommunitySupport: nBoolean,
+          hasEmailSupport: nBoolean,
+          hasDedicatedCustomerSupport: nBoolean,
+          hasApiAccess: nBoolean,
+        })
+        .optional(),
     })
     .array()
-    .optional(),
-  settings: z
-    .object({
-      id: nString,
-      noOfCredits: nNumber,
-      noOfCharacters: nNumber,
-      noOfPremiumVoices: nNumber,
-      noOfCloneVoices: nNumber,
-      noOfImages: nNumber,
-      noOfOfMusic: nNumber,
-      noOfOfVideos: nNumber,
-    })
     .optional(),
   updatedAt: nDate,
   createdAt: nDate,

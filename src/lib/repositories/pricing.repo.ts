@@ -89,6 +89,7 @@ export const query = async (
     skip,
     take,
     include: {
+      settings: options?.includeRelations,
       plan: options?.includeRelations,
     },
   });

@@ -74,7 +74,13 @@ export const query = async (
     skip,
     take,
     include: {
-      pricings: options?.includeRelations,
+      pricings: options?.includeRelations
+        ? {
+            include: {
+              settings: options?.includeRelations,
+            },
+          }
+        : false,
       settings: options?.includeRelations,
     },
   });
