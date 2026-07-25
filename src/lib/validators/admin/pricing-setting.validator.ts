@@ -19,6 +19,8 @@ export const pricingSettingGetParamsValidator = z.object({
 
 export const pricingSettingReadDtoValidator = z.object({
   id: nString,
+  pricingId: nString,
+  pricingName: nString,
   noOfCredits: nNumber,
   noOfWordsAllowed: nNumber,
   noOfPremiumVoices: nNumber,

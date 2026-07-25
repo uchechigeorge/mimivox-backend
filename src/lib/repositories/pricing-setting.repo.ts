@@ -69,13 +69,14 @@ export const query = async (
   const where: PricingSettingFindManyArgs["where"] = {};
 
   if (isNotNullOrWhitespace(params.id)) where.id = params.id;
+  if (isNotNullOrWhitespace(params.pricingId)) where.pricingId = params.pricingId;
   if (params.searchString && params.searchString.trim() !== "") {
     where.pricingName = { contains: params.searchString, mode: "insensitive" };
   }
 
   // Determine sort column
   const sortColumn =
-    sortColumnOptions[params.sortBy ?? "sequence"] ?? "sequence";
+    sortColumnOptions[params.sortBy ?? "updatedAt"] ?? "updatedAt";
 
   // orderBy expects: { column: "asc" | "desc" }
   const orderBy = {
@@ -95,7 +96,6 @@ export const query = async (
     take,
     include: {
       pricing: options?.includeRelations,
-      plan: options?.includeRelations,
     },
   });
 
@@ -103,7 +103,7 @@ export const query = async (
 };
 
 type PricingSettingGetParams = BaseGetParams & {
-  slug?: string;
+  pricingId?: string;
 };
 
 export type PricingSettingGetOptions = BaseGetOptions & {};
