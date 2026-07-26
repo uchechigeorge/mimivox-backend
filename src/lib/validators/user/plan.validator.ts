@@ -55,6 +55,7 @@ export const planReadDtoValidator = z.object({
       noOfMusic: nNumber,
       noOfVideos: nNumber,
       maxVideoDurationInSeconds: nNumber,
+      noOfWordsAllowed: nNumber,
     })
     .optional(),
   updatedAt: nDate,
