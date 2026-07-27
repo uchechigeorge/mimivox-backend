@@ -19,6 +19,8 @@ export const pricingReadDtoValidator = z.object({
   oldPrice: nNumber,
   description: nString,
   isFree: nBoolean,
+  planId: nString,
+  planName: nString,
   plan: z
     .object({
       id: nString,
