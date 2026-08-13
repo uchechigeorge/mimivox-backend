@@ -78,6 +78,7 @@ export const onSubscriptionDisable = async (body: HandlePaystackWebhookDto) => {
   if (!previousSubscription) {
     await userRepo.update(user.id, {
       hasActiveSubscription: false,
+      nextBillingDate: null,
     });
   }
 

@@ -67,6 +67,14 @@ export const extendSubscription = async (params: SubscriptionExtendParams) => {
       tc,
     );
 
+    await userRepo.update(
+      user.id,
+      {
+        nextBillingDate,
+      },
+      tc,
+    );
+
     await subscriptionPaymentRepo.create(subscriptionPayment, tc);
   });
 };

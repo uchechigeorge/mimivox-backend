@@ -17,6 +17,7 @@ export const checkExpiry = async () => {
     if (user) {
       await userRepo.update(user.id, {
         hasActiveSubscription: false,
+        nextBillingDate: null,
       });
     }
 

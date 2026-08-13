@@ -57,6 +57,11 @@ export const updateUserSubscription = async (
   await prisma.$transaction(async (tc) => {
     // Activate subscriptions
     if (activeSubscription == null && updateDto.isActive && pricing != null) {
+      const nextBillingDate = getNextBillingDate(
+        startDate,
+        toAppIntervalType(pricing.intervalType),
+        pricing.intervalCount,
+      );
       await subscriptionRepo.create(
         {
           isActive: true,
@@ -67,15 +72,19 @@ export const updateUserSubscription = async (
           pricingId: pricing.id,
           pricingName: pricing.name,
           startDate,
-          nextBillingDate: getNextBillingDate(
-            startDate,
-            toAppIntervalType(pricing.intervalType),
-            pricing.intervalCount,
-          ),
+          nextBillingDate,
           status: "WillRenew",
           initialAmount,
           paymentGateway: "Manual",
           reference: await sharedSubscriptionService.generateReference(tc),
+        },
+        tc,
+      );
+
+      await userRepo.update(
+        user.id,
+        {
+          nextBillingDate,
         },
         tc,
       );
@@ -127,6 +136,11 @@ export const updateUserSubscription = async (
       }
       // Changing plans
       else if (pricing != null) {
+        const nextBillingDate = getNextBillingDate(
+          startDate,
+          toAppIntervalType(pricing.intervalType),
+          pricing.intervalCount,
+        );
         await subscriptionRepo.update(
           activeSubscription.id,
           {
@@ -135,12 +149,16 @@ export const updateUserSubscription = async (
             pricingId: pricing.id,
             pricingName: pricing.name,
             startDate,
-            nextBillingDate: getNextBillingDate(
-              startDate,
-              toAppIntervalType(pricing.intervalType),
-              pricing.intervalCount,
-            ),
+            nextBillingDate,
             initialAmount,
+          },
+          tc,
+        );
+
+        await userRepo.update(
+          user.id,
+          {
+            nextBillingDate,
           },
           tc,
         );

@@ -126,6 +126,7 @@ export const extendSubscription = async (body: HandlePaystackWebhookDto) => {
       user.id,
       {
         ...userSettings,
+        nextBillingDate: subscription.nextBillingDate,
         hasActiveSubscription: true,
       },
       tx,

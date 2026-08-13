@@ -1,4 +1,4 @@
-import { Prisma, User } from "@/generated/prisma/client";
+import { Prisma, Subscription, User } from "@/generated/prisma/client";
 import { prisma } from "../db/prisma";
 import { DB } from "../db/types";
 import {
@@ -88,7 +88,9 @@ const sortColumnOptions: Record<string, string> = {
 export const query = async (
   params: UserGetParams,
   options?: UserGetOptions,
-): Promise<[User[], number]> => {
+): Promise<
+  [(User & { activeSubscription?: Subscription | null })[], number]
+> => {
   // Build `where` filter
   const where: UserFindManyArgs["where"] = {};
 
@@ -113,12 +115,26 @@ export const query = async (
 
   // Execute query
   const total = await prisma.user.count({ where });
-  const result = await prisma.user.findMany({
-    where,
-    orderBy,
-    skip,
-    take,
-  });
+  const result: (User & { activeSubscription?: Subscription | null })[] =
+    await prisma.user.findMany({
+      where,
+      orderBy,
+      skip,
+      take,
+    });
+
+  // Include active subscriptions
+  if (options?.includeRelations) {
+    const userIds = result.map((u) => u.id);
+    const subscriptions = await prisma.subscription.findMany({
+      where: { userId: { in: userIds }, isActive: true },
+    });
+    // Associate subscriptions with users
+    result.forEach((user) => {
+      user.activeSubscription =
+        subscriptions.filter((s) => s.userId === user.id).at(0) ?? null;
+    });
+  }
 
   result.forEach((e) => {
     e.dpUrl = getDefaultDp(e);

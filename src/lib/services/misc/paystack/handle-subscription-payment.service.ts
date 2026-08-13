@@ -194,6 +194,14 @@ export const handleSubscriptionPayment = async (
       tx,
     );
 
+    await userRepo.update(
+      user.id,
+      {
+        nextBillingDate: subscription.nextBillingDate,
+      },
+      tx,
+    );
+
     if (previousSubscription) {
       await subscriptionRepo.update(
         previousSubscription.id,

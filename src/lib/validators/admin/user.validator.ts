@@ -37,7 +37,6 @@ export const userReadDtoValidator = z.object({
   lastName: nString,
   fullName: nString,
   dpUrl: nString,
-  hasActiveSubscription: nBoolean,
   noOfCreditsUsed: nNumber,
   totalCreditsUsed: nNumber,
   noOfCreditsLeft: nNumber,
@@ -67,7 +66,9 @@ export const userReadDtoValidator = z.object({
   totalVideosUsed: nNumber,
   noOfVideosLeft: nNumber,
   noOfVideosAllocated: nNumber,
-  subscription: z
+  hasActiveSubscription: nBoolean,
+  nextBillingDate: nDate,
+  activeSubscription: z
     .object({
       isActive: nBoolean,
       nextBillingDate: nDate,

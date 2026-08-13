@@ -47,6 +47,7 @@ export const cancelSubscription = async (authItems: UserAuthItems) => {
   if (isExpired) {
     await userRepo.update(userId, {
       hasActiveSubscription: false,
+      nextBillingDate: null,
     });
   }
 

@@ -28,6 +28,7 @@ model User {
   defaultBg                  String?               @db.VarChar(1024)
   phoneNumber                String?               @db.VarChar(1024)
   hasActiveSubscription      Boolean               @default(false)
+  nextBillingDate            DateTime?
   noOfCreditsUsed            Int                   @default(0)
   totalCreditsUsed           Int                   @default(0)
   noOfCreditsAllocated       Int?                  @default(0)
