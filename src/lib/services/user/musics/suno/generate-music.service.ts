@@ -14,16 +14,17 @@ export const generateMusic = async (
   const user = await validate({ prompt: body.prompt, authItems });
 
   const url = `https://api.sunoapi.org/api/v1/generate`;
+  const modBody = JSON.stringify({
+    ...body,
+    callBackUrl: env.SUNO_MUSIC_GENERATE_CALLBACK_URL,
+  });
   const res = await fetch(url, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${env.SUNO_API_KEY}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      ...body,
-      callBackUrl: env.SUNO_MUSIC_GENERATE_CALLBACK_URL,
-    }),
+    body: modBody,
   });
 
   const clonedRes = res.clone();
@@ -44,7 +45,7 @@ export const generateMusic = async (
 
   await createTask(response, user, {
     url,
-    body,
+    body: modBody,
   });
 
   return res;
