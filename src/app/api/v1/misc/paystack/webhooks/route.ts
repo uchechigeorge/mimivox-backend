@@ -1,5 +1,5 @@
 import paystackService from "@/lib/services/misc/paystack";
-import { userHandler } from "@/lib/utils/handler.utils";
+import { miscHandler } from "@/lib/utils/handler.utils";
 import { successResponse } from "@/lib/utils/response.utils";
 import {
   getHeaders,
@@ -7,7 +7,7 @@ import {
 } from "@/lib/validators/misc/paystack.validator";
 import { NextResponse } from "next/server";
 
-export const POST = userHandler(async (req: Request) => {
+export const POST = miscHandler(async (req: Request) => {
   const headers = await getHeaders(req);
   const body = await req.json();
   const dto = handlePaystackWebhookDto.parse(body);

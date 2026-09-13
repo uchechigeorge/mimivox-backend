@@ -100,3 +100,8 @@ export type SunoMusicGenerateStatusResponse = {
   msg: string;
   data: SunoMusicGenerateResponsePayload;
 };
+
+export type SunoMusicProcessStatusParams = {
+  ignoreReversal?: boolean;
+  maxTasksToProcess?: number;
+};

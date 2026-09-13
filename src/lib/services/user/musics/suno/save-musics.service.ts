@@ -92,6 +92,7 @@ export const saveMusics = async (data: SaveMusicData) => {
       task.id,
       {
         status: "Completed",
+        completedAt: new Date(),
       },
       tx,
     );

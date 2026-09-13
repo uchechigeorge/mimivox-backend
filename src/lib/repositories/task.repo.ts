@@ -30,6 +30,19 @@ const getByReference = async (
   });
 };
 
+const listByStatus = async (
+  status: Task["status"],
+  type: Task["type"],
+  serviceOption: Task["serviceOption"],
+  tc?: Prisma.TransactionClient,
+) => {
+  const db: DB = tc || prisma;
+
+  return await db.task.findMany({
+    where: { status, type, serviceOption },
+  });
+};
+
 const create = async (
   data: TaskCreateArgs["data"],
   tc?: Prisma.TransactionClient,
@@ -114,6 +127,7 @@ export type TaskGetOptions = BaseGetOptions & {};
 const taskRepo = {
   getById,
   getByReference,
+  listByStatus,
   create,
   update,
   query,
