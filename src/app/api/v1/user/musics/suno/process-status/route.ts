@@ -8,6 +8,7 @@ export const GET = miscHandler(async (req, ctx) => {
   const searchParams = getQueryParams(req);
 
   const params: { ignoreReversal?: boolean } = {
+    ...searchParams,
     ignoreReversal: searchParams.ignoreReversal === "true" ? true : false,
   };
   const result = await musicService.suno.processMusicStatus(params);

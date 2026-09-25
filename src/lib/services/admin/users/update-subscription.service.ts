@@ -45,13 +45,21 @@ export const updateUserSubscription = async (
     );
   }
 
-  const startDate = updateDto.startDate ?? new Date();
-  const initialAmount = Decimal(
-    updateDto.amount ? updateDto.amount : (pricing?.price.toNumber() ?? 0),
-  );
   const activeSubscription = await subscriptionRepo.getByUserIdAndIsActive(
     user.id,
     true,
+  );
+  if (activeSubscription && pricing) {
+    if (pricing.id == activeSubscription.pricingId) {
+      throw new BadRequestError(
+        "Already on subscription with existing pricing",
+      );
+    }
+  }
+
+  const startDate = updateDto.startDate ?? new Date();
+  const initialAmount = Decimal(
+    updateDto.amount ? updateDto.amount : (pricing?.price.toNumber() ?? 0),
   );
 
   await prisma.$transaction(async (tc) => {

@@ -25,10 +25,13 @@ export const processMusicStatus = async (
         Authorization: `Bearer ${env.SUNO_API_KEY}`,
       },
     });
-    const clonedRes = res.clone();
+
+    const response = res.ok
+      ? ((await res.clone().json()) as SunoMusicGenerateStatusResponse)
+      : null;
     // Handle non-200 responses
-    if (!res.ok) {
-      const errorText = await clonedRes.text();
+    if (!res.ok || !response || response.data == null) {
+      const errorText = await res.clone().text();
       console.error(errorText);
 
       nonCompletedTasks.push({
@@ -39,8 +42,12 @@ export const processMusicStatus = async (
     }
 
     if (task && task.status === "Pending") {
-      const response =
-        (await clonedRes.json()) as SunoMusicGenerateStatusResponse;
+      // console.dir(
+      //   { response },
+      //   {
+      //     depth: 5,
+      //   },
+      // );
 
       if (response.data.status == "SUCCESS") {
         await saveMusics({

@@ -105,3 +105,9 @@ export type SunoMusicProcessStatusParams = {
   ignoreReversal?: boolean;
   maxTasksToProcess?: number;
 };
+
+export type SunoMusicGetParams = {
+  taskId: string;
+  ignoreUpdate?: boolean;
+  ignoreReversal?: boolean;
+};
