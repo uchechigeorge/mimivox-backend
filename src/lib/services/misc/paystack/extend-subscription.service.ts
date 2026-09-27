@@ -3,12 +3,14 @@ import paystackCustomerRepo from "@/lib/repositories/paystack-customer.repo";
 import paystackPlanRepo from "@/lib/repositories/paystack-pricing.repo";
 import pricingRepo from "@/lib/repositories/pricing.repo";
 import subscriptionRepo from "@/lib/repositories/subscription.repo";
+import subscriptionPaymentRepo from "@/lib/repositories/subscription-payment.repo";
 import userRepo from "@/lib/repositories/user.repo";
 import { getNextBillingDate } from "@/lib/utils/date.utils";
 import { toAppIntervalType } from "../../shared/pricings/pricing-helper.service";
 import { prisma } from "@/lib/db/prisma";
 import pricingSettingRepo from "@/lib/repositories/pricing-setting.repo";
 import pricingSettingsService from "../../shared/pricing-settings";
+import { BadRequestError } from "@/lib/utils/error.util";
 
 export const extendSubscription = async (body: HandlePaystackWebhookDto) => {
   const data = body.data;
@@ -103,12 +105,30 @@ export const extendSubscription = async (body: HandlePaystackWebhookDto) => {
   );
 
   await prisma.$transaction(async (tx) => {
+    const paymentClaim = await subscriptionPaymentRepo.claimCurrentPendingPayment(
+      subscription.id,
+      tx,
+    );
+    if (paymentClaim.count !== 1) {
+      console.error(
+        `Paystack webhook error: No current pending invoice found or renewal was already processed; ${JSON.stringify(
+          { subscriptionId: subscription.id },
+        )}`,
+      );
+      return;
+    }
+
+    const currentUser = await userRepo.getByIdWithLock(user.id, tx);
+    if (!currentUser) {
+      throw new BadRequestError("User not found for subscription renewal");
+    }
+
     const pricingSettings = await pricingSettingRepo.getByPricingId(
       pricing.id,
       tx,
     );
     const userSettings = pricingSettings
-      ? pricingSettingsService.topUpCredits(pricingSettings, user)
+      ? pricingSettingsService.topUpCredits(pricingSettings, currentUser)
       : {};
 
     await subscriptionRepo.update(
@@ -126,7 +146,7 @@ export const extendSubscription = async (body: HandlePaystackWebhookDto) => {
       user.id,
       {
         ...userSettings,
-        nextBillingDate: subscription.nextBillingDate,
+        nextBillingDate,
         hasActiveSubscription: true,
       },
       tx,

@@ -71,6 +71,27 @@ const updateBySubscriptionId = async (
   });
 };
 
+const claimCurrentPendingPayment = async (
+  subscriptionId: Subscription["id"],
+  tc?: Prisma.TransactionClient,
+) => {
+  const db: DB = tc || prisma;
+
+  return await db.subscriptionPayment.updateMany({
+    where: {
+      subscriptionId,
+      isCurrent: true,
+      status: "Pending",
+      isPaymentVerified: false,
+    },
+    data: {
+      status: "Paid",
+      isPaymentVerified: true,
+      paidAt: new Date(),
+    },
+  });
+};
+
 // Order column options mapping
 const sortColumnOptions: Record<string, string> = {
   paidAt: "paidAt",
@@ -139,6 +160,7 @@ const subscriptionPaymentRepo = {
   create,
   update,
   updateBySubscriptionId,
+  claimCurrentPendingPayment,
   query,
 };
 

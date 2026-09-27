@@ -47,6 +47,7 @@ export const extendSubscription = async (params: SubscriptionExtendParams) => {
     paymentGateway: "Manual",
     isInitialPayment: false,
     isPaymentVerified: true,
+    isCurrent: true,
     paidAt: new Date(),
     startDate: subscription.nextBillingDate,
     endDate: nextBillingDate,
@@ -54,6 +55,7 @@ export const extendSubscription = async (params: SubscriptionExtendParams) => {
     planName: subscription.planName,
     userId: subscription.userId,
     userName: user.fullName,
+    status: "Paid",
   };
 
   await prisma.$transaction(async (tc) => {

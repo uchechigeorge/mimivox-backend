@@ -14,6 +14,9 @@ import { prisma } from "@/lib/db/prisma";
 import sharedSubscriptionService from "../../shared/subscriptions";
 import pricingSettingsService from "../../shared/pricing-settings";
 import pricingSettingRepo from "@/lib/repositories/pricing-setting.repo";
+import subscriptionPaymentRepo from "@/lib/repositories/subscription-payment.repo";
+import paystackSubscriptionRepo from "@/lib/repositories/paystack-subscription.repo";
+import paystackService from "../../shared/paystack";
 
 export const updateUserSubscription = async (
   params: UpdateUserSubscriptionParams,
@@ -59,8 +62,20 @@ export const updateUserSubscription = async (
 
   const startDate = updateDto.startDate ?? new Date();
   const initialAmount = Decimal(
-    updateDto.amount ? updateDto.amount : (pricing?.price.toNumber() ?? 0),
+    updateDto.amount ?? pricing?.price.toNumber() ?? 0,
   );
+  const changeDate = new Date();
+  const previousPaystackSubscription =
+    activeSubscription?.paymentGateway === "Paystack"
+      ? await paystackSubscriptionRepo.getBySubscriptionId(activeSubscription.id)
+      : null;
+
+  if (
+    activeSubscription?.paymentGateway === "Paystack" &&
+    !previousPaystackSubscription
+  ) {
+    throw new BadRequestError("Paystack subscription not found");
+  }
 
   await prisma.$transaction(async (tc) => {
     // Activate subscriptions
@@ -97,8 +112,12 @@ export const updateUserSubscription = async (
         tc,
       );
 
+      const currentUser = await userRepo.getByIdWithLock(user.id, tc);
+      if (!currentUser) {
+        throw new BadRequestError("User not found");
+      }
       const userSettings = pricingSettings
-        ? pricingSettingsService.topUpCredits(pricingSettings, user)
+        ? pricingSettingsService.topUpCredits(pricingSettings, currentUser)
         : {};
       await userRepo.update(
         user.id,
@@ -121,6 +140,14 @@ export const updateUserSubscription = async (
           tc,
         );
 
+        await subscriptionPaymentRepo.updateBySubscriptionId(
+          activeSubscription.id,
+          {
+            isCurrent: false,
+          },
+          tc,
+        );
+
         const freePricing = await pricingRepo.getByIsFree(tc);
         let freePricingSettings: PricingSetting | null = null;
         if (freePricing) {
@@ -130,54 +157,97 @@ export const updateUserSubscription = async (
           );
         }
 
+        const currentUser = await userRepo.getByIdWithLock(user.id, tc);
+        if (!currentUser) {
+          throw new BadRequestError("User not found");
+        }
         const userSettings = freePricingSettings
-          ? pricingSettingsService.topUpCredits(freePricingSettings, user)
+          ? pricingSettingsService.topUpCredits(freePricingSettings, currentUser)
           : {};
         await userRepo.update(
           user.id,
           {
             ...userSettings,
             hasActiveSubscription: false,
+            nextBillingDate: null,
           },
           tc,
         );
       }
       // Changing plans
       else if (pricing != null) {
-        const nextBillingDate = getNextBillingDate(
-          startDate,
-          toAppIntervalType(pricing.intervalType),
-          pricing.intervalCount,
+        const completed = await subscriptionRepo.completeActive(
+          activeSubscription.id,
+          changeDate,
+          tc,
         );
-        await subscriptionRepo.update(
+        if (completed.count !== 1) {
+          throw new BadRequestError(
+            "Active subscription changed before the plan update completed",
+          );
+        }
+
+        await subscriptionPaymentRepo.updateBySubscriptionId(
           activeSubscription.id,
           {
+            isCurrent: false,
+          },
+          tc,
+        );
+
+        const newSubscription = await subscriptionRepo.create(
+          {
+            userId: user.id,
+            userName: user.fullName,
             planId: pricing.planId,
             planName: pricing.planName,
             pricingId: pricing.id,
             pricingName: pricing.name,
-            startDate,
-            nextBillingDate,
+            startDate: activeSubscription.startDate,
+            nextBillingDate: activeSubscription.nextBillingDate,
+            status: "WillRenew",
+            isActive: true,
             initialAmount,
+            paymentGateway: "Manual",
+            previousSubscriptionId: activeSubscription.id,
+            reference: await sharedSubscriptionService.generateReference(tc),
           },
           tc,
         );
 
-        await userRepo.update(
-          user.id,
+        await subscriptionPaymentRepo.create(
           {
-            nextBillingDate,
+            subscriptionId: newSubscription.id,
+            subscriptionReference: newSubscription.reference,
+            amount: initialAmount,
+            paymentGateway: "Manual",
+            isInitialPayment: true,
+            isPaymentVerified: true,
+            isCurrent: true,
+            status: "Paid",
+            paidAt: changeDate,
+            startDate: activeSubscription.startDate,
+            endDate: activeSubscription.nextBillingDate,
+            planId: pricing.planId,
+            planName: pricing.planName,
+            userId: user.id,
+            userName: user.fullName,
           },
           tc,
         );
 
+        const currentUser = await userRepo.getByIdWithLock(user.id, tc);
+        if (!currentUser) {
+          throw new BadRequestError("User not found");
+        }
         const userSettings = pricingSettings
-          ? pricingSettingsService.topUpCredits(pricingSettings, user)
+          ? pricingSettingsService.topUpCredits(pricingSettings, currentUser)
           : {};
         await userRepo.update(
           user.id,
           {
             ...userSettings,
+            nextBillingDate: activeSubscription.nextBillingDate,
             hasActiveSubscription: true,
           },
           tc,
@@ -185,4 +255,11 @@ export const updateUserSubscription = async (
       }
     }
   });
+
+  if (previousPaystackSubscription) {
+    await paystackService.subscription.disableSubscription({
+      code: previousPaystackSubscription.reference,
+      token: previousPaystackSubscription.token,
+    });
+  }
 };

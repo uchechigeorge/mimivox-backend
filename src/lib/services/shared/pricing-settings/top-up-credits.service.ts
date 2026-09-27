@@ -4,95 +4,70 @@ export const topUpCredits = (
   pricingSettings: PricingSetting,
   user?: User | null,
 ) => {
-  const noOfCreditsAllocated = user ? (user.noOfCreditsAllocated ?? 0) : 0;
-  const noOfCharactersAllocated = user
-    ? (user.noOfCharactersAllocated ?? 0)
-    : 0;
-  const noOfVoicesAllocated = user ? (user.noOfVoicesAllocated ?? 0) : 0;
-  const noOfPremiumVoicesAllocated = user
-    ? (user.noOfPremiumVoicesAllocated ?? 0)
-    : 0;
-  const noOfCloneVoicesAllocated = user
-    ? (user.noOfCloneVoicesAllocated ?? 0)
-    : 0;
-  const noOfImagesAllocated = user ? (user.noOfImagesAllocated ?? 0) : 0;
-  const noOfMusicAllocated = user ? (user.noOfMusicAllocated ?? 0) : 0;
-  const noOfVideosAllocated = user ? (user.noOfVideosAllocated ?? 0) : 0;
+  const addUnusedBalance = (
+    allowance: number | null,
+    remaining: number | null | undefined,
+  ) => (allowance === null ? null : allowance + (remaining ?? 0));
+
+  const noOfCredits = addUnusedBalance(
+    pricingSettings.noOfCredits,
+    user?.noOfCreditsLeft,
+  );
+  const noOfCharacters = addUnusedBalance(
+    pricingSettings.noOfCharacters,
+    user?.noOfCharactersLeft,
+  );
+  const noOfVoices = addUnusedBalance(
+    pricingSettings.noOfVoices,
+    user?.noOfVoicesLeft,
+  );
+  const noOfPremiumVoices = addUnusedBalance(
+    pricingSettings.noOfPremiumVoices,
+    user?.noOfPremiumVoicesLeft,
+  );
+  const noOfCloneVoices = addUnusedBalance(
+    pricingSettings.noOfCloneVoices,
+    user?.noOfCloneVoicesLeft,
+  );
+  const noOfImages = addUnusedBalance(
+    pricingSettings.noOfImages,
+    user?.noOfImagesLeft,
+  );
+  const noOfMusic = addUnusedBalance(
+    pricingSettings.noOfMusic,
+    user?.noOfMusicLeft,
+  );
+  const noOfVideos = addUnusedBalance(
+    pricingSettings.noOfVideos,
+    user?.noOfVideosLeft,
+  );
 
   const userSettings: Partial<User> = {
     noOfCreditsUsed: 0,
-    noOfCreditsAllocated:
-      pricingSettings.noOfCredits === null
-        ? null
-        : pricingSettings.noOfCredits + noOfCreditsAllocated,
-    noOfCreditsLeft:
-      pricingSettings.noOfCredits === null
-        ? null
-        : pricingSettings.noOfCredits + noOfCreditsAllocated,
+    noOfCreditsAllocated: noOfCredits,
+    noOfCreditsLeft: noOfCredits,
     noOfCharactersUsed: 0,
-    noOfCharactersAllocated:
-      pricingSettings.noOfCharacters === null
-        ? null
-        : pricingSettings.noOfCharacters + noOfCharactersAllocated,
-    noOfCharactersLeft:
-      pricingSettings.noOfCharacters === null
-        ? null
-        : pricingSettings.noOfCharacters + noOfCharactersAllocated,
+    noOfCharactersAllocated: noOfCharacters,
+    noOfCharactersLeft: noOfCharacters,
     noOfWordsAllowed: pricingSettings.noOfWordsAllowed,
     noOfVoicesUsed: 0,
-    noOfVoicesAllocated:
-      pricingSettings.noOfVoices === null
-        ? null
-        : pricingSettings.noOfVoices + noOfVoicesAllocated,
-    noOfVoicesLeft:
-      pricingSettings.noOfVoices === null
-        ? null
-        : pricingSettings.noOfVoices + noOfVoicesAllocated,
+    noOfVoicesAllocated: noOfVoices,
+    noOfVoicesLeft: noOfVoices,
     noOfPremiumVoicesUsed: 0,
-    noOfPremiumVoicesAllocated:
-      pricingSettings.noOfPremiumVoices === null
-        ? null
-        : pricingSettings.noOfPremiumVoices + noOfPremiumVoicesAllocated,
-    noOfPremiumVoicesLeft:
-      pricingSettings.noOfPremiumVoices === null
-        ? null
-        : pricingSettings.noOfPremiumVoices + noOfPremiumVoicesAllocated,
+    noOfPremiumVoicesAllocated: noOfPremiumVoices,
+    noOfPremiumVoicesLeft: noOfPremiumVoices,
     noOfCloneVoicesUsed: 0,
-    noOfCloneVoicesAllocated:
-      pricingSettings.noOfCloneVoices === null
-        ? null
-        : pricingSettings.noOfCloneVoices + noOfCloneVoicesAllocated,
-    noOfCloneVoicesLeft:
-      pricingSettings.noOfCloneVoices === null
-        ? null
-        : pricingSettings.noOfCloneVoices + noOfCloneVoicesAllocated,
+    noOfCloneVoicesAllocated: noOfCloneVoices,
+    noOfCloneVoicesLeft: noOfCloneVoices,
     noOfImagesUsed: 0,
-    noOfImagesAllocated:
-      pricingSettings.noOfImages === null
-        ? null
-        : pricingSettings.noOfImages + noOfImagesAllocated,
-    noOfImagesLeft:
-      pricingSettings.noOfImages === null
-        ? null
-        : pricingSettings.noOfImages + noOfImagesAllocated,
+    noOfImagesAllocated: noOfImages,
+    noOfImagesLeft: noOfImages,
     noOfMusicUsed: 0,
-    noOfMusicAllocated:
-      pricingSettings.noOfMusic === null
-        ? null
-        : pricingSettings.noOfMusic + noOfMusicAllocated,
-    noOfMusicLeft:
-      pricingSettings.noOfMusic === null
-        ? null
-        : pricingSettings.noOfMusic + noOfMusicAllocated,
+    noOfMusicAllocated: noOfMusic,
+    noOfMusicLeft: noOfMusic,
     noOfVideosUsed: 0,
-    noOfVideosAllocated:
-      pricingSettings.noOfVideos === null
-        ? null
-        : pricingSettings.noOfVideos + noOfVideosAllocated,
-    noOfVideosLeft:
-      pricingSettings.noOfVideos === null
-        ? null
-        : pricingSettings.noOfVideos + noOfVideosAllocated,
+    noOfVideosAllocated: noOfVideos,
+    noOfVideosLeft: noOfVideos,
     maxVideoDurationInSeconds: pricingSettings.maxVideoDurationInSeconds,
   };
 

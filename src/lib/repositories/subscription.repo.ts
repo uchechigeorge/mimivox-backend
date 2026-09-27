@@ -150,6 +150,41 @@ const update = async (
   });
 };
 
+const completeActive = async (
+  id: Subscription["id"],
+  endDate: Date,
+  tc?: Prisma.TransactionClient,
+) => {
+  const db: DB = tc || prisma;
+
+  return await db.subscription.updateMany({
+    where: { id, isActive: true },
+    data: {
+      isActive: false,
+      status: "Completed",
+      endDate,
+    },
+  });
+};
+
+const claimPendingPayment = async (
+  id: Subscription["id"],
+  tc?: Prisma.TransactionClient,
+) => {
+  const db: DB = tc || prisma;
+
+  return await db.subscription.updateMany({
+    where: {
+      id,
+      status: "Pending",
+      paymentVerified: false,
+    },
+    data: {
+      paymentVerified: true,
+    },
+  });
+};
+
 const upsert = async (
   id: Subscription["id"] | undefined,
   create: SubscriptionUpsertArgs["create"],
@@ -241,6 +276,8 @@ const subscriptionRepo = {
   listByIsActive,
   create,
   update,
+  completeActive,
+  claimPendingPayment,
   upsert,
   query,
 };

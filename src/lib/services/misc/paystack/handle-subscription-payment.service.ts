@@ -112,7 +112,7 @@ export const handleSubscriptionPayment = async (
   }
 
   // Create paystack subscription
-  var [paystackSubscription, paystackSubscriptionError] =
+  const [paystackSubscription, paystackSubscriptionError] =
     await paystackSubscriptionService.createSubscription({
       plan: paystackPlan.reference,
       customer: data.customer.customer_code,
@@ -155,7 +155,7 @@ export const handleSubscriptionPayment = async (
   // Get currency and exchange rate
   const currency = data.currency?.toLowerCase() ?? null;
 
-  let paystackCustomer = await paystackCustomerRepo.getByEmail(
+  const paystackCustomer = await paystackCustomerRepo.getByEmail(
     data.customer.email ?? "",
   );
   const pSub = paystackSubscription;
@@ -164,15 +164,24 @@ export const handleSubscriptionPayment = async (
     email: data.customer.email,
     customer_code: data.customer.customer_code,
   }; // customer from webhook data/body
-  await prisma.$transaction(async (tx) => {
+  const paymentClaimed = await prisma.$transaction(async (tx) => {
     // Update subscription, invoice, transaction, and user
+    const claim = await subscriptionRepo.claimPendingPayment(subscription.id, tx);
+    if (claim.count !== 1) {
+      return false;
+    }
+
+    const currentUser = await userRepo.getByIdWithLock(user.id, tx);
+    if (!currentUser) {
+      throw new BadRequestError("User not found for subscription payment");
+    }
 
     const pricingSettings = await pricingSettingRepo.getByPricingId(
       pricing.id,
       tx,
     );
     const userSettings = pricingSettings
-      ? pricingSettingsService.topUpCredits(pricingSettings, user)
+      ? pricingSettingsService.topUpCredits(pricingSettings, currentUser)
       : {};
     await userRepo.update(
       user.id,
@@ -264,7 +273,13 @@ export const handleSubscriptionPayment = async (
         tx,
       );
     }
+
+    return true;
   });
+
+  if (!paymentClaimed) {
+    return;
+  }
 
   // If this subscription is coming as an upgrade or downgrade
   // Disable the source subscription
