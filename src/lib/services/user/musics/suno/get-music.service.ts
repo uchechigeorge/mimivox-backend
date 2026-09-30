@@ -35,7 +35,7 @@ export const getMusic = async (params: SunoMusicGetParams) => {
           task,
           musicItems: response.data.response.sunoData,
         });
-      } else {
+      } else if (response.data.status == "GENERATE_AUDIO_FAILED") {
         if (!ignoreReversal && task.userId) {
           // Reverse credits if the task failed
           await reverseCredits(task.userId);

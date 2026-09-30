@@ -87,7 +87,15 @@ export type SunoMusicGenerateResponsePayload = {
     taskId: string;
     sunoData: SunoMusicGenerateResponseItem[];
   };
-  status: string;
+  status:
+    | "PENDING"
+    | "TEXT_SUCCESS"
+    | "FIRST_SUCCESS"
+    | "SUCCESS"
+    | "CREATE_TASK_FAILED"
+    | "GENERATE_AUDIO_FAILED"
+    | "CALLBACK_EXCEPTION"
+    | "SENSITIVE_WORD_ERROR";
   type: string;
   operationType: string;
   errorCode: string | null;
