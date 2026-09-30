@@ -56,11 +56,27 @@ export const saveMusics = async (data: SaveMusicData) => {
   const uploadedMusics = await uploadMusics(musicItems);
 
   await prisma.$transaction(async (tx) => {
+    await taskRepo.update(
+      task.id,
+      {
+        status: "Completed",
+        completedAt: new Date(),
+      },
+      tx,
+    );
+
     for (let i = 0; i < uploadedMusics.length; i++) {
       const uploadedMusic = uploadedMusics[i];
       if (!uploadedMusic.success) continue;
 
       const musicData = uploadedMusic.inputData;
+      const existingMusic = await musicRepo.getByReference(
+        musicData.id,
+        "Suno",
+        tx,
+      );
+      if (existingMusic) continue;
+
       let title = musicData.title;
       if (!isNotNullOrWhitespace(title)) {
         title = task.serviceRequestLog
@@ -74,28 +90,19 @@ export const saveMusics = async (data: SaveMusicData) => {
           prompt: musicData.prompt,
           title,
           durationInSeconds: musicData.duration,
-          musicServiceType: "Suno",
-          musicServiceReferenceId: musicData.id,
           streamAudioUrl: musicData.streamAudioUrl,
           audioUrl: uploadedMusic.uploadData.audio.secure_url,
           audioAltUrl: musicData.audioUrl,
           imageUrl: uploadedMusic.uploadData.image.secure_url,
           imageAltUrl: musicData.imageUrl,
+          musicServiceType: "Suno",
+          musicServiceReferenceId: musicData.id,
           musicServiceRequestLog: task.serviceRequestLog!,
           taskId: task.id,
         },
         tx,
       );
     }
-
-    await taskRepo.update(
-      task.id,
-      {
-        status: "Completed",
-        completedAt: new Date(),
-      },
-      tx,
-    );
   });
 };
 

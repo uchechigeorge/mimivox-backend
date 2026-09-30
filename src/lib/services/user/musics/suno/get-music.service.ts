@@ -1,8 +1,11 @@
 import { env } from "@/lib/config/env.config";
+import { prisma } from "@/lib/db/prisma";
 import taskRepo from "@/lib/repositories/task.repo";
 import { SunoMusicGenerateStatusResponse, SunoMusicGetParams } from "./types";
 import { saveMusics } from "./save-musics.service";
-import { reverseCredits } from "../base.service";
+import { applyCredits, reverseCredits } from "../base.service";
+import userRepo from "@/lib/repositories/user.repo";
+import { UnauthorizedError } from "@/lib/utils/error.util";
 
 export const getMusic = async (params: SunoMusicGetParams) => {
   const { taskId, ignoreUpdate, ignoreReversal } = params;
@@ -14,7 +17,6 @@ export const getMusic = async (params: SunoMusicGetParams) => {
     },
   });
 
-  // const clonedRes = res.clone();
   // Handle non-200 responses
   if (!res.ok) {
     const errorText = await res.clone().text();
@@ -25,26 +27,54 @@ export const getMusic = async (params: SunoMusicGetParams) => {
 
   if (!ignoreUpdate) {
     const task = await taskRepo.getByReference(taskId, "Music", "Suno");
-    if (task && task.status === "Pending") {
+    if (task && (task.status === "Pending" || task.status === "Failed")) {
       const response = (await res
         .clone()
         .json()) as SunoMusicGenerateStatusResponse;
 
       if (response.data.status == "SUCCESS") {
-        await saveMusics({
-          task,
-          musicItems: response.data.response.sunoData,
-        });
-      } else if (response.data.status == "GENERATE_AUDIO_FAILED") {
-        if (!ignoreReversal && task.userId) {
-          // Reverse credits if the task failed
-          await reverseCredits(task.userId);
-        }
+        const claimedTask = await prisma.$transaction(async (tx) => {
+          const claimedTask = await tx.task.updateMany({
+            where: { id: task.id, status: task.status },
+            data: {
+              status: "Started",
+              errorMessage: null,
+              completedAt: null,
+            },
+          });
 
-        await taskRepo.update(task.id, {
-          errorMessage: response.data.status,
-          status: "Failed",
-          completedAt: new Date(),
+          if (claimedTask.count > 0 && task.status === "Failed") {
+            const user = task.userId
+              ? await userRepo.getByIdWithLock(task.userId, tx)
+              : null;
+            if (!user) throw new UnauthorizedError();
+
+            await applyCredits(user, tx);
+          }
+
+          return claimedTask.count > 0;
+        });
+
+        if (claimedTask) {
+          await saveMusics({
+            task,
+            musicItems: response.data.response.sunoData,
+          });
+        }
+      } else if (response.data.status == "GENERATE_AUDIO_FAILED") {
+        await prisma.$transaction(async (tx) => {
+          const failedTask = await tx.task.updateMany({
+            where: { id: task.id, status: "Pending" },
+            data: {
+              errorMessage: response.data.status,
+              status: "Failed",
+              completedAt: new Date(),
+            },
+          });
+
+          if (!ignoreReversal && failedTask.count > 0 && task.userId) {
+            await reverseCredits(task.userId, tx);
+          }
         });
       }
     }

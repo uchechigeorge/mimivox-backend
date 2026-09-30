@@ -1,4 +1,5 @@
 import { env } from "@/lib/config/env.config";
+import { Prisma, User } from "@/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import userRepo from "@/lib/repositories/user.repo";
 import { BadRequestError, UnauthorizedError } from "@/lib/utils/error.util";
@@ -17,47 +18,18 @@ export const validate = async (options: GenerateMusicValidationOptions) => {
     const user = await userRepo.getByIdWithLock(userId, tx);
     if (!user) throw new UnauthorizedError();
 
-    const noOfMusic = 1;
-    const creditsPerMusic = env.CREDITS_PER_MUSIC;
-    const noOfCreditsToUse = noOfMusic * creditsPerMusic;
-    let noOfCreditsLeft = user.noOfCreditsLeft;
-    let noOfMusicLeft = user.noOfMusicLeft;
-
-    if (noOfCreditsLeft !== null && noOfCreditsLeft < noOfCreditsToUse) {
+    if (
+      user.noOfCreditsLeft !== null &&
+      user.noOfCreditsLeft < env.CREDITS_PER_MUSIC
+    ) {
       throw new BadRequestError("Not enough credits");
     }
 
-    if (noOfMusicLeft !== null && noOfMusicLeft < noOfMusic) {
+    if (user.noOfMusicLeft !== null && user.noOfMusicLeft < 1) {
       throw new BadRequestError("Reached max quota");
     }
 
-    noOfCreditsLeft =
-      user.noOfCreditsAllocated == null || noOfCreditsLeft == null
-        ? null
-        : noOfCreditsLeft - noOfCreditsToUse;
-    noOfMusicLeft =
-      user.noOfMusicAllocated == null || noOfMusicLeft == null
-        ? null
-        : noOfMusicLeft - 1;
-
-    const noOfCreditsUsed = user.noOfCreditsUsed + noOfCreditsToUse;
-    const totalCreditsUsed = user.totalCreditsUsed + noOfCreditsToUse;
-
-    const noOfMusicUsed = user.noOfMusicUsed + noOfMusic;
-    const totalMusicUsed = user.totalMusicUsed + noOfMusic;
-
-    await userRepo.update(
-      userId,
-      {
-        noOfCreditsUsed,
-        totalCreditsUsed,
-        noOfCreditsLeft,
-        noOfMusicUsed,
-        noOfMusicLeft,
-        totalMusicUsed,
-      },
-      tx,
-    );
+    await applyCredits(user, tx);
 
     return user;
   });
@@ -65,39 +37,72 @@ export const validate = async (options: GenerateMusicValidationOptions) => {
   return user;
 };
 
-export const reverseCredits = async (userId?: string) => {
+export const reverseCredits = async (
+  userId?: string,
+  tc?: Prisma.TransactionClient,
+) => {
   if (!userId) throw new UnauthorizedError();
 
-  const user = await userRepo.getById(userId);
-  if (!user) throw new UnauthorizedError();
+  const reverse = async (tx: Prisma.TransactionClient) => {
+    const user = await userRepo.getByIdWithLock(userId, tx);
+    if (!user) throw new UnauthorizedError();
 
-  const noOfMusic = 1;
+    const creditsPerMusic = env.CREDITS_PER_MUSIC;
+    const noOfCreditsLeft =
+      user.noOfCreditsAllocated == null || user.noOfCreditsLeft == null
+        ? null
+        : user.noOfCreditsLeft + creditsPerMusic;
+    const noOfMusicLeft =
+      user.noOfMusicAllocated == null || user.noOfMusicLeft == null
+        ? null
+        : user.noOfMusicLeft + 1;
+
+    await userRepo.update(
+      userId,
+      {
+        noOfCreditsUsed: user.noOfCreditsUsed - creditsPerMusic,
+        totalCreditsUsed: user.totalCreditsUsed - creditsPerMusic,
+        noOfCreditsLeft,
+        noOfMusicUsed: user.noOfMusicUsed - 1,
+        noOfMusicLeft,
+        totalMusicUsed: user.totalMusicUsed - 1,
+      },
+      tx,
+    );
+  };
+
+  if (tc) {
+    await reverse(tc);
+    return;
+  }
+
+  await prisma.$transaction(reverse);
+};
+
+export const applyCredits = async (
+  user: User,
+  tx: Prisma.TransactionClient,
+) => {
   const creditsPerMusic = env.CREDITS_PER_MUSIC;
-  const noOfCreditsToUse = noOfMusic * creditsPerMusic;
-  let noOfCreditsLeft = user.noOfCreditsLeft;
-  let noOfMusicLeft = user.noOfMusicLeft;
-
-  noOfCreditsLeft =
-    user.noOfCreditsAllocated == null || noOfCreditsLeft == null
+  const noOfCreditsLeft =
+    user.noOfCreditsAllocated == null || user.noOfCreditsLeft == null
       ? null
-      : noOfCreditsLeft + noOfCreditsToUse;
-  noOfMusicLeft =
-    user.noOfMusicAllocated == null || noOfMusicLeft == null
+      : user.noOfCreditsLeft - creditsPerMusic;
+  const noOfMusicLeft =
+    user.noOfMusicAllocated == null || user.noOfMusicLeft == null
       ? null
-      : noOfMusicLeft + 1;
+      : user.noOfMusicLeft - 1;
 
-  const noOfCreditsUsed = user.noOfCreditsUsed - noOfCreditsToUse;
-  const totalCreditsUsed = user.totalCreditsUsed - noOfCreditsToUse;
-
-  const noOfMusicUsed = user.noOfMusicUsed - noOfMusic;
-  const totalMusicUsed = user.totalMusicUsed - noOfMusic;
-
-  await userRepo.update(userId, {
-    noOfCreditsUsed,
-    totalCreditsUsed,
-    noOfCreditsLeft,
-    noOfMusicUsed,
-    noOfMusicLeft,
-    totalMusicUsed,
-  });
+  await userRepo.update(
+    user.id,
+    {
+      noOfCreditsUsed: user.noOfCreditsUsed + creditsPerMusic,
+      totalCreditsUsed: user.totalCreditsUsed + creditsPerMusic,
+      noOfCreditsLeft,
+      noOfMusicUsed: user.noOfMusicUsed + 1,
+      noOfMusicLeft,
+      totalMusicUsed: user.totalMusicUsed + 1,
+    },
+    tx,
+  );
 };
