@@ -5,6 +5,7 @@ import { parseArr } from "@/lib/utils/zod.utils";
 import { videoReadDtoValidator } from "@/lib/validators/user/video.validator";
 import { UserAuthItems } from "@/lib/types";
 import { UnauthorizedError } from "@/lib/utils/error.util";
+import { syncPendingTasks } from "../tasks/sync-pending-tasks.service";
 
 export const listVideos = async (
   params: VideoListParams,
@@ -12,6 +13,9 @@ export const listVideos = async (
 ): Promise<[VideoReadDto[], ListVideosMetaResponse]> => {
   const userId = authItems.userId;
   if (!userId) throw new UnauthorizedError();
+
+  // Save any generations that finished after the user left the page
+  await syncPendingTasks(userId, "Video");
 
   const [data, total] = await videoRepo.query({
     ...params,

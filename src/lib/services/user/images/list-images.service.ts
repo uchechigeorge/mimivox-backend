@@ -5,6 +5,7 @@ import { parseArr } from "@/lib/utils/zod.utils";
 import { imageReadDtoValidator } from "@/lib/validators/user/image.validator";
 import { UserAuthItems } from "@/lib/types";
 import { UnauthorizedError } from "@/lib/utils/error.util";
+import { syncPendingTasks } from "../tasks/sync-pending-tasks.service";
 
 export const listImages = async (
   params: ImageListParams,
@@ -12,6 +13,9 @@ export const listImages = async (
 ): Promise<[ImageReadDto[], ListImagesMetaResponse]> => {
   const userId = authItems.userId;
   if (!userId) throw new UnauthorizedError();
+
+  // Save any generations that finished after the user left the page
+  await syncPendingTasks(userId, "Image");
 
   const [data, total] = await imageRepo.query({
     ...params,

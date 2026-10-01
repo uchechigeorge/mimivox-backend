@@ -43,6 +43,27 @@ const listByStatus = async (
   });
 };
 
+// Oldest unfinished tasks of a user, for finishing generations in the background
+const listPendingByUser = async (
+  userId: string,
+  type: Task["type"],
+  take: number,
+  tc?: Prisma.TransactionClient,
+) => {
+  const db: DB = tc || prisma;
+
+  return await db.task.findMany({
+    where: {
+      userId,
+      type,
+      status: "Pending",
+      serviceOption: { in: ["Runway", "Xai"] },
+    },
+    orderBy: { createdAt: "asc" },
+    take,
+  });
+};
+
 const create = async (
   data: TaskCreateArgs["data"],
   tc?: Prisma.TransactionClient,
@@ -145,6 +166,7 @@ const taskRepo = {
   getById,
   getByReference,
   listByStatus,
+  listPendingByUser,
   create,
   update,
   claimPending,

@@ -32,47 +32,64 @@ export const generateVideoCallBack = async (
   let video: Video | null = null;
 
   if (videoData.status === "done") {
-    // Upload
-    const uploadedVideo = await uploadVideo(
-      videoData.video.url,
-      "generated-videos",
-    );
+    // Another request (page poll, library load) is already finalizing it
+    if (!(await taskRepo.claimPending(task.id, "Started"))) return null;
 
-    await prisma.$transaction(async (tx) => {
-      video = await videoRepo.create(
-        {
-          userId: task.userId,
-          userName: task.userName,
-          prompt: task.serviceRequestLog
-            ? JSON.parse(JSON.stringify(task.serviceRequestLog)).body.prompt
-            : "",
-          title: "",
-          altUrl: videoData.video.url,
-          url: uploadedVideo.secure_url,
-          durationInSeconds: videoData.video.duration,
-          videoServiceType: "Xai",
-          videoServiceReferenceId: null,
-          videoServiceRequestLog: task.serviceRequestLog!,
-          taskId: task.id,
-        },
-        tx,
+    try {
+      // Upload
+      const uploadedVideo = await uploadVideo(
+        videoData.video.url,
+        "generated-videos",
       );
 
-      await taskRepo.update(
-        task.id,
-        {
-          status: "Completed",
-        },
-        tx,
-      );
+      await prisma.$transaction(async (tx) => {
+        video = await videoRepo.create(
+          {
+            userId: task.userId,
+            userName: task.userName,
+            prompt: task.serviceRequestLog
+              ? JSON.parse(JSON.stringify(task.serviceRequestLog)).body.prompt
+              : "",
+            title: "",
+            altUrl: videoData.video.url,
+            url: uploadedVideo.secure_url,
+            durationInSeconds: videoData.video.duration,
+            videoServiceType: "Xai",
+            videoServiceReferenceId: null,
+            videoServiceRequestLog: task.serviceRequestLog!,
+            taskId: task.id,
+          },
+          tx,
+        );
+
+        await taskRepo.update(
+          task.id,
+          {
+            status: "Completed",
+          },
+          tx,
+        );
+
+        if (task.userId) {
+          await applyCredits(task.userId, videoData.video.duration, tx);
+        }
+      });
+    } catch (err) {
+      // Release the claim so the next check can retry
+      await taskRepo.update(task.id, { status: "Pending" });
+      throw err;
+    }
+  } else if (videoData.status === "failed" || videoData.status === "expired") {
+    // Mark it failed so the refund happens exactly once
+    if (await taskRepo.claimPending(task.id, "Failed")) {
+      await taskRepo.update(task.id, {
+        errorMessage: videoData.status,
+        completedAt: new Date(),
+      });
 
       if (task.userId) {
-        await applyCredits(task.userId, videoData.video.duration, tx);
+        await reverseCredits(task.userId);
       }
-    });
-  } else if (videoData.status === "failed") {
-    if (task.userId) {
-      await reverseCredits(task.userId);
     }
   }
 
