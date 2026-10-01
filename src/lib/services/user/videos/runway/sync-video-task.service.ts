@@ -1,6 +1,7 @@
 import { Task } from "@/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import taskRepo from "@/lib/repositories/task.repo";
+import { InternalServerError } from "@/lib/utils/error.util";
 import videoRepo from "@/lib/repositories/video.repo";
 import runwayService from "@/lib/services/shared/runway";
 import { RunwayTask } from "@/lib/services/shared/runway/types";
@@ -73,7 +74,10 @@ const completeTask = async (
   } catch (err) {
     // Release the claim so the next poll can retry
     await taskRepo.update(task.id, { status: "Pending" });
-    throw err;
+    console.error(`Could not save Runway video for task ${task.id}`, err);
+    throw new InternalServerError(
+      "Your video is ready but could not be saved yet. It will be retried automatically.",
+    );
   }
 
   return await getCompletedResponse(task);
@@ -124,11 +128,18 @@ export const syncVideoTask = async (
     case "FAILED":
     case "CANCELLED":
       return await failTask(task, runwayTask);
-    default:
+    default: {
+      // Keep the latest progress on the task for the library and admin
+      const percent = Math.round((runwayTask.progress ?? 0) * 100);
+      if (percent !== task.progress) {
+        await taskRepo.update(task.id, { progress: percent });
+      }
+
       return {
         id: task.id,
         status: runwayTask.status === "RUNNING" ? "running" : "pending",
         progress: runwayTask.progress ?? 0,
       };
+    }
   }
 };
