@@ -37,7 +37,8 @@ export const validate = async (
     if (!user) throw new UnauthorizedError();
 
     const noOfVideo = 1;
-    const creditsPerVideoPerSecond = env.CREDITS_PER_VIDEO_PER_SECOND;
+    const creditsPerVideoPerSecond =
+      options.creditsPerSecond ?? env.CREDITS_PER_VIDEO_PER_SECOND;
     const noOfCreditsToUse =
       noOfVideo *
       creditsPerVideoPerSecond *
@@ -79,7 +80,8 @@ export const validate = async (
   let duration = options.duration;
   // Modify duration if user is nearing credit limit
   const noOfVideoSecondsLeft = user.noOfCreditsLeft
-    ? user.noOfCreditsLeft / env.CREDITS_PER_VIDEO_PER_SECOND
+    ? user.noOfCreditsLeft /
+      (options.creditsPerSecond ?? env.CREDITS_PER_VIDEO_PER_SECOND)
     : 0;
   if (noOfVideoSecondsLeft && noOfVideoSecondsLeft <= defaultDuration) {
     duration = Math.min(duration ?? defaultDuration, noOfVideoSecondsLeft);
@@ -121,6 +123,7 @@ export const applyCredits = async (
   userId: string,
   videoDurationInSeconds: number,
   tc?: Prisma.TransactionClient,
+  creditsPerSecond?: number,
 ) => {
   if (!userId) throw new UnauthorizedError();
 
@@ -128,7 +131,8 @@ export const applyCredits = async (
   if (!user) throw new UnauthorizedError();
 
   // const noOfVideos = 1;
-  const creditsPerVideoPerSecond = env.CREDITS_PER_VIDEO_PER_SECOND;
+  const creditsPerVideoPerSecond =
+    creditsPerSecond ?? env.CREDITS_PER_VIDEO_PER_SECOND;
   const noOfCreditsToUse = videoDurationInSeconds * creditsPerVideoPerSecond;
   let noOfCreditsLeft = user.noOfCreditsLeft;
 

@@ -31,6 +31,8 @@ const envSchema = z.object({
   CLOUDINARY_API_KEY: z.string(),
   CLOUDINARY_CLOUD_NAME: z.string(),
   RESEND_API_KEY: z.string(),
+  RUNWAY_API_KEY: z.string().optional(),
+  RUNWAY_API_BASE: z.string().default("https://api.dev.runwayml.com/v1"),
 
   INIT_ADMIN_EMAIL: z.string().optional(),
   INIT_ADMIN_PASSWORD: z.string().optional(),
@@ -42,6 +44,17 @@ const envSchema = z.object({
   CREDITS_PER_IMAGE: z.coerce.number(),
   CREDITS_PER_MUSIC: z.coerce.number(),
   CREDITS_PER_VIDEO_PER_SECOND: z.coerce.number(),
+  // Default credit rates for Runway models; override per model with
+  // CREDITS_PER_VIDEO_<MODEL>_PER_SECOND / CREDITS_PER_IMAGE_<MODEL>
+  CREDITS_PER_VIDEO_MODEL_PER_SECOND: z.coerce.number().default(750),
+  CREDITS_PER_IMAGE_MODEL: z.coerce.number().default(250),
+  // Default surcharges for higher resolutions; override per model with
+  // CREDITS_PER_VIDEO_<MODEL>_1080P_EXTRA_PER_SECOND / _4K_EXTRA_PER_SECOND and
+  // CREDITS_PER_IMAGE_<MODEL>_2K_EXTRA / _4K_EXTRA
+  CREDITS_PER_VIDEO_MODEL_1080P_EXTRA_PER_SECOND: z.coerce.number().default(0),
+  CREDITS_PER_VIDEO_MODEL_4K_EXTRA_PER_SECOND: z.coerce.number().default(0),
+  CREDITS_PER_IMAGE_MODEL_2K_EXTRA: z.coerce.number().default(0),
+  CREDITS_PER_IMAGE_MODEL_4K_EXTRA: z.coerce.number().default(0),
 
   PAYSTACK_API_BASE: z.string(),
   PAYSTACK_SECRET_KEY: z.string(),

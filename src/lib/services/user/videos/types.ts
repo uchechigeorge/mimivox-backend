@@ -8,6 +8,7 @@ export type GenerateVideoValidationOptions = {
   prompt: string;
   authItems: UserAuthItems;
   duration?: number;
+  creditsPerSecond?: number;
 };
 
 export type GenerateVideoValidationResponse = {

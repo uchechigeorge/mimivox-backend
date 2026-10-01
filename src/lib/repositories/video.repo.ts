@@ -28,6 +28,16 @@ const getCount = async (
   });
 };
 
+const getByTaskId = async (
+  taskId: string,
+  tc?: Prisma.TransactionClient,
+) => {
+  const db: DB = tc || prisma;
+  return await db.video.findFirst({
+    where: { taskId },
+  });
+};
+
 const create = async (
   data: VideoCreateArgs["data"],
   tc?: Prisma.TransactionClient,
@@ -92,6 +102,7 @@ const videoRepo = {
   getById,
   getCount,
   create,
+  getByTaskId,
   query,
 };
 

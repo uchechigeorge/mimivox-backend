@@ -28,6 +28,16 @@ const getCount = async (
   });
 };
 
+const listByTaskId = async (
+  taskId: string,
+  tc?: Prisma.TransactionClient,
+) => {
+  const db: DB = tc || prisma;
+  return await db.image.findMany({
+    where: { taskId },
+  });
+};
+
 const create = async (
   data: ImageCreateArgs["data"],
   tc?: Prisma.TransactionClient,
@@ -92,6 +102,7 @@ const imageRepo = {
   getById,
   getCount,
   create,
+  listByTaskId,
   query,
 };
 

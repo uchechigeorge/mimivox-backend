@@ -4,9 +4,9 @@ import { nDate, normalizeOptional, nString } from "@/lib/utils/zod.utils";
 
 export const taskListParamsValidator = z.object({
   ...baseGetParamsSchema,
-  type: normalizeOptional(z.enum(["None", "Music", "Video"])),
-  status: normalizeOptional(z.enum(["Pending", "Started", "Completed"])),
-  serviceOption: normalizeOptional(z.enum(["None", "Suno", "Xai"])),
+  type: normalizeOptional(z.enum(["None", "Music", "Video", "Image"])),
+  status: normalizeOptional(z.enum(["Pending", "Started", "Completed", "Failed"])),
+  serviceOption: normalizeOptional(z.enum(["None", "Suno", "Xai", "Runway"])),
   userId: z.string().optional(),
 });
 

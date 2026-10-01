@@ -20,8 +20,8 @@ export const validate = async (options: GenerateImageValidationOptions) => {
     const user = await userRepo.getByIdWithLock(userId, tx);
     if (!user) throw new UnauthorizedError();
 
-    const noOfImages = 1;
-    const creditsPerImage = env.CREDITS_PER_IMAGE;
+    const noOfImages = options.noOfImages ?? 1;
+    const creditsPerImage = options.creditsPerImage ?? env.CREDITS_PER_IMAGE;
     const noOfCreditsToUse = noOfImages * creditsPerImage;
     let noOfCreditsLeft = user.noOfCreditsLeft;
     let noOfImagesLeft = user.noOfImagesLeft;
@@ -41,7 +41,7 @@ export const validate = async (options: GenerateImageValidationOptions) => {
     noOfImagesLeft =
       user.noOfImagesAllocated == null || noOfImagesLeft == null
         ? null
-        : noOfImagesLeft - 1;
+        : noOfImagesLeft - noOfImages;
 
     const noOfCreditsUsed = user.noOfCreditsUsed + noOfCreditsToUse;
     const totalCreditsUsed = user.totalCreditsUsed + noOfCreditsToUse;
@@ -71,6 +71,8 @@ export const validate = async (options: GenerateImageValidationOptions) => {
 export const reverseCredits = async (
   authItems: UserAuthItems,
   tc?: Prisma.TransactionClient,
+  creditsPerImage: number = env.CREDITS_PER_IMAGE,
+  noOfImages: number = 1,
 ) => {
   const userId = authItems.userId;
   if (!userId) throw new UnauthorizedError();
@@ -78,8 +80,6 @@ export const reverseCredits = async (
   const user = await userRepo.getById(userId);
   if (!user) throw new UnauthorizedError();
 
-  const noOfImages = 1;
-  const creditsPerImage = env.CREDITS_PER_IMAGE;
   const noOfCreditsToUse = noOfImages * creditsPerImage;
   let noOfCreditsLeft = user.noOfCreditsLeft;
   let noOfImagesLeft = user.noOfImagesLeft;
@@ -91,7 +91,7 @@ export const reverseCredits = async (
   noOfImagesLeft =
     user.noOfImagesAllocated == null || noOfImagesLeft == null
       ? null
-      : noOfImagesLeft + 1;
+      : noOfImagesLeft + noOfImages;
 
   const noOfCreditsUsed = user.noOfCreditsUsed - noOfCreditsToUse;
   const totalCreditsUsed = user.totalCreditsUsed - noOfCreditsToUse;
@@ -99,12 +99,16 @@ export const reverseCredits = async (
   const noOfImagesUsed = user.noOfImagesUsed - noOfImages;
   const totalImagesUsed = user.totalImagesUsed - noOfImages;
 
-  await userRepo.update(userId, {
-    noOfCreditsUsed,
-    totalCreditsUsed,
-    noOfCreditsLeft,
-    noOfImagesUsed,
-    noOfImagesLeft,
-    totalImagesUsed,
-  });
+  await userRepo.update(
+    userId,
+    {
+      noOfCreditsUsed,
+      totalCreditsUsed,
+      noOfCreditsLeft,
+      noOfImagesUsed,
+      noOfImagesLeft,
+      totalImagesUsed,
+    },
+    tc,
+  );
 };

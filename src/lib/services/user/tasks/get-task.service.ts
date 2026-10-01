@@ -4,6 +4,8 @@ import { UserAuthItems } from "@/lib/types";
 import { NotFoundError, UnauthorizedError } from "@/lib/utils/error.util";
 import { taskReadDtoValidator } from "@/lib/validators/user/task.validator";
 import xaiVideoService from "../videos/xai";
+import runwayVideoService from "../videos/runway";
+import runwayImageService from "../images/runway";
 
 export const getTask = async (
   params: TaskGetParams,
@@ -25,6 +27,15 @@ export const getTask = async (
   if (task.status === "Pending") {
     if (task.type === "Video" && task.serviceOption === "Xai") {
       await xaiVideoService.generateVideoCallBack(task.referenceId);
+    }
+    if (task.serviceOption === "Runway") {
+      const sync =
+        task.type === "Video"
+          ? runwayVideoService.syncVideoTask
+          : runwayImageService.syncImageTask;
+      await sync(task);
+
+      return await getTask(params, authItems);
     }
   }
 

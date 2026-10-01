@@ -448,6 +448,7 @@ model Audio {
 enum ImageServiceType {
   None
   Xai
+  Runway
 }
 
 model Image {
@@ -460,10 +461,12 @@ model Image {
   altUrl                 String?          @db.VarChar(1024)
   imageServiceType       ImageServiceType @default(None)
   imageServiceRequestLog Json?
+  taskId                 String?          @db.Uuid()
   updatedAt              DateTime         @updatedAt
   createdAt              DateTime         @default(now())
   deletedAt              DateTime?
   user                   User?            @relation(fields: [userId], references: [id])
+  task                   Task?            @relation(fields: [taskId], references: [id])
 
   @@map("Images")
 }
@@ -472,6 +475,7 @@ enum TaskType {
   None
   Music
   Video
+  Image
 }
 
 enum TaskStatus {
@@ -485,6 +489,7 @@ enum TaskServiceOption {
   None
   Suno
   Xai
+  Runway
 }
 
 model Task {
@@ -510,6 +515,7 @@ model Task {
   deletedAt         DateTime?
   music             Music[]
   videos            Video[]
+  images            Image[]
 
   @@map("Tasks")
 }
@@ -548,6 +554,7 @@ model Music {
 enum VideoServiceType {
   None
   Xai
+  Runway
 }
 
 model Video {

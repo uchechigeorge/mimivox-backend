@@ -6,4 +6,6 @@ export type ListImagesMetaResponse = ResponseMeta & {};
 export type GenerateImageValidationOptions = {
   prompt: string;
   authItems: UserAuthItems;
+  creditsPerImage?: number;
+  noOfImages?: number;
 };

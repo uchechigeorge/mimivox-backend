@@ -67,6 +67,23 @@ const update = async (
   });
 };
 
+// Atomically moves a pending task to `status`; returns false if another
+// request already claimed it
+const claimPending = async (
+  id: Task["id"],
+  status: Task["status"],
+  tc?: Prisma.TransactionClient,
+) => {
+  const db: DB = tc || prisma;
+
+  const result = await db.task.updateMany({
+    where: { id, status: "Pending" },
+    data: { status, lockedAt: new Date() },
+  });
+
+  return result.count > 0;
+};
+
 // Order column options mapping
 const sortColumnOptions: Record<string, string> = {
   updatedAt: "updatedAt",
@@ -130,6 +147,7 @@ const taskRepo = {
   listByStatus,
   create,
   update,
+  claimPending,
   query,
 };
 
