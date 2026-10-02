@@ -45,7 +45,7 @@ export type SunoMusicCallbackRequestBody = {
   code: number;
   msg: string;
   data: {
-    callbackType: "complete" | "error";
+    callbackType: "text" | "first" | "complete" | "error";
     task_id: string;
     data: SunoMusicItem[] | null;
   };

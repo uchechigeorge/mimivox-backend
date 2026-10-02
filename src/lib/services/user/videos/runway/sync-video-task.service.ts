@@ -5,6 +5,7 @@ import { InternalServerError } from "@/lib/utils/error.util";
 import videoRepo from "@/lib/repositories/video.repo";
 import runwayService from "@/lib/services/shared/runway";
 import { RunwayTask } from "@/lib/services/shared/runway/types";
+import { notifyTaskFinished } from "@/lib/services/user/notifications/notify-task-finished.service";
 import { uploadVideo } from "@/lib/utils/cloudinary.utils";
 import { applyCredits, reverseCredits } from "../base.service";
 import { RunwayVideoStatusResponse, RunwayVideoTaskLog } from "./types";
@@ -80,6 +81,8 @@ const completeTask = async (
     );
   }
 
+  notifyTaskFinished(task, { succeeded: true });
+
   return await getCompletedResponse(task);
 };
 
@@ -98,6 +101,12 @@ const failTask = async (
     if (task.userId) {
       await reverseCredits(task.userId);
     }
+
+    notifyTaskFinished(task, {
+      succeeded: false,
+      error,
+      refunded: Boolean(task.userId),
+    });
   }
 
   return { id: task.id, status: "failed", progress: 0, error };

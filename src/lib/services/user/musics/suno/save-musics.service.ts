@@ -4,8 +4,8 @@ import { UploadApiErrorResponse } from "cloudinary";
 import { prisma } from "@/lib/db/prisma";
 import musicRepo from "@/lib/repositories/music.repo";
 import { Task } from "@/generated/prisma/client";
-import taskRepo from "@/lib/repositories/task.repo";
 import { isNotNullOrWhitespace } from "@/lib/utils/type.utils";
+import { notifyTaskFinished } from "@/lib/services/user/notifications/notify-task-finished.service";
 
 export const saveMusics = async (data: SaveMusicData) => {
   const { musicItems, task } = data;
@@ -55,15 +55,15 @@ export const saveMusics = async (data: SaveMusicData) => {
 
   const uploadedMusics = await uploadMusics(musicItems);
 
-  await prisma.$transaction(async (tx) => {
-    await taskRepo.update(
-      task.id,
-      {
+  const completedNow = await prisma.$transaction(async (tx) => {
+    // Only the call that completes the task sends the email
+    const completed = await tx.task.updateMany({
+      where: { id: task.id, status: { not: "Completed" } },
+      data: {
         status: "Completed",
         completedAt: new Date(),
       },
-      tx,
-    );
+    });
 
     for (let i = 0; i < uploadedMusics.length; i++) {
       const uploadedMusic = uploadedMusics[i];
@@ -117,7 +117,11 @@ export const saveMusics = async (data: SaveMusicData) => {
         tx,
       );
     }
+
+    return completed.count > 0;
   });
+
+  if (completedNow) notifyTaskFinished(task, { succeeded: true });
 };
 
 type SaveMusicData = {

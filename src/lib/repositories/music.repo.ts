@@ -9,6 +9,7 @@ import {
 } from "@/generated/prisma/models";
 import { BaseGetOptions, BaseGetParams } from "../dtos/shared/base-get-params";
 import { isNotNullOrWhitespace } from "../utils/type.utils";
+import { createdAtRange, DateRangeParams } from "../utils/date-range.utils";
 
 const getById = async (id: Music["id"], tc?: Prisma.TransactionClient) => {
   const db: DB = tc || prisma;
@@ -83,6 +84,9 @@ export const query = async (
     where.prompt = { contains: params.searchString, mode: "insensitive" };
   }
 
+  const createdAt = createdAtRange(params);
+  if (createdAt) where.createdAt = createdAt;
+
   // Determine sort column
   const sortColumn =
     sortColumnOptions[params.sortBy ?? "createdAt"] ?? "createdAt";
@@ -108,7 +112,7 @@ export const query = async (
   return [result, total];
 };
 
-type MusicGetParams = BaseGetParams & {
+type MusicGetParams = BaseGetParams & DateRangeParams & {
   userId?: User["id"];
 };
 

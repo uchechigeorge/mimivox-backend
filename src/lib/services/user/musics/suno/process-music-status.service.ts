@@ -5,7 +5,13 @@ import {
   SunoMusicProcessStatusParams,
 } from "./types";
 import { saveMusics } from "./save-musics.service";
+import { sunoFailureStatuses } from "./base.service";
 import { reverseCredits } from "../base.service";
+import { prisma } from "@/lib/db/prisma";
+import { notifyTaskFinished } from "@/lib/services/user/notifications/notify-task-finished.service";
+
+// Songs still not done after this long are failed and refunded
+const SUNO_TIMEOUT_MS = 60 * 60 * 1000;
 
 export const processMusicStatus = async (
   params?: SunoMusicProcessStatusParams,
@@ -57,21 +63,48 @@ export const processMusicStatus = async (
 
         completedTaskIds.push(task.referenceId);
       } else {
+        const timedOut =
+          Date.now() - task.createdAt.getTime() > SUNO_TIMEOUT_MS;
+
+        // Still generating (PENDING, TEXT_SUCCESS, FIRST_SUCCESS): check again next run
+        if (!sunoFailureStatuses.has(response.data.status) && !timedOut) {
+          continue;
+        }
+
+        const status = sunoFailureStatuses.has(response.data.status)
+          ? response.data.status
+          : "TIMED_OUT";
         const error = {
-          status: response.data.status,
+          status,
           code: response.data.errorCode,
           message: response.data.errorMessage,
         };
-        if (!ignoreReversal && task.userId) {
-          await reverseCredits(task.userId);
-        }
 
-        await taskRepo.update(task.id, {
-          errorMessage: response.data.status,
-          status: "Failed",
-          completedAt: new Date(),
+        // Only the call that fails the task refunds and emails
+        const failed = await prisma.task.updateMany({
+          where: { id: task.id, status: "Pending" },
+          data: {
+            errorMessage: status,
+            status: "Failed",
+            completedAt: new Date(),
+          },
         });
         nonCompletedTasks.push({ id: task.referenceId, error });
+
+        if (failed.count > 0) {
+          if (!ignoreReversal && task.userId) {
+            await reverseCredits(task.userId);
+          }
+
+          notifyTaskFinished(task, {
+            succeeded: false,
+            error:
+              status === "TIMED_OUT"
+                ? status
+                : response.data.errorMessage || status,
+            refunded: !ignoreReversal,
+          });
+        }
       }
     }
   }

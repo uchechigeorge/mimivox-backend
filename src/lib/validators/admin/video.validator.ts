@@ -1,9 +1,11 @@
 import z from "zod";
 import { baseGetParamsSchema } from "../shared/base-get-params.validator";
+import { dateRangeParamsSchema } from "../shared/date-range-params.validator";
 import { nDate, nNumber, nString } from "@/lib/utils/zod.utils";
 
 export const videoListParamsValidator = z.object({
   ...baseGetParamsSchema,
+  ...dateRangeParamsSchema,
   userId: z.string().optional(),
 });
 

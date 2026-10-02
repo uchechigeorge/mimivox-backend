@@ -16,3 +16,11 @@ export const createTask = async (
     serviceRequestLog: log,
   });
 };
+
+// Suno statuses that mean the song will not be generated; the rest are still in progress
+export const sunoFailureStatuses = new Set<string>([
+  "CREATE_TASK_FAILED",
+  "GENERATE_AUDIO_FAILED",
+  "CALLBACK_EXCEPTION",
+  "SENSITIVE_WORD_ERROR",
+]);

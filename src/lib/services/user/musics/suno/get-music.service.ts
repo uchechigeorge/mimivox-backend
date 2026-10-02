@@ -3,9 +3,11 @@ import { prisma } from "@/lib/db/prisma";
 import taskRepo from "@/lib/repositories/task.repo";
 import { SunoMusicGenerateStatusResponse, SunoMusicGetParams } from "./types";
 import { saveMusics } from "./save-musics.service";
+import { sunoFailureStatuses } from "./base.service";
 import { applyCredits, reverseCredits } from "../base.service";
 import userRepo from "@/lib/repositories/user.repo";
 import { UnauthorizedError } from "@/lib/utils/error.util";
+import { notifyTaskFinished } from "@/lib/services/user/notifications/notify-task-finished.service";
 
 export const getMusic = async (params: SunoMusicGetParams) => {
   const { taskId, ignoreUpdate, ignoreReversal } = params;
@@ -67,8 +69,8 @@ export const getMusic = async (params: SunoMusicGetParams) => {
             musicItems: response.data.response.sunoData,
           });
         }
-      } else if (response.data.status == "GENERATE_AUDIO_FAILED") {
-        await prisma.$transaction(async (tx) => {
+      } else if (sunoFailureStatuses.has(response.data.status)) {
+        const failedNow = await prisma.$transaction(async (tx) => {
           const failedTask = await tx.task.updateMany({
             where: { id: task.id, status: "Pending" },
             data: {
@@ -81,7 +83,17 @@ export const getMusic = async (params: SunoMusicGetParams) => {
           if (!ignoreReversal && failedTask.count > 0 && task.userId) {
             await reverseCredits(task.userId, tx);
           }
+
+          return failedTask.count > 0;
         });
+
+        if (failedNow) {
+          notifyTaskFinished(task, {
+            succeeded: false,
+            error: response.data.status,
+            refunded: !ignoreReversal,
+          });
+        }
       }
     }
   }

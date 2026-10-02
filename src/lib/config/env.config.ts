@@ -49,8 +49,9 @@ const envSchema = z.object({
   CREDITS_PER_VIDEO_MODEL_PER_SECOND: z.coerce.number().default(750),
   CREDITS_PER_IMAGE_MODEL: z.coerce.number().default(250),
   // Default surcharges for higher resolutions; override per model with
-  // CREDITS_PER_VIDEO_<MODEL>_1080P_EXTRA_PER_SECOND / _4K_EXTRA_PER_SECOND and
-  // CREDITS_PER_IMAGE_<MODEL>_2K_EXTRA / _4K_EXTRA
+  // CREDITS_PER_VIDEO_<MODEL>_720P_EXTRA_PER_SECOND / _1080P_EXTRA_PER_SECOND /
+  // _4K_EXTRA_PER_SECOND and CREDITS_PER_IMAGE_<MODEL>_2K_EXTRA / _4K_EXTRA
+  CREDITS_PER_VIDEO_MODEL_720P_EXTRA_PER_SECOND: z.coerce.number().default(0),
   CREDITS_PER_VIDEO_MODEL_1080P_EXTRA_PER_SECOND: z.coerce.number().default(0),
   CREDITS_PER_VIDEO_MODEL_4K_EXTRA_PER_SECOND: z.coerce.number().default(0),
   CREDITS_PER_IMAGE_MODEL_2K_EXTRA: z.coerce.number().default(0),

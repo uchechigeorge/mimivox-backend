@@ -5,6 +5,7 @@ import taskRepo from "@/lib/repositories/task.repo";
 import { InternalServerError } from "@/lib/utils/error.util";
 import runwayService from "@/lib/services/shared/runway";
 import { RunwayTask } from "@/lib/services/shared/runway/types";
+import { notifyTaskFinished } from "@/lib/services/user/notifications/notify-task-finished.service";
 import { upload } from "@/lib/utils/cloudinary.utils";
 import { reverseCredits } from "../base.service";
 import { RunwayImageStatusResponse, RunwayImageTaskLog } from "./types";
@@ -78,6 +79,8 @@ const completeTask = async (
     );
   }
 
+  notifyTaskFinished(task, { succeeded: true });
+
   return await getCompletedResponse(task);
 };
 
@@ -102,6 +105,12 @@ const failTask = async (
         log.noOfImages ?? 1,
       );
     }
+
+    notifyTaskFinished(task, {
+      succeeded: false,
+      error,
+      refunded: Boolean(task.userId),
+    });
   }
 
   return { id: task.id, status: "failed", progress: 0, error, data: [] };

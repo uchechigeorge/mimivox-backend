@@ -1,9 +1,11 @@
 import z from "zod";
 import { baseGetParamsSchema } from "../shared/base-get-params.validator";
+import { dateRangeParamsSchema } from "../shared/date-range-params.validator";
 import { nDate, nString } from "@/lib/utils/zod.utils";
 
 export const audioListParamsValidator = z.object({
   ...baseGetParamsSchema,
+  ...dateRangeParamsSchema,
   type: nString,
   userId: z.string().optional(),
 });

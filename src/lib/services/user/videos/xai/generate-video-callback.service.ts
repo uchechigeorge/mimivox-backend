@@ -7,6 +7,7 @@ import { getVideo } from "./get-video.service";
 import videoRepo from "@/lib/repositories/video.repo";
 import { Task, Video } from "@/generated/prisma/client";
 import { applyCredits, reverseCredits } from "../base.service";
+import { notifyTaskFinished } from "@/lib/services/user/notifications/notify-task-finished.service";
 
 export const generateVideoCallBack = async (
   requestId: string,
@@ -79,6 +80,8 @@ export const generateVideoCallBack = async (
       await taskRepo.update(task.id, { status: "Pending" });
       throw err;
     }
+
+    notifyTaskFinished(task, { succeeded: true });
   } else if (videoData.status === "failed" || videoData.status === "expired") {
     // Mark it failed so the refund happens exactly once
     if (await taskRepo.claimPending(task.id, "Failed")) {
@@ -90,6 +93,12 @@ export const generateVideoCallBack = async (
       if (task.userId) {
         await reverseCredits(task.userId);
       }
+
+      notifyTaskFinished(task, {
+        succeeded: false,
+        error: videoData.status,
+        refunded: Boolean(task.userId),
+      });
     }
   }
 

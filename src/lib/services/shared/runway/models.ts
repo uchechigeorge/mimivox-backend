@@ -211,14 +211,15 @@ const readSurchargeEnv = (key: string) => {
   return Number.isFinite(value) && value >= 0 ? value : undefined;
 };
 
-export type VideoSurchargeTier = "1080p" | "4K";
+export type VideoSurchargeTier = "720p" | "1080p" | "4K";
 export type ImageSurchargeTier = "2K" | "4K";
 
-// Maps a quality label ("1080p", "1440p", "4K", "720p"...) to the tier we charge extra for
+// Maps a quality label ("720p", "1080p", "1440p", "4K"...) to the tier we charge extra for
 export const toVideoSurchargeTier = (
   quality: string | null | undefined,
 ): VideoSurchargeTier | null => {
   const value = quality?.toLowerCase();
+  if (value === "720p") return "720p";
   if (value === "1080p" || value === "1440p") return "1080p";
   if (value === "4k" || value === "2160p") return "4K";
   return null;
@@ -237,21 +238,23 @@ export const getVideoRequestQuality = (
   (ratio && describeRatio(ratio, "video").quality) ||
   (typeof options.resolution === "string" ? options.resolution : null);
 
-// CREDITS_PER_VIDEO_<MODEL>_<1080P|4K>_EXTRA_PER_SECOND, added to the per second rate
+const videoSurchargeDefaults: Record<VideoSurchargeTier, () => number> = {
+  "720p": () => env.CREDITS_PER_VIDEO_MODEL_720P_EXTRA_PER_SECOND,
+  "1080p": () => env.CREDITS_PER_VIDEO_MODEL_1080P_EXTRA_PER_SECOND,
+  "4K": () => env.CREDITS_PER_VIDEO_MODEL_4K_EXTRA_PER_SECOND,
+};
+
+// CREDITS_PER_VIDEO_<MODEL>_<720P|1080P|4K>_EXTRA_PER_SECOND, added to the per second rate
 export const getVideoQualityExtraPerSecond = (
   modelId: string,
   tier: VideoSurchargeTier | null,
 ) => {
   if (!tier) return 0;
-  const suffix = tier === "1080p" ? "1080P" : "4K";
 
   return (
     readSurchargeEnv(
-      `CREDITS_PER_VIDEO_${toEnvKey(modelId)}_${suffix}_EXTRA_PER_SECOND`,
-    ) ??
-    (tier === "1080p"
-      ? env.CREDITS_PER_VIDEO_MODEL_1080P_EXTRA_PER_SECOND
-      : env.CREDITS_PER_VIDEO_MODEL_4K_EXTRA_PER_SECOND)
+      `CREDITS_PER_VIDEO_${toEnvKey(modelId)}_${tier.toUpperCase()}_EXTRA_PER_SECOND`,
+    ) ?? videoSurchargeDefaults[tier]()
   );
 };
 
@@ -289,7 +292,7 @@ export const getVideoModelSurchargeTiers = (modelId: string) => {
       });
   }
 
-  return (["1080p", "4K"] as const).filter((e) => tiers.has(e));
+  return (["720p", "1080p", "4K"] as const).filter((e) => tiers.has(e));
 };
 
 // Surcharged tiers an image model can produce

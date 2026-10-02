@@ -1,10 +1,12 @@
 import z from "zod";
 import { baseGetParamsSchema } from "../shared/base-get-params.validator";
+import { dateRangeParamsSchema } from "../shared/date-range-params.validator";
 import { nDate, nNumber, nString } from "@/lib/utils/zod.utils";
 import { runwayVideoModelIds } from "@/lib/services/shared/runway/models";
 
 export const videoListParamsValidator = z.object({
   ...baseGetParamsSchema,
+  ...dateRangeParamsSchema,
 });
 
 export const videoGetParamsValidator = z.object({

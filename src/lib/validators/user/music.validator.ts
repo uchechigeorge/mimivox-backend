@@ -1,5 +1,6 @@
 import z from "zod";
 import { baseGetParamsSchema } from "../shared/base-get-params.validator";
+import { dateRangeParamsSchema } from "../shared/date-range-params.validator";
 import {
   nDate,
   nNumber,
@@ -9,6 +10,7 @@ import {
 
 export const musicListParamsValidator = z.object({
   ...baseGetParamsSchema,
+  ...dateRangeParamsSchema,
 });
 
 export const sunoMusicGetQueryValidator = z.object({
