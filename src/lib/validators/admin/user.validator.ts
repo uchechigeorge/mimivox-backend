@@ -12,6 +12,9 @@ import {
 export const userListParamsValidator = z.object({
   ...baseGetParamsSchema,
   blocked: stringToOptionalBoolean,
+  hasActiveSubscription: stringToOptionalBoolean,
+  startDate: stringToNullableDate,
+  endDate: stringToNullableDate,
 });
 
 export const userGetParamsValidator = z.object({

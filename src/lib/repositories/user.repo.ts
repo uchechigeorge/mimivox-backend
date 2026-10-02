@@ -85,6 +85,34 @@ const sortColumnOptions: Record<string, string> = {
   dateCreated: "dateCreated",
 };
 
+const buildWhere = (params: UserGetParams) => {
+  const where: NonNullable<UserFindManyArgs["where"]> = {};
+
+  if (isNotNullOrWhitespace(params.id)) where.id = params.id;
+  if (params.blocked != null) where.blocked = params.blocked;
+  if (params.hasActiveSubscription != null) {
+    where.hasActiveSubscription = params.hasActiveSubscription;
+  }
+  if (params.startDate || params.endDate) {
+    where.createdAt = {};
+    if (params.startDate) where.createdAt.gte = params.startDate;
+    if (params.endDate) {
+      // Include the whole end day
+      const end = new Date(params.endDate);
+      end.setUTCHours(23, 59, 59, 999);
+      where.createdAt.lte = end;
+    }
+  }
+  if (isNotNullOrWhitespace(params.searchString)) {
+    const search = params.searchString!.trim();
+    where.OR = ["fullName", "firstName", "lastName", "email"].map(
+      (column) => ({ [column]: { contains: search, mode: "insensitive" } }), // LIKE '%searchString%'
+    );
+  }
+
+  return where;
+};
+
 export const query = async (
   params: UserGetParams,
   options?: UserGetOptions,
@@ -92,13 +120,7 @@ export const query = async (
   [(User & { activeSubscription?: Subscription | null })[], number]
 > => {
   // Build `where` filter
-  const where: UserFindManyArgs["where"] = {};
-
-  if (isNotNullOrWhitespace(params.id)) where.id = params.id;
-  if (params.blocked != null) where.blocked = params.blocked;
-  if (isNotNullOrWhitespace(params.searchString)) {
-    where.fullName = { contains: params.searchString, mode: "insensitive" }; // LIKE '%searchString%'
-  }
+  const where = buildWhere(params);
 
   // Determine sort column
   const sortColumn =
@@ -143,8 +165,23 @@ export const query = async (
   return [result, total];
 };
 
+// Counts for the summary cards, using the same filters as the list
+const getSubscriberSummary = async (params: UserGetParams = {}) => {
+  const where = buildWhere(params);
+  const [total, active] = await Promise.all([
+    prisma.user.count({ where }),
+    prisma.user.count({
+      where: { AND: [where, { hasActiveSubscription: true }] },
+    }),
+  ]);
+  return { total, active, inactive: total - active };
+};
+
 type UserGetParams = BaseGetParams & {
   blocked?: boolean;
+  hasActiveSubscription?: boolean;
+  startDate?: Date;
+  endDate?: Date;
 };
 
 export type UserGetOptions = BaseGetOptions & {};
@@ -157,6 +194,7 @@ const userRepo = {
   create,
   update,
   query,
+  getSubscriberSummary,
 };
 
 export default userRepo;

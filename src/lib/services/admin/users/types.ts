@@ -1,3 +1,11 @@
 import { ResponseMeta } from "@/lib/dtos/shared/response-meta";
 
-export type UserListMetaResponse = ResponseMeta & {};
+export type UserSubscriberSummary = {
+  total: number;
+  active: number;
+  inactive: number;
+};
+
+export type UserListMetaResponse = ResponseMeta & {
+  summary: UserSubscriberSummary;
+};
