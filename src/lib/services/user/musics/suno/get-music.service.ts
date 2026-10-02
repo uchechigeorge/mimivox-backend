@@ -27,10 +27,16 @@ export const getMusic = async (params: SunoMusicGetParams) => {
 
   if (!ignoreUpdate) {
     const task = await taskRepo.getByReference(taskId, "Music", "Suno");
-    if (task && (task.status === "Pending" || task.status === "Failed")) {
+    if (task && task.status !== "Completed") {
       const response = (await res
         .clone()
         .json()) as SunoMusicGenerateStatusResponse;
+
+      if (response.data == null) {
+        const errorText = await res.clone().text();
+        console.error(errorText);
+        return res;
+      }
 
       if (response.data.status == "SUCCESS") {
         const claimedTask = await prisma.$transaction(async (tx) => {

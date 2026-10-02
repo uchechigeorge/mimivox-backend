@@ -79,10 +79,24 @@ export const saveMusics = async (data: SaveMusicData) => {
 
       let title = musicData.title;
       if (!isNotNullOrWhitespace(title)) {
-        title = task.serviceRequestLog
-          ? JSON.parse(JSON.stringify(task.serviceRequestLog)).body.title
+        let fallbackTitle: string | null | undefined;
+
+        try {
+          const log =
+            typeof task.serviceRequestLog === "string"
+              ? JSON.parse(task.serviceRequestLog)
+              : task.serviceRequestLog;
+
+          fallbackTitle = log?.body?.title;
+        } catch {
+          fallbackTitle = undefined;
+        }
+
+        title = isNotNullOrWhitespace(fallbackTitle)
+          ? fallbackTitle
           : "Untitled Music";
       }
+
       await musicRepo.create(
         {
           userId: task.userId,
