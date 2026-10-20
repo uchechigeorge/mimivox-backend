@@ -20,7 +20,7 @@ import taskRepo from "@/lib/repositories/task.repo";
 import { reverseCredits, validate } from "../base.service";
 import { RunwayVideoGenerateResponse, RunwayVideoTaskLog } from "./types";
 
-const defaultDuration = 5;
+const defaultDuration = 15;
 
 // Prefer 720p 16:9, then any 16:9, then whatever the model lists first
 const getDefaultRatio = (ratios: string[]) => {

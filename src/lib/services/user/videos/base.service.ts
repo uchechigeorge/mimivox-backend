@@ -30,7 +30,7 @@ export const validate = async (
     throw new BadRequestError("Video duration exceeds maximum allowed");
   }
 
-  const defaultDuration = 5;
+  const defaultDuration = 15;
 
   const user = await prisma.$transaction(async (tx) => {
     const user = await userRepo.getByIdWithLock(userId, tx);
