@@ -2,7 +2,7 @@ import { env } from "@/lib/config/env.config";
 import { UserAuthItems } from "@/lib/types";
 import voiceRepo from "@/lib/repositories/voice.repo";
 import elevenLabsService from "@/lib/services/shared/eleven-labs";
-import { uploadAudioStream } from "@/lib/utils/cloudinary.utils";
+import { uploadAudioStream } from "@/lib/utils/upload.utils";
 import { UnauthorizedError } from "@/lib/utils/error.util";
 import { createAudio, reverseCredits, validate } from "../base.service";
 

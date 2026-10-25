@@ -1,4 +1,5 @@
-import { UploadApiErrorResponse, UploadApiResponse } from "cloudinary";
+import { UploadApiErrorResponse } from "cloudinary";
+import { UploadResult } from "@/lib/utils/upload.utils";
 
 export interface XaiVideoGenerateRequestBody {
   prompt: string;
@@ -29,5 +30,5 @@ export interface XaiVideoGenerateResponse {
 }
 
 export type UploadVideoResult =
-  | { success: true; input: XaiVideoData; upload: { video: UploadApiResponse } }
+  | { success: true; input: XaiVideoData; upload: { video: UploadResult } }
   | { success: false; input: XaiVideoData; err: UploadApiErrorResponse };

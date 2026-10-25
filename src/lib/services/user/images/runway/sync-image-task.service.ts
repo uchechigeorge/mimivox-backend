@@ -6,7 +6,7 @@ import { InternalServerError } from "@/lib/utils/error.util";
 import runwayService from "@/lib/services/shared/runway";
 import { RunwayTask } from "@/lib/services/shared/runway/types";
 import { notifyTaskFinished } from "@/lib/services/user/notifications/notify-task-finished.service";
-import { upload } from "@/lib/utils/cloudinary.utils";
+import { upload } from "@/lib/utils/upload.utils";
 import { reverseCredits } from "../base.service";
 import { RunwayImageStatusResponse, RunwayImageTaskLog } from "./types";
 

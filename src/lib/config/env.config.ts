@@ -27,9 +27,13 @@ const envSchema = z.object({
   XAI_API_KEY: z.string(),
   SUNO_API_KEY: z.string(),
   SUNO_MUSIC_GENERATE_CALLBACK_URL: z.string(),
-  CLOUDINARY_API_SECRET: z.string(),
-  CLOUDINARY_API_KEY: z.string(),
-  CLOUDINARY_CLOUD_NAME: z.string(),
+  // "cloudinary" (default) or "custom" (the C# web handler)
+  UPLOAD_PROVIDER: z.enum(["cloudinary", "custom"]).default("cloudinary"),
+  CLOUDINARY_API_SECRET: z.string().optional(),
+  CLOUDINARY_API_KEY: z.string().optional(),
+  CLOUDINARY_CLOUD_NAME: z.string().optional(),
+  CUSTOM_UPLOAD_URL: z.string().optional(),
+  CUSTOM_UPLOAD_KEY: z.string().optional(),
   RESEND_API_KEY: z.string(),
   RUNWAY_API_KEY: z.string().optional(),
   RUNWAY_API_BASE: z.string().default("https://api.dev.runwayml.com/v1"),
@@ -73,4 +77,25 @@ const envSchema = z.object({
   }, z.boolean()),
 });
 
-export const env = envSchema.parse(process.env);
+export const env = envSchema
+  .superRefine((val, ctx) => {
+    const required =
+      val.UPLOAD_PROVIDER === "custom"
+        ? (["CUSTOM_UPLOAD_URL", "CUSTOM_UPLOAD_KEY"] as const)
+        : ([
+            "CLOUDINARY_CLOUD_NAME",
+            "CLOUDINARY_API_KEY",
+            "CLOUDINARY_API_SECRET",
+          ] as const);
+
+    for (const key of required) {
+      if (!val[key]) {
+        ctx.addIssue({
+          code: "custom",
+          path: [key],
+          message: `${key} is required when UPLOAD_PROVIDER=${val.UPLOAD_PROVIDER}`,
+        });
+      }
+    }
+  })
+  .parse(process.env);

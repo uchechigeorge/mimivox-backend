@@ -190,6 +190,10 @@ export const describeRatio = (
   value: string,
   kind: "video" | "image",
 ): RunwayRatioOption => {
+  // "auto_720p": the output aspect ratio follows the first frame
+  const auto = kind === "video" ? value.match(/^auto_(\d+p)$/) : null;
+  if (auto) return { value, aspect: "auto", quality: auto[1] };
+
   const [w, h] = value.split(":").map(Number);
   const isPixels = w > 32 && h > 32;
 

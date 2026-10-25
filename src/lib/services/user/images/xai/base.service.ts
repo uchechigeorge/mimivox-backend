@@ -1,4 +1,4 @@
-import { upload } from "@/lib/utils/cloudinary.utils";
+import { upload } from "@/lib/utils/upload.utils";
 import { UploadImageResult, XaiImageData, XaiImageResponse } from "./types";
 import { UploadApiErrorResponse } from "cloudinary";
 import imageRepo from "@/lib/repositories/image.repo";

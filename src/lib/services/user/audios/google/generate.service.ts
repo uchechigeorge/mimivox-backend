@@ -4,7 +4,7 @@ import { GoogleTTSDto } from "@/lib/dtos/user/tts.dto";
 import voiceRepo from "@/lib/repositories/voice.repo";
 import googleService from "@/lib/services/shared/google";
 import { BadRequestError, UnauthorizedError } from "@/lib/utils/error.util";
-import { uploadAudio } from "@/lib/utils/cloudinary.utils";
+import { uploadAudio } from "@/lib/utils/upload.utils";
 import { createAudio, reverseCredits, validate } from "../base.service";
 
 export const generateSpeechFromText = async (

@@ -1,4 +1,5 @@
-import { UploadApiErrorResponse, UploadApiResponse } from "cloudinary";
+import { UploadApiErrorResponse } from "cloudinary";
+import { UploadResult as UploadedFile } from "@/lib/utils/upload.utils";
 
 export type SunoMusicGenerateRequestBody = {
   prompt: string;
@@ -56,9 +57,9 @@ export type UploadResult<TInput> =
       success: true;
       inputData: TInput;
       uploadData: {
-        audio: UploadApiResponse;
-        image: UploadApiResponse;
-        stream?: UploadApiResponse;
+        audio: UploadedFile;
+        image: UploadedFile;
+        stream?: UploadedFile;
       };
     }
   | { success: false; inputData: TInput; err: UploadApiErrorResponse };

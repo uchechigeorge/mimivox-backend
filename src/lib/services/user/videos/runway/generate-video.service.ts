@@ -28,6 +28,7 @@ const getDefaultRatio = (ratios: string[]) => {
   return (
     described.find((e) => e.aspect === "16:9" && e.quality === "720p") ??
     described.find((e) => e.aspect === "16:9") ??
+    described.find((e) => e.quality === "720p") ??
     described[0]
   )?.value;
 };

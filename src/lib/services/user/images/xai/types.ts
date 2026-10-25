@@ -1,4 +1,5 @@
-import { UploadApiErrorResponse, UploadApiResponse } from "cloudinary";
+import { UploadApiErrorResponse } from "cloudinary";
+import { UploadResult } from "@/lib/utils/upload.utils";
 
 export interface XaiImageRequestBody {
   model: "grok-imagine-image";
@@ -21,5 +22,5 @@ export interface XaiImageResponse {
 }
 
 export type UploadImageResult =
-  | { success: true; image: XaiImageData; data: UploadApiResponse }
+  | { success: true; image: XaiImageData; data: UploadResult }
   | { success: false; image: XaiImageData; err: UploadApiErrorResponse };

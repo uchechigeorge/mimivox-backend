@@ -1,7 +1,7 @@
 import { env } from "@/lib/config/env.config";
 import { UserAuthItems } from "@/lib/types";
 import { createVoiceAndUpdateUser, validate } from "./clone.service";
-import { uploadAudioStream } from "@/lib/utils/cloudinary.utils";
+import { uploadAudioStream } from "@/lib/utils/upload.utils";
 
 export const cloneViaElevenLabs = async (
   formData: FormData,

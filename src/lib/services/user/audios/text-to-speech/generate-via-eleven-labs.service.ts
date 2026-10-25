@@ -3,7 +3,7 @@ import { UserAuthItems } from "@/lib/types";
 import { createAudioAndUpdateUser, validate } from "./generate.service";
 import voiceRepo from "@/lib/repositories/voice.repo";
 import elevenLabsService from "@/lib/services/shared/eleven-labs";
-import { uploadAudioStream } from "@/lib/utils/cloudinary.utils";
+import { uploadAudioStream } from "@/lib/utils/upload.utils";
 
 export const generateViaElevenLabs = async (
   voiceId: string,

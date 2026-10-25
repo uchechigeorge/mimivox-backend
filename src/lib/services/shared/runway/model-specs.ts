@@ -416,23 +416,8 @@ export const runwayVideoModelSpecs: Record<string, RunwayVideoModelSpec> = {
     },
     image: {
       maxPromptLength: 20000,
-      ratios: [
-        "832:480",
-        "720:544",
-        "624:624",
-        "544:720",
-        "480:832",
-        "1280:720",
-        "1104:832",
-        "960:960",
-        "832:1104",
-        "720:1280",
-        "1920:1080",
-        "1648:1248",
-        "1440:1440",
-        "1248:1648",
-        "1080:1920",
-      ],
+      // Image to video follows the first frame, so only auto ratios are accepted
+      ratios: ["auto_480p", "auto_720p", "auto_1080p"],
       durations: {
         min: 2,
         max: 30,
@@ -493,23 +478,8 @@ export const runwayVideoModelSpecs: Record<string, RunwayVideoModelSpec> = {
     },
     image: {
       maxPromptLength: 20000,
-      ratios: [
-        "832:480",
-        "720:544",
-        "624:624",
-        "544:720",
-        "480:832",
-        "1280:720",
-        "1104:832",
-        "960:960",
-        "832:1104",
-        "720:1280",
-        "1920:1080",
-        "1648:1248",
-        "1440:1440",
-        "1248:1648",
-        "1080:1920",
-      ],
+      // Image to video follows the first frame, so only auto ratios are accepted
+      ratios: ["auto_480p", "auto_720p", "auto_1080p"],
       durations: {
         min: 2,
         max: 30,

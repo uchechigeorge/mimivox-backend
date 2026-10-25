@@ -1,4 +1,4 @@
-import { upload } from "@/lib/utils/cloudinary.utils";
+import { upload } from "@/lib/utils/upload.utils";
 import { UploadResult } from "./types";
 import { UploadApiErrorResponse } from "cloudinary";
 import { prisma } from "@/lib/db/prisma";

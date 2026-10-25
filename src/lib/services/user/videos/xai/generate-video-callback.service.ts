@@ -1,6 +1,6 @@
 import { XaiVideoGetResponse } from "./types";
 import { BadRequestError } from "@/lib/utils/error.util";
-import { uploadVideo } from "@/lib/utils/cloudinary.utils";
+import { uploadVideo } from "@/lib/utils/upload.utils";
 import taskRepo from "@/lib/repositories/task.repo";
 import { prisma } from "@/lib/db/prisma";
 import { getVideo } from "./get-video.service";
