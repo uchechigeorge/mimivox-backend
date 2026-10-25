@@ -2,6 +2,7 @@ import subscriptionRepo from "@/lib/repositories/subscription.repo";
 import userRepo from "@/lib/repositories/user.repo";
 import paystackSubscriptionService from "../../shared/paystack/subscriptions";
 import paystackSubscriptionRepo from "@/lib/repositories/paystack-subscription.repo";
+import pricingSettingsService from "../../shared/pricing-settings";
 
 export const checkExpiry = async () => {
   const subscriptions = await subscriptionRepo.listByExpiredAndIsActive();
@@ -16,6 +17,7 @@ export const checkExpiry = async () => {
     const user = await userRepo.getById(subscription.userId);
     if (user) {
       await userRepo.update(user.id, {
+        ...pricingSettingsService.expireTopUpCredits(user),
         hasActiveSubscription: false,
         nextBillingDate: null,
       });

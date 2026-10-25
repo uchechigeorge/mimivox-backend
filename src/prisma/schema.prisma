@@ -33,6 +33,7 @@ model User {
   totalCreditsUsed           Int                   @default(0)
   noOfCreditsAllocated       Int?                  @default(0)
   noOfCreditsLeft            Int?                  @default(0)
+  noOfTopUpCreditsLeft       Int                   @default(0)
   noOfCharactersUsed         Int                   @default(0)
   totalCharactersUsed        Int                   @default(0)
   noOfCharactersAllocated    Int?                  @default(0)
@@ -76,6 +77,7 @@ model User {
   userTokens                 UserToken[]
   paystackCustomers          PaystackCustomer[]
   subscriptionPayments       SubscriptionPayment[]
+  creditPurchases            CreditPurchase[]
 
   @@map("Users")
 }
@@ -297,6 +299,61 @@ model Subscription {
   paystackSubscriptions  PaystackSubscription[]
 
   @@map("Subscriptions")
+}
+
+enum CreditPackageType {
+  TopUp
+  BuyCredit
+}
+
+model CreditPackage {
+  id          String            @id @default(uuid()) @db.VarChar(1024)
+  slug        String            @unique @db.VarChar(1024)
+  name        String            @db.VarChar(1024)
+  description String?           @db.VarChar(1024)
+  type        CreditPackageType
+  price       Decimal           @db.Decimal(18, 2)
+  noOfCredits Int
+  sequence    Int               @default(0)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  deletedAt   DateTime?
+  purchases   CreditPurchase[]
+
+  @@map("CreditPackages")
+}
+
+enum CreditPurchaseStatus {
+  Pending
+  Paid
+  Failed
+}
+
+model CreditPurchase {
+  id              String               @id @default(uuid()) @db.Uuid()
+  reference       String               @unique @default(cuid()) @db.VarChar(1024)
+  paymentToken    String               @unique @default(cuid()) @db.VarChar(1024)
+  userId          String               @db.VarChar(1024)
+  userName        String               @db.VarChar(1024)
+  packageId       String               @db.VarChar(1024)
+  packageName     String               @db.VarChar(1024)
+  type            CreditPackageType
+  noOfCredits     Int
+  amount          Decimal              @db.Decimal(18, 2)
+  amountPaid      Decimal?             @db.Decimal(18, 2)
+  currency        String?              @db.VarChar(1024)
+  status          CreditPurchaseStatus @default(Pending)
+  paymentVerified Boolean              @default(false)
+  paymentGateway  PaymentGatewayOption @default(None)
+  subscriptionId  String?              @db.VarChar(1024)
+  paidAt          DateTime?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  deletedAt       DateTime?
+  user            User                 @relation(fields: [userId], references: [id])
+  creditPackage   CreditPackage        @relation(fields: [packageId], references: [id])
+
+  @@map("CreditPurchases")
 }
 
 enum SubscriptionPaymentStatus {

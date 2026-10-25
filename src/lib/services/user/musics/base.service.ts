@@ -25,10 +25,6 @@ export const validate = async (options: GenerateMusicValidationOptions) => {
       throw new BadRequestError("Not enough credits");
     }
 
-    if (user.noOfMusicLeft !== null && user.noOfMusicLeft < 1) {
-      throw new BadRequestError("Reached max quota");
-    }
-
     await applyCredits(user, tx);
 
     return user;
@@ -52,11 +48,6 @@ export const reverseCredits = async (
       user.noOfCreditsAllocated == null || user.noOfCreditsLeft == null
         ? null
         : user.noOfCreditsLeft + creditsPerMusic;
-    const noOfMusicLeft =
-      user.noOfMusicAllocated == null || user.noOfMusicLeft == null
-        ? null
-        : user.noOfMusicLeft + 1;
-
     await userRepo.update(
       userId,
       {
@@ -64,7 +55,6 @@ export const reverseCredits = async (
         totalCreditsUsed: user.totalCreditsUsed - creditsPerMusic,
         noOfCreditsLeft,
         noOfMusicUsed: user.noOfMusicUsed - 1,
-        noOfMusicLeft,
         totalMusicUsed: user.totalMusicUsed - 1,
       },
       tx,
@@ -88,11 +78,6 @@ export const applyCredits = async (
     user.noOfCreditsAllocated == null || user.noOfCreditsLeft == null
       ? null
       : user.noOfCreditsLeft - creditsPerMusic;
-  const noOfMusicLeft =
-    user.noOfMusicAllocated == null || user.noOfMusicLeft == null
-      ? null
-      : user.noOfMusicLeft - 1;
-
   await userRepo.update(
     user.id,
     {
@@ -100,7 +85,6 @@ export const applyCredits = async (
       totalCreditsUsed: user.totalCreditsUsed + creditsPerMusic,
       noOfCreditsLeft,
       noOfMusicUsed: user.noOfMusicUsed + 1,
-      noOfMusicLeft,
       totalMusicUsed: user.totalMusicUsed + 1,
     },
     tx,

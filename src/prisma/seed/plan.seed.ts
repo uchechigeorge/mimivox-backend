@@ -328,6 +328,26 @@ export default async function seedPlans() {
             },
           },
         });
+
+        // The plans endpoint reads the plan level settings, so mirror the first pricing
+        if (j === 0) {
+          const { pricingName, ...planSettings } = settings;
+
+          await prisma.planSetting.upsert({
+            where: { planId: createdPlan.id },
+            create: {
+              ...planSettings,
+              planName: data.name,
+              plan: {
+                connect: { id: createdPlan.id },
+              },
+            },
+            update: {
+              ...planSettings,
+              planName: data.name,
+            },
+          });
+        }
       }
     }
   }

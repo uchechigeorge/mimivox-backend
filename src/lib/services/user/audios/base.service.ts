@@ -5,6 +5,7 @@ import audioRepo from "@/lib/repositories/audio.repo";
 import userRepo from "@/lib/repositories/user.repo";
 import voiceRepo from "@/lib/repositories/voice.repo";
 import { BadRequestError, UnauthorizedError } from "@/lib/utils/error.util";
+import { getMaxWordsPerRequest } from "./word-limit.service";
 import {
   TTSCreateAudioOptions,
   TTSReverseOptions,
@@ -38,19 +39,13 @@ export const validate = async (
 
     const noOfCreditsToUse = noOfCharacters * creditsPerCharacter;
     let noOfCreditsLeft = user.noOfCreditsLeft;
-    let noOfCharactersLeft = user.noOfCharactersLeft;
 
-    if (
-      (noOfCreditsLeft !== null && noOfCreditsLeft < noOfCreditsToUse) ||
-      (noOfCharactersLeft !== null && noOfCharactersLeft < noOfCharacters)
-    ) {
-      throw new BadRequestError("Reached max quota");
+    if (noOfCreditsLeft !== null && noOfCreditsLeft < noOfCreditsToUse) {
+      throw new BadRequestError("Not enough credits");
     }
 
-    if (
-      user.noOfWordsAllowed !== null &&
-      user.noOfWordsAllowed < content.trim().split(" ").length
-    ) {
+    const maxWords = getMaxWordsPerRequest(user);
+    if (maxWords !== null && maxWords < content.trim().split(" ").length) {
       throw new BadRequestError("Reached max word quota");
     }
 
@@ -64,10 +59,6 @@ export const validate = async (
 
     const noOfCharactersUsed = user.noOfCharactersUsed + noOfCharacters;
     const totalCharactersUsed = user.totalCharactersUsed + noOfCharacters;
-    noOfCharactersLeft =
-      user.noOfCharactersAllocated == null || user.noOfCharactersLeft == null
-        ? null
-        : user.noOfCharactersLeft - noOfCharacters;
 
     const noOfCreditsUsed = user.noOfCreditsUsed + noOfCreditsToUse;
     const totalCreditsUsed = user.totalCreditsUsed + noOfCreditsToUse;
@@ -95,7 +86,6 @@ export const validate = async (
       {
         noOfCharactersUsed,
         totalCharactersUsed,
-        noOfCharactersLeft,
         noOfCreditsUsed,
         totalCreditsUsed,
         noOfCreditsLeft,
@@ -125,16 +115,11 @@ export const reverseCredits = async (data: TTSReverseOptions) => {
       : env.CREDITS_PER_CHARACTER;
   const noOfCreditsToUse = noOfCharacters * creditsPerCharacter;
   let noOfCreditsLeft = user.noOfCreditsLeft;
-  let noOfCharactersLeft = user.noOfCharactersLeft;
 
   const isPremiumVoice = audioServiceType === "ElevenLabs";
 
   const noOfCharactersUsed = user.noOfCharactersUsed - noOfCharacters;
   const totalCharactersUsed = user.totalCharactersUsed - noOfCharacters;
-  noOfCharactersLeft =
-    user.noOfCharactersAllocated == null || user.noOfCharactersLeft == null
-      ? null
-      : user.noOfCharactersLeft + noOfCharacters;
 
   const noOfCreditsUsed = user.noOfCreditsUsed - noOfCreditsToUse;
   const totalCreditsUsed = user.totalCreditsUsed - noOfCreditsToUse;
@@ -160,7 +145,6 @@ export const reverseCredits = async (data: TTSReverseOptions) => {
   await userRepo.update(user.id, {
     noOfCharactersUsed,
     totalCharactersUsed,
-    noOfCharactersLeft,
     noOfCreditsUsed,
     totalCreditsUsed,
     noOfCreditsLeft,

@@ -48,6 +48,11 @@ const envSchema = z.object({
   CREDITS_PER_IMAGE: z.coerce.number(),
   CREDITS_PER_MUSIC: z.coerce.number(),
   CREDITS_PER_VIDEO_PER_SECOND: z.coerce.number(),
+  // When set, replaces the plan word limit for text to speech requests
+  MAX_WORDS_PER_REQUEST: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.coerce.number().optional(),
+  ),
   // Default credit rates for Runway models; override per model with
   // CREDITS_PER_VIDEO_<MODEL>_PER_SECOND / CREDITS_PER_IMAGE_<MODEL>
   CREDITS_PER_VIDEO_MODEL_PER_SECOND: z.coerce.number().default(750),

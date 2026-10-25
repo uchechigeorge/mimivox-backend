@@ -24,25 +24,15 @@ export const validate = async (options: GenerateImageValidationOptions) => {
     const creditsPerImage = options.creditsPerImage ?? env.CREDITS_PER_IMAGE;
     const noOfCreditsToUse = noOfImages * creditsPerImage;
     let noOfCreditsLeft = user.noOfCreditsLeft;
-    let noOfImagesLeft = user.noOfImagesLeft;
 
     if (noOfCreditsLeft !== null && noOfCreditsLeft < noOfCreditsToUse) {
       throw new BadRequestError("Not enough credits");
-    }
-
-    if (noOfImagesLeft !== null && noOfImagesLeft < noOfImages) {
-      throw new BadRequestError("Reached max quota");
     }
 
     noOfCreditsLeft =
       user.noOfCreditsAllocated == null || noOfCreditsLeft == null
         ? null
         : noOfCreditsLeft - noOfCreditsToUse;
-    noOfImagesLeft =
-      user.noOfImagesAllocated == null || noOfImagesLeft == null
-        ? null
-        : noOfImagesLeft - noOfImages;
-
     const noOfCreditsUsed = user.noOfCreditsUsed + noOfCreditsToUse;
     const totalCreditsUsed = user.totalCreditsUsed + noOfCreditsToUse;
 
@@ -56,7 +46,6 @@ export const validate = async (options: GenerateImageValidationOptions) => {
         totalCreditsUsed,
         noOfCreditsLeft,
         noOfImagesUsed,
-        noOfImagesLeft,
         totalImagesUsed,
       },
       tx,
@@ -82,17 +71,11 @@ export const reverseCredits = async (
 
   const noOfCreditsToUse = noOfImages * creditsPerImage;
   let noOfCreditsLeft = user.noOfCreditsLeft;
-  let noOfImagesLeft = user.noOfImagesLeft;
 
   noOfCreditsLeft =
     user.noOfCreditsAllocated == null || noOfCreditsLeft == null
       ? null
       : noOfCreditsLeft + noOfCreditsToUse;
-  noOfImagesLeft =
-    user.noOfImagesAllocated == null || noOfImagesLeft == null
-      ? null
-      : noOfImagesLeft + noOfImages;
-
   const noOfCreditsUsed = user.noOfCreditsUsed - noOfCreditsToUse;
   const totalCreditsUsed = user.totalCreditsUsed - noOfCreditsToUse;
 
@@ -106,7 +89,6 @@ export const reverseCredits = async (
       totalCreditsUsed,
       noOfCreditsLeft,
       noOfImagesUsed,
-      noOfImagesLeft,
       totalImagesUsed,
     },
     tc,

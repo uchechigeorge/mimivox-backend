@@ -30,6 +30,8 @@ export const getCredentials = async (userId: string) => {
     // totalCreditsUsed: user.totalCreditsUsed,
     noOfCreditsAllocated: user.noOfCreditsAllocated,
     noOfCreditsLeft: user.noOfCreditsLeft,
+    // Part of noOfCreditsLeft that ends with the current plan period
+    noOfTopUpCreditsLeft: user.noOfTopUpCreditsLeft,
 
     // noOfCharactersUsed: user.noOfCharactersUsed,
     // totalCharactersUsed: user.totalCharactersUsed,

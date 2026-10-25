@@ -1,12 +1,13 @@
 import { HandlePaystackWebhookDto } from "@/lib/dtos/misc/paystack.dto";
 import { handleSubscriptionPayment } from "./handle-subscription-payment.service";
 import { extendSubscription } from "./extend-subscription.service";
+import { handleOneTimePayment } from "./handle-one-time-payment.service";
 
 export const onChargeSuccess = async (body: HandlePaystackWebhookDto) => {
   if (body.data.metadata?.type === "SubscriptionPayment") {
     await handleSubscriptionPayment(body);
   } else if (body.data.metadata?.type === "OneTimePayment") {
-    // await handleOneTimePayment(body);
+    await handleOneTimePayment(body);
   } else if (body.data.plan && body.data.plan.plan_code) {
     await extendSubscription(body);
   }

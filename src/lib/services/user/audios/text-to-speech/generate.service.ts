@@ -6,6 +6,7 @@ import userRepo from "@/lib/repositories/user.repo";
 import voiceRepo from "@/lib/repositories/voice.repo";
 import { UserAuthItems } from "@/lib/types";
 import { BadRequestError, UnauthorizedError } from "@/lib/utils/error.util";
+import { getMaxWordsPerRequest } from "../word-limit.service";
 
 export const validate = async (
   options: GenerateValidateOptions,
@@ -28,17 +29,13 @@ export const validate = async (
     throw new BadRequestError("Cannot use voice");
   }
 
-  if (
-    !user.noOfCharactersLeft ||
-    user.noOfCharactersLeft < content.trim().length
-  ) {
-    throw new BadRequestError("Reached max character quota");
+  const noOfCreditsToUse = content.trim().length * env.CREDITS_PER_CHARACTER;
+  if (user.noOfCreditsLeft !== null && user.noOfCreditsLeft < noOfCreditsToUse) {
+    throw new BadRequestError("Not enough credits");
   }
 
-  if (
-    !user.noOfWordsAllowed ||
-    user.noOfWordsAllowed < content.trim().split(" ").length
-  ) {
+  const maxWords = getMaxWordsPerRequest(user);
+  if (!maxWords || maxWords < content.trim().split(" ").length) {
     throw new BadRequestError("Reached max word quota");
   }
 
@@ -74,10 +71,6 @@ export const createAudioAndUpdateUser = async (
 
     const noOfCharactersUsed = user.noOfCharactersUsed + noOfCharacters;
     const totalCharactersUsed = user.totalCharactersUsed + noOfCharacters;
-    const noOfCharactersLeft =
-      user.noOfCharactersAllocated == null || user.noOfCharactersLeft == null
-        ? null
-        : user.noOfCharactersLeft - noOfCharacters;
 
     const noOfCreditsUsed = user.noOfCreditsUsed + noOfCredits;
     const totalCreditsUsed = user.totalCreditsUsed + noOfCredits;
@@ -105,7 +98,6 @@ export const createAudioAndUpdateUser = async (
       {
         noOfCharactersUsed,
         totalCharactersUsed,
-        noOfCharactersLeft,
         noOfCreditsUsed,
         totalCreditsUsed,
         noOfCreditsLeft,

@@ -38,6 +38,7 @@ export type UserCredentials = {
   // totalCreditsUsed: number;
   noOfCreditsAllocated: number | null;
   noOfCreditsLeft: number | null;
+  noOfTopUpCreditsLeft: number;
   // noOfCharactersUsed: number;
   // totalCharactersUsed: number;
   // noOfCharactersAllocated: number | null;
