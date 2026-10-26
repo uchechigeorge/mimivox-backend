@@ -23,7 +23,7 @@ export const updatePricing = async (
   }
 
   pricing.price = new Decimal(updateDto.price);
-  pricing.oldPrice = updateDto.oldPrice ? new Decimal(updateDto.price) : null;
+  pricing.oldPrice = updateDto.oldPrice ? new Decimal(updateDto.oldPrice) : null;
 
   const syncPaystack = env.SYNC_PAYSTACK_PRICINGS;
   let reference: string | null = null;

@@ -11,7 +11,7 @@ export function proxy(request: NextRequest) {
 
   // CORS headers
   let headers: Record<string, string> = {
-    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+    "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
     "Access-Control-Allow-Headers": "*",
     "Access-Control-Allow-Credentials": "true",
   };

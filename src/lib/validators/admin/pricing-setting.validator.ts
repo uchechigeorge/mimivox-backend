@@ -44,12 +44,13 @@ export const pricingSettingUpdateParamsValidator = z.object({
 export const pricingSettingUpdateDtoValidator = z.object({
   noOfCredits: rNumber,
   noOfWordsAllowed: rNumber,
-  noOfPremiumVoices: rNumber,
   noOfCloneVoices: rNumber,
-  noOfImages: rNumber,
-  noOfMusic: rNumber,
-  noOfVideos: rNumber,
-  maxVideoDurationInSeconds: rNumber,
+  // null means unlimited
+  noOfPremiumVoices: nNumber,
+  noOfImages: nNumber,
+  noOfMusic: nNumber,
+  noOfVideos: nNumber,
+  maxVideoDurationInSeconds: nNumber,
   hasCommunitySupport: z.boolean(),
   hasEmailSupport: z.boolean(),
   hasDedicatedCustomerSupport: z.boolean(),

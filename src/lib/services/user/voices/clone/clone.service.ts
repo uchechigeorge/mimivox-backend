@@ -17,8 +17,9 @@ export const validate = async (
     throw new UnauthorizedError();
   }
 
-  if (!user.noOfVoicesLeft || user.noOfVoicesLeft < 1) {
-    throw new BadRequestError("Reached max voice quota");
+  // null means unlimited
+  if (user.noOfCloneVoicesLeft !== null && user.noOfCloneVoicesLeft < 1) {
+    throw new BadRequestError("Reached max clone voice quota");
   }
 
   return user;
