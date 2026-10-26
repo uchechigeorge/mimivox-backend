@@ -21,6 +21,28 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Sample accounts
+
+Seed the admin account with `npx prisma db seed`. It uses `INIT_ADMIN_*` from `.env` (defaults in `.env.example`):
+
+| Role  | Email           | Password   |
+| ----- | --------------- | ---------- |
+| Admin | admin@email.com | `password` |
+
+Create the sample user with `POST /api/v1/user/auth/register`:
+
+| Role | Email          | Password       |
+| ---- | -------------- | -------------- |
+| User | user@email.com | `Password123!` |
+
+These are development-only sample credentials. Never use them in production.
+
+Add sample activity (subscription payment, credit purchase, audio, image, music, video) for the sample user:
+
+```bash
+npx tsx --env-file=.env src/prisma/seed/sample-activity.ts [email]
+```
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

@@ -9,7 +9,7 @@ export const POST = adminHandler(
   async (req: NextRequest, ctx: AppGetRouteContext, authItems) => {
     const params = subscriptionExtendParamsValidator.parse(await ctx.params);
 
-    const data = await subscriptionService.extendSubscription(params);
+    const data = await subscriptionService.extendSubscription(params, authItems);
     const result = getResponse(data);
     return NextResponse.json(result);
   },

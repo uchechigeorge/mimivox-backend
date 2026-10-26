@@ -54,7 +54,10 @@ export const changePlan = async (
     throw new BadRequestError("Current subscription plan not found");
   }
 
-  if (currentPlan.id === plan.id) {
+  // A subscription an admin granted manually can move to Paystack on the same plan
+  const isGatewaySwitch =
+    currentPlan.id === plan.id && activeSubscription.paymentGateway !== "Paystack";
+  if (currentPlan.id === plan.id && !isGatewaySwitch) {
     throw new BadRequestError("Cannot change to the same subscription plan");
   }
 

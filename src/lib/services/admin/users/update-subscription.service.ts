@@ -17,10 +17,13 @@ import pricingSettingRepo from "@/lib/repositories/pricing-setting.repo";
 import subscriptionPaymentRepo from "@/lib/repositories/subscription-payment.repo";
 import paystackSubscriptionRepo from "@/lib/repositories/paystack-subscription.repo";
 import paystackService from "../../shared/paystack";
+import adminActionLogRepo from "@/lib/repositories/admin-action-log.repo";
+import { AdminAuthItems } from "@/lib/types";
 
 export const updateUserSubscription = async (
   params: UpdateUserSubscriptionParams,
   updateDto: UpdateUserSubscriptionDto,
+  authItems?: AdminAuthItems,
 ) => {
   const user = await userRepo.getById(params.id);
   if (!user) {
@@ -77,6 +80,28 @@ export const updateUserSubscription = async (
     throw new BadRequestError("Paystack subscription not found");
   }
 
+  const logAction = (
+    tc: Parameters<typeof adminActionLogRepo.create>[1],
+    action:
+      | "SubscriptionActivated"
+      | "SubscriptionChanged"
+      | "SubscriptionCancelled",
+    description: string,
+    amount?: Decimal,
+  ) =>
+    adminActionLogRepo.create(
+      {
+        adminId: authItems?.adminId,
+        adminName: authItems?.adminName,
+        userId: user.id,
+        userName: user.fullName,
+        action,
+        description,
+        amount,
+      },
+      tc,
+    );
+
   await prisma.$transaction(async (tc) => {
     // Activate subscriptions
     if (activeSubscription == null && updateDto.isActive && pricing != null) {
@@ -85,7 +110,7 @@ export const updateUserSubscription = async (
         toAppIntervalType(pricing.intervalType),
         pricing.intervalCount,
       );
-      await subscriptionRepo.create(
+      const created = await subscriptionRepo.create(
         {
           isActive: true,
           userId: user.id,
@@ -98,10 +123,43 @@ export const updateUserSubscription = async (
           nextBillingDate,
           status: "WillRenew",
           initialAmount,
+          paymentVerified: true,
           paymentGateway: "Manual",
+          adminId: authItems?.adminId,
+          adminName: authItems?.adminName,
           reference: await sharedSubscriptionService.generateReference(tc),
         },
         tc,
+      );
+
+      await subscriptionPaymentRepo.create(
+        {
+          subscriptionId: created.id,
+          subscriptionReference: created.reference,
+          amount: initialAmount,
+          paymentGateway: "Manual",
+          adminId: authItems?.adminId,
+          adminName: authItems?.adminName,
+          isInitialPayment: true,
+          isPaymentVerified: true,
+          isCurrent: true,
+          status: "Paid",
+          paidAt: changeDate,
+          startDate,
+          endDate: nextBillingDate,
+          planId: pricing.planId,
+          planName: pricing.planName,
+          userId: user.id,
+          userName: user.fullName,
+        },
+        tc,
+      );
+
+      await logAction(
+        tc,
+        "SubscriptionActivated",
+        `Activated ${pricing.planName} - ${pricing.name} manually`,
+        initialAmount,
       );
 
       await userRepo.update(
@@ -146,6 +204,12 @@ export const updateUserSubscription = async (
             isCurrent: false,
           },
           tc,
+        );
+
+        await logAction(
+          tc,
+          "SubscriptionCancelled",
+          `Cancelled ${activeSubscription.planName} - ${activeSubscription.pricingName}`,
         );
 
         const freePricing = await pricingRepo.getByIsFree(tc);
@@ -208,7 +272,10 @@ export const updateUserSubscription = async (
             status: "WillRenew",
             isActive: true,
             initialAmount,
+            paymentVerified: true,
             paymentGateway: "Manual",
+            adminId: authItems?.adminId,
+            adminName: authItems?.adminName,
             previousSubscriptionId: activeSubscription.id,
             reference: await sharedSubscriptionService.generateReference(tc),
           },
@@ -221,6 +288,8 @@ export const updateUserSubscription = async (
             subscriptionReference: newSubscription.reference,
             amount: initialAmount,
             paymentGateway: "Manual",
+            adminId: authItems?.adminId,
+            adminName: authItems?.adminName,
             isInitialPayment: true,
             isPaymentVerified: true,
             isCurrent: true,
@@ -234,6 +303,13 @@ export const updateUserSubscription = async (
             userName: user.fullName,
           },
           tc,
+        );
+
+        await logAction(
+          tc,
+          "SubscriptionChanged",
+          `Changed ${activeSubscription.planName} - ${activeSubscription.pricingName} to ${pricing.planName} - ${pricing.name}`,
+          initialAmount,
         );
 
         const currentUser = await userRepo.getByIdWithLock(user.id, tc);

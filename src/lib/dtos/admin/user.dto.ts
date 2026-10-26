@@ -1,4 +1,7 @@
 import {
+  grantUserCreditsDtoValidator,
+  grantUserCreditsParamsValidator,
+  listUserActivityLogsParamsValidator,
   updateUserSubscriptionDtoValidator,
   updateUserSubscriptionParamsValidator,
   userGetParamsValidator,
@@ -18,4 +21,14 @@ export type UpdateUserSubscriptionParams = z.infer<
 
 export type UpdateUserSubscriptionDto = z.infer<
   typeof updateUserSubscriptionDtoValidator
+>;
+
+export type GrantUserCreditsParams = z.infer<
+  typeof grantUserCreditsParamsValidator
+>;
+
+export type GrantUserCreditsDto = z.infer<typeof grantUserCreditsDtoValidator>;
+
+export type ListUserActivityLogsParams = z.infer<
+  typeof listUserActivityLogsParamsValidator
 >;

@@ -30,6 +30,17 @@ const getByUserIdAndIsActive = async (
   });
 };
 
+const listActiveByUserId = async (
+  userId: User["id"],
+  tc?: Prisma.TransactionClient,
+) => {
+  const db: DB = tc || prisma;
+
+  return await db.subscription.findMany({
+    where: { userId, isActive: true },
+  });
+};
+
 const getExistsByUserIdAndIsActive = async (
   userId: User["id"],
   isActive: boolean = true,
@@ -265,6 +276,7 @@ export type SubscriptionGetOptions = BaseGetOptions & {};
 const subscriptionRepo = {
   getById,
   getByUserIdAndIsActive,
+  listActiveByUserId,
   getExistsByUserIdAndIsActive,
   getByUserIdAndStatus,
   getByReference,

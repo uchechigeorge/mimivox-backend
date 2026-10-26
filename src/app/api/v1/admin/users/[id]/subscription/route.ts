@@ -10,7 +10,11 @@ import {
 import { NextResponse } from "next/server";
 
 export const POST = adminHandler(
-  async (req: Request, ctx: AppRouteContext<UpdateUserSubscriptionParams>) => {
+  async (
+    req: Request,
+    ctx: AppRouteContext<UpdateUserSubscriptionParams>,
+    authItems,
+  ) => {
     const body = await req.json();
 
     const params = updateUserSubscriptionParamsValidator.parse(
@@ -18,7 +22,7 @@ export const POST = adminHandler(
     );
     const dto = updateUserSubscriptionDtoValidator.parse(body);
 
-    await userService.updateUserSubscription(params, dto);
+    await userService.updateUserSubscription(params, dto, authItems);
     const response = successResponse();
     return NextResponse.json(response);
   },

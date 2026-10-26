@@ -31,6 +31,8 @@ export const subscriptionReadDtoValidator = z.object({
   nextBillingDate: nDate,
   endDate: nDate,
   initialAmount: nNumber,
+  paymentGateway: nString,
+  adminName: nString,
   user: z
     .object({
       id: nString,

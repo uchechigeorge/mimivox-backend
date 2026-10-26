@@ -21,6 +21,7 @@ export const subscriptionPaymentReadDtoValidator = z.object({
   isInitialPayment: nBoolean,
   isPaymentVerified: nBoolean,
   paymentGateway: nString,
+  adminName: nString,
   status: nString,
   planId: nString,
   planName: nString,

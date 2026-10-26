@@ -32,6 +32,22 @@ export const updateUserSubscriptionDtoValidator = z.object({
   startDate: stringToNullableDate,
 });
 
+export const grantUserCreditsParamsValidator = z.object({
+  id: z.string().min(1),
+});
+
+export const grantUserCreditsDtoValidator = z.object({
+  type: z.enum(["TopUp", "Credit"]),
+  noOfCredits: z.number().int().min(1).max(10_000_000),
+  note: z.string().max(500).optional(),
+});
+
+export const listUserActivityLogsParamsValidator = z.object({
+  id: z.string().min(1),
+  page: nNumber,
+  pageSize: nNumber,
+});
+
 export const userReadDtoValidator = z.object({
   id: nString,
   email: nString,
@@ -44,6 +60,7 @@ export const userReadDtoValidator = z.object({
   totalCreditsUsed: nNumber,
   noOfCreditsLeft: nNumber,
   noOfCreditsAllocated: nNumber,
+  noOfTopUpCreditsLeft: nNumber,
   noOfWordsAllowed: nNumber,
   noOfCharactersUsed: nNumber,
   totalCharactersUsed: nNumber,

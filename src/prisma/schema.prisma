@@ -286,6 +286,8 @@ model Subscription {
   paymentVerified        Boolean                @default(false)
   paymentGateway         PaymentGatewayOption   @default(None)
   isDowngrade            Boolean                @default(false)
+  adminId                String?                @db.VarChar(1024)
+  adminName              String?                @db.VarChar(1024)
   previousSubscriptionId String?                @unique
   previousSubscription   Subscription?          @relation("SubscriptionHistory", fields: [previousSubscriptionId], references: [id])
   nextSubscription       Subscription?          @relation("SubscriptionHistory")
@@ -371,6 +373,8 @@ model SubscriptionPayment {
   isInitialPayment      Boolean                   @default(false)
   isCurrent             Boolean                   @default(false)
   isPaymentVerified     Boolean                   @default(false)
+  adminId               String?                   @db.VarChar(1024)
+  adminName             String?                   @db.VarChar(1024)
   paymentGateway        PaymentGatewayOption      @default(None)
   userId                String?                   @db.VarChar(1024)
   userName              String?                   @db.VarChar(1024)
@@ -635,4 +639,31 @@ model Video {
   task                    Task?            @relation(fields: [taskId], references: [id])
 
   @@map("Videos")
+}
+
+enum AdminActionType {
+  SubscriptionActivated
+  SubscriptionChanged
+  SubscriptionCancelled
+  SubscriptionExtended
+  CreditTopUp
+  CreditAdded
+}
+
+model AdminActionLog {
+  id          String          @id @default(uuid()) @db.Uuid()
+  adminId     String?         @db.VarChar(1024)
+  adminName   String?         @db.VarChar(1024)
+  userId      String          @db.VarChar(1024)
+  userName    String?         @db.VarChar(1024)
+  action      AdminActionType
+  description String          @db.VarChar(1024)
+  noOfCredits Int?
+  amount      Decimal?        @db.Decimal(18, 2)
+  note        String?         @db.VarChar(1024)
+  createdAt   DateTime        @default(now())
+  deletedAt   DateTime?
+
+  @@index([userId, createdAt])
+  @@map("AdminActionLogs")
 }

@@ -144,12 +144,16 @@ export const handleSubscriptionPayment = async (
     if (!previousSubscription)
       throw new BadRequestError("Previous subscription not found");
 
-    previousPaystackSubscription =
-      await paystackSubscriptionRepo.getBySubscriptionId(
-        previousSubscription.id,
-      );
-    if (!previousPaystackSubscription)
-      throw new BadRequestError("Paystack previous subscription not found");
+    // Only Paystack subscriptions have something to disable on Paystack's side;
+    // one the admin granted manually just ends here
+    if (previousSubscription.paymentGateway === "Paystack") {
+      previousPaystackSubscription =
+        await paystackSubscriptionRepo.getBySubscriptionId(
+          previousSubscription.id,
+        );
+      if (!previousPaystackSubscription)
+        throw new BadRequestError("Paystack previous subscription not found");
+    }
   }
 
   // Get currency and exchange rate
@@ -164,6 +168,7 @@ export const handleSubscriptionPayment = async (
     email: data.customer.email,
     customer_code: data.customer.customer_code,
   }; // customer from webhook data/body
+  const supersededPaystackSubscriptions: PaystackSubscription[] = [];
   const paymentClaimed = await prisma.$transaction(async (tx) => {
     // Update subscription, invoice, transaction, and user
     const claim = await subscriptionRepo.claimPendingPayment(subscription.id, tx);
@@ -221,6 +226,35 @@ export const handleSubscriptionPayment = async (
         },
         tx,
       );
+    }
+
+    // The user may have been activated by an admin (or another checkout) since this
+    // payment started. The completed payment wins, so end any other live subscription
+    // instead of leaving two active ones.
+    const otherActive = (
+      await subscriptionRepo.listActiveByUserId(user.id, tx)
+    ).filter(
+      (item) =>
+        item.id !== subscription.id && item.id !== previousSubscription?.id,
+    );
+    for (const other of otherActive) {
+      await subscriptionRepo.update(
+        other.id,
+        { isActive: false, status: "Completed", endDate: new Date() },
+        tx,
+      );
+      await subscriptionPaymentRepo.updateBySubscriptionId(
+        other.id,
+        { isCurrent: false },
+        tx,
+      );
+      if (other.paymentGateway === "Paystack") {
+        const otherPaystack = await paystackSubscriptionRepo.getBySubscriptionId(
+          other.id,
+          tx,
+        );
+        if (otherPaystack) supersededPaystackSubscriptions.push(otherPaystack);
+      }
     }
 
     await paystackSubscriptionRepo.create(
@@ -287,6 +321,14 @@ export const handleSubscriptionPayment = async (
     await paystackService.subscription.disableSubscription({
       code: previousPaystackSubscription.reference,
       token: previousPaystackSubscription.token,
+    });
+  }
+
+  // Stop Paystack from also billing any live Paystack subscription we just ended
+  for (const superseded of supersededPaystackSubscriptions) {
+    await paystackService.subscription.disableSubscription({
+      code: superseded.reference,
+      token: superseded.token,
     });
   }
 };

@@ -76,6 +76,9 @@ export const createSubscription = async (
           planId: pricing.planId,
           planName: pricing.planName,
           initialAmount: body.amount,
+          // A reused pending subscription may come from an earlier plan change
+          previousSubscriptionId: null,
+          isDowngrade: false,
         },
         tx,
       );
